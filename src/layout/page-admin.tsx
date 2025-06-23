@@ -69,15 +69,13 @@ export default function Page({ children }: { children: ReactNode }) {
         return;
       }
 
-      const { user } = authData;
-
-      // Check if user role is 'admin' or 'superadmin'
+      const { user } = authData;      // Check if user role is 'admin' or 'superadmin'
       const allowedRoles = ["admin", "superadmin"];
       if (!allowedRoles.includes(user.role)) {
         console.log(
           `❌ User role "${user.role}" not authorized. Required: admin/superadmin`
         );
-
+        
         // Simple unauthorized page for non-admin users
         document.body.innerHTML = `
           <div style="

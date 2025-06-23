@@ -23,10 +23,9 @@ export default function RegisterPage() {
           window.location.href = previousPage;
         } else {
           // Jika tidak ada halaman sebelumnya, redirect ke home atau dashboard
-          try {
-            const userData = JSON.parse(user);
+          try {            const userData = JSON.parse(user);
             const role = userData.role?.toLowerCase() || "user";
-            window.location.href = role === "admin" ? "/dashboard" : "/form-pendaftaran";
+            window.location.href = (role === "admin" || role === "superadmin") ? "/dashboard" : "/form-pendaftaran";
           } catch (error) {
             console.error("Error parsing user data:", error);
             window.location.href = "/";

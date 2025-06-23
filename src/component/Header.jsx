@@ -141,13 +141,12 @@ export default function Header() {
       window.location.href = '/';
     }
   };
-
   // ✅ UPDATED: Dapatkan path dashboard berdasarkan role
   const getDashboardPath = () => {
     if (!userData) return "/dashboard";
     
     const role = userData.role?.toLowerCase() || "user";
-    return role === "admin" ? "/dashboard" : "/form-pendaftaran";
+    return (role === "admin" || role === "superadmin") ? "/dashboard" : "/form-pendaftaran";
   };
 
   // Dapatkan inisial untuk avatar

@@ -155,11 +155,11 @@ export function RegisterForm({
         description: `Selamat datang, ${result.user?.name || 'User'}!`,
         duration: 3000,
       })
-      
-      // ✅ FIXED: Redirect berdasarkan role user
+        // ✅ FIXED: Redirect berdasarkan role user
       setTimeout(() => {
         const role = result.user?.role?.toLowerCase() || "user";
-        const redirectUrl = role === "admin" ? "/dashboard" : "/form-pendaftaran";
+        // Admin dan superadmin diarahkan ke dashboard
+        const redirectUrl = (role === "admin" || role === "superadmin") ? "/dashboard" : "/form-pendaftaran";
         console.log("🔄 Melakukan redirect ke", redirectUrl, "berdasarkan role:", role);
         window.location.href = redirectUrl;
       }, 1500);

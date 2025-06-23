@@ -70,11 +70,16 @@ export default function Page({ children }: { children: ReactNode }) {
         return;
       }
 
-      const { user } = authData;
-
-      // Check if user role is 'user'
-      if (user.role !== "user") {
-        console.log(`❌ User role "${user.role}" not authorized. Required: "user"`);
+      const { user } = authData;      // Check if user role is 'user'
+      if (user.role !== "user" && user.role !== "beswan") {
+        console.log(`❌ User role "${user.role}" not authorized. Required: "user" or "beswan"`);
+        
+        // Redirect admin dan superadmin ke dashboard admin
+        if (user.role === "admin" || user.role === "superadmin") {
+          console.log("🔄 Redirecting admin/superadmin to dashboard");
+          window.location.href = "/dashboard";
+          return;
+        }
 
         // Simple unauthorized page
         document.body.innerHTML = `

@@ -148,6 +148,65 @@ const data = {
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  // State untuk menyimpan data pengguna dan status superadmin
+  const [isSuperAdmin, setIsSuperAdmin] = React.useState(false);
+  const [userData, setUserData] = React.useState(data.user);
+  const [navItems, setNavItems] = React.useState(data.navMain);
+  
+  // Hook untuk mendapatkan informasi user saat komponen dimount
+  React.useEffect(() => {
+    // Get user data from localStorage
+    try {
+      const userStr = localStorage.getItem('bersekolah_user');
+      if (userStr) {
+        const user = JSON.parse(userStr);
+        
+        // Set user data
+        setUserData({
+          name: user.name || 'Admin',
+          email: user.email || 'admin@bersekolah.com',
+          avatar: user.avatar || '/images/admin-avatar.jpg',
+        });
+        
+        // Periksa apakah pengguna adalah superadmin
+        const userIsSuperAdmin = user.role === 'superadmin';
+        setIsSuperAdmin(userIsSuperAdmin);
+        console.log('User role:', user.role, 'Is SuperAdmin:', userIsSuperAdmin);
+        
+        // Jika superadmin, tambahkan menu khusus
+        if (userIsSuperAdmin) {
+          setNavItems([
+            ...data.navMain,
+            {
+              title: "Super Admin Tools",
+              url: "#",
+              icon: Shield,
+              items: [
+                {
+                  title: "Manajemen Admin",
+                  url: "/dashboard/manage-admin",
+                  icon: Shield,
+                },
+                {
+                  title: "Logs Sistem",
+                  url: "/dashboard/system-logs",
+                  icon: FileText,
+                },
+                {
+                  title: "Konfigurasi API",
+                  url: "/dashboard/api-config",
+                  icon: Settings,
+                }
+              ]
+            }
+          ]);
+        }
+      }
+    } catch (error) {
+      console.error('Error parsing user data:', error);
+    }
+  }, []);
+  
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
@@ -157,15 +216,21 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </div>
           <div className="grid flex-1 text-sm leading-tight text-left">
             <span className="font-semibold truncate">Bersekolah</span>
-            <span className="text-xs truncate">Admin Panel</span>
+            <span className="text-xs truncate">
+              {isSuperAdmin ? 'Super Admin Panel' : 'Admin Panel'}
+            </span>
           </div>
         </div>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
-      </SidebarContent>
-      <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavMain items={navItems} />
+      </SidebarContent>      <SidebarFooter>
+        <NavUser />
+        {isSuperAdmin && (
+          <div className="px-4 py-2 mt-2 text-xs font-semibold text-center text-sidebar-primary">
+            Super Admin Mode
+          </div>
+        )}
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

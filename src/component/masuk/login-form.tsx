@@ -6,7 +6,6 @@ import { Label } from "@/components/ui/label"
 import { Eye, EyeOff, AlertCircle } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Checkbox } from "@/components/ui/checkbox"
 
 export function LoginForm({
   className,
@@ -16,14 +15,12 @@ export function LoginForm({
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const { toast } = useToast()
-    // State untuk form data
+  
+  // State untuk form data
   const [formData, setFormData] = useState({
-    email: localStorage.getItem('bersekolah_remember_email') || "",
+    email: "",
     password: ""
   })
-  
-  // State untuk remember email
-  const [rememberEmail, setRememberEmail] = useState(!!localStorage.getItem('bersekolah_remember_email'))
   
   // State untuk error
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -56,7 +53,8 @@ export function LoginForm({
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword)
   }
-    // Handle form submission
+  
+  // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
@@ -80,7 +78,9 @@ export function LoginForm({
           'Accept': 'application/json',
         },
         body: JSON.stringify(formData)
-      })      // ✅ FIXED: Tambahkan handling untuk response yang bukan JSON
+      })
+      
+      // ✅ FIXED: Tambahkan handling untuk response yang bukan JSON
       let result;
       const contentType = response.headers.get('content-type');
       if (contentType && contentType.includes('application/json')) {
@@ -91,14 +91,8 @@ export function LoginForm({
         console.log("Response bukan JSON:", text.substring(0, 100) + "...");
         throw new Error("Server mengembalikan respons yang bukan JSON");
       }
-        if (response.ok) {
-        // Jika "Remember me" dicentang, simpan email
-        if (rememberEmail) {
-          localStorage.setItem('bersekolah_remember_email', formData.email);
-        } else {
-          localStorage.removeItem('bersekolah_remember_email');
-        }
-        
+      
+      if (response.ok) {
         // Simpan token ke localStorage dengan prefix bersekolah_
         if (result.token) {
           localStorage.setItem('bersekolah_auth_token', result.token);
@@ -120,13 +114,14 @@ export function LoginForm({
         // Simpan timestamp login dengan prefix bersekolah_
         localStorage.setItem('bersekolah_login_time', Date.now().toString());
         console.log("Login timestamp berhasil disimpan");
-          toast({
+        
+        toast({
           title: "Login berhasil",
           description: `Selamat datang kembali, ${result.user?.name || 'User'}!`,
           duration: 3000,
-        });
-
-        // Redirect ke halaman yang sesuai berdasarkan role        
+        })
+        
+        // Redirect ke halaman yang sesuai berdasarkan role
         setTimeout(() => {
           const role = result.user?.role?.toLowerCase() || "user";
           
@@ -173,7 +168,8 @@ export function LoginForm({
           title: "Login gagal",
           description: generalError || result.message || "Email atau password salah",
           variant: "destructive",
-          duration: 5000,        });
+          duration: 5000,
+        })
       }
     } catch (error) {
       console.error("Error saat submit:", error);
@@ -259,40 +255,24 @@ export function LoginForm({
                 {showPassword ? "Sembunyikan kata sandi" : "Tampilkan kata sandi"}
               </span>
             </button>
-          </div>          {errors.password && <p className="mt-1 text-xs text-red-500">{errors.password}</p>}
+          </div>
+          {errors.password && <p className="mt-1 text-xs text-red-500">{errors.password}</p>}
         </div>
-        
-        <div className="flex items-center space-x-2">
-          <Checkbox 
-            id="remember" 
-            checked={rememberEmail}
-            onCheckedChange={(checked) => setRememberEmail(!!checked)}
-          />
-          <label
-            htmlFor="remember"
-            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-          >
-            Ingat email saya
-          </label>
-        </div>
-        
-        <div className="flex justify-end">
-          <a 
-            href="/lupa-password" 
-            className="text-sm text-muted-foreground hover:text-foreground"
-          >
-            Lupa kata sandi?
-          </a>
-        </div>
-        
         <Button type="submit" className="w-full" disabled={isLoading}>
           {isLoading ? "Masuk..." : "Masuk"}
         </Button>
-      </div>      <div className="text-sm text-center">
-        Belum memiliki akun?{" "}
-        <a href="/daftar" className="font-medium text-primary hover:underline">
-          Daftar sekarang
-        </a>
+      </div>      <div className="flex flex-col gap-2 text-sm text-center">
+        <div>
+          <a href="/lupa-password" className="text-muted-foreground hover:text-foreground">
+            Lupa kata sandi?
+          </a>
+        </div>
+        <div>
+          Belum memiliki akun?{" "}
+          <a href="/daftar" className="underline underline-offset-4">
+            Daftar sekarang
+          </a>
+        </div>
       </div>
     </form>
   )
