@@ -341,32 +341,6 @@ export function NavUser() {
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem asChild>
-                <a href="/dashboard/profil" className="flex items-center w-full">
-                  <UserCog className="w-4 h-4 mr-2" />
-                  Profil Saya
-                </a>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <a href="/dashboard/notifikasi" className="flex items-center w-full">
-                  <Bell className="w-4 h-4 mr-2" />
-                  Notifikasi
-                </a>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <a href="/dashboard/pengaturan" className="flex items-center w-full">
-                  <Settings className="w-4 h-4 mr-2" />
-                  Pengaturan
-                </a>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <a href="/bantuan" className="flex items-center w-full">
-                  <HelpCircle className="w-4 h-4 mr-2" />
-                  Bantuan
-                </a>
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem 
               onClick={handleLogout} 
