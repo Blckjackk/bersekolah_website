@@ -1,0 +1,33 @@
+/* Custom styles for sidebar persistence */
+.sidebar {
+  transition: width 0.3s ease, transform 0.3s ease;
+}
+
+.sidebar-closed {
+  width: var(--sidebar-collapsed-width, 60px);
+}
+
+/* Add this if you want to hide elements when sidebar is collapsed */
+.sidebar-closed .hide-when-collapsed {
+  display: none;
+}
+
+/* Hide sidebar on mobile when closed */
+@media (max-width: 768px) {
+  .sidebar-closed {
+    transform: translateX(-100%);
+  }
+}
+
+/* Prevent content flashing during page transitions */
+.sidebar {
+  will-change: width, transform;
+}
+
+/* Static positioning to ensure it doesn't disappear during navigation */
+.sidebar-container {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  z-index: 40;
+}

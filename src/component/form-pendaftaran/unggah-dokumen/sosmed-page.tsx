@@ -42,6 +42,14 @@ import {
 } from "@/components/ui/table"
 import { useToast } from "@/hooks/use-toast"
 
+interface MediaSosialLinks {
+  id?: number;
+  instagram_link: string;
+  twibbon_link: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
 interface UploadedDocument {
   id: number;
   document_type: string;
@@ -78,6 +86,12 @@ interface DocumentType {
 }
 
 export default function DokumenSosmedPage() {
+  // Default links as fallback
+  const defaultLinks: MediaSosialLinks = {
+    instagram_link: "https://instagram.com/ber.sekolah",
+    twibbon_link: "https://twibbon.com/bersekolah2025"
+  }
+
   const [documentTypes, setDocumentTypes] = useState<DocumentType[]>([])
   const [uploadedDocs, setUploadedDocs] = useState<UploadedDocument[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -89,6 +103,9 @@ export default function DokumenSosmedPage() {
   const [uploading, setUploading] = useState(false)
   const [previewDoc, setPreviewDoc] = useState<UploadedDocument | null>(null)
   const [forceUpdateCounter, setForceUpdateCounter] = useState(0)
+  // New state for social media links
+  const [socialLinks, setSocialLinks] = useState<MediaSosialLinks>(defaultLinks)
+  const [fetchingSocialLinks, setFetchingSocialLinks] = useState(false)
   
   const fileInputRef = useRef<HTMLInputElement>(null)
   const { toast } = useToast()
@@ -119,7 +136,48 @@ export default function DokumenSosmedPage() {
       })
     }
   }
-    // Fetch uploaded documents untuk kategori sosial_media SAJA
+  
+  // Fetch social media links from API
+  const fetchSocialMediaLinks = async () => {
+    setFetchingSocialLinks(true)
+    try {
+      const response = await fetch(`${import.meta.env.PUBLIC_API_BASE_URL}/media-sosial/latest`, {
+        headers: {
+          'Accept': 'application/json',
+          'Cache-Control': 'no-cache'
+        },
+        cache: 'no-store'
+      })
+
+      if (!response.ok) {
+        console.warn('Could not fetch social media links, using defaults')
+        return
+      }
+
+      const data = await response.json()
+      if (data.status === 'success' && data.data) {
+        const links = data.data
+        // Only update if we actually have links
+        if (links.instagram_link || links.twibbon_link) {
+          setSocialLinks({
+            instagram_link: links.instagram_link || defaultLinks.instagram_link,
+            twibbon_link: links.twibbon_link || defaultLinks.twibbon_link,
+            id: links.id,
+            created_at: links.created_at,
+            updated_at: links.updated_at
+          })
+          console.log('Social media links loaded:', links)
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching social media links:', error)
+      // Keep using default links (already set in state)
+    } finally {
+      setFetchingSocialLinks(false)
+    }
+  }
+  
+  // Fetch uploaded documents untuk kategori sosial_media SAJA
   const fetchDocuments = async () => {
     try {
       const token = localStorage.getItem('bersekolah_auth_token')
@@ -422,22 +480,27 @@ export default function DokumenSosmedPage() {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
   }
 
+  // Load data on component mount
   useEffect(() => {
-    const fetchData = async () => {
+    const loadAllData = async () => {
       setIsLoading(true)
       try {
         await Promise.all([
           fetchDocumentTypes(),
-          fetchDocuments()
+          fetchDocuments(),
+          fetchSocialMediaLinks()
         ])
-      } catch (error) {
-        console.error('Error fetching data:', error)
       } finally {
         setIsLoading(false)
       }
     }
-
-    fetchData()
+    
+    loadAllData()
+  }, [forceUpdateCounter])
+  
+  useEffect(() => {
+    // Set page title
+    document.title = "Unggah Dokumen Sosial Media | Bersekolah"
   }, [])
 
   if (isLoading) {
@@ -468,21 +531,19 @@ export default function DokumenSosmedPage() {
         <Instagram className="w-4 h-4 text-blue-600" />
         <AlertTitle className="text-blue-800">Petunjuk Sosial Media</AlertTitle>
         <AlertDescription className="text-blue-700">
-          <div className="space-y-2">
-            <p>1. Follow akun Instagram @ber.sekolah</p>
+          <div className="space-y-2">            <p>1. Follow akun Instagram resmi Bersekolah</p>
             <p>2. Posting twibbon beasiswa di feed Instagram Anda</p>
             <p>3. Screenshot bukti follow dan postingan sebagai dokumen</p>
-          </div>
-          <div className="flex gap-2 mt-3">
+          </div>          <div className="flex gap-2 mt-3">
             <Button size="sm" variant="outline" className="text-blue-600 border-blue-200" asChild>
-              <a href="https://instagram.com/ber.sekolah" target="_blank" rel="noopener noreferrer">
+              <a href={socialLinks.instagram_link} target="_blank" rel="noopener noreferrer">
                 <Instagram className="w-4 h-4 mr-1" />
-                Follow @ber.sekolah
+                Follow Instagram
                 <ExternalLink className="w-3 h-3 ml-1" />
               </a>
             </Button>
             <Button size="sm" variant="outline" className="text-blue-600 border-blue-200" asChild>
-              <a href="https://twibbon.com/bersekolah2025" target="_blank" rel="noopener noreferrer">
+              <a href={socialLinks.twibbon_link} target="_blank" rel="noopener noreferrer">
                 <FileText className="w-4 h-4 mr-1" />
                 Ambil Twibbon
                 <ExternalLink className="w-3 h-3 ml-1" />

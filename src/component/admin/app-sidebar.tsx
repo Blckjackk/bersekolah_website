@@ -30,6 +30,7 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar"
+import { useSidebar } from "@/contexts/SidebarContext"
 
 // Menu data untuk admin
 const data = {
@@ -152,6 +153,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const [isSuperAdmin, setIsSuperAdmin] = React.useState(false);
   const [userData, setUserData] = React.useState(data.user);
   const [navItems, setNavItems] = React.useState(data.navMain);
+  const { isOpen, sidebarRef } = useSidebar(); // Get sidebar state from context
   
   // Hook untuk mendapatkan informasi user saat komponen dimount
   React.useEffect(() => {
@@ -205,10 +207,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     } catch (error) {
       console.error('Error parsing user data:', error);
     }
-  }, []);
-  
+  }, []);  // Use the controlled prop to manage the sidebar state
   return (
-    <Sidebar collapsible="icon" {...props}>
+    <Sidebar 
+      ref={sidebarRef} 
+      id="main-sidebar"
+      collapsible="icon" 
+      className={`sidebar-container sidebar ${!isOpen ? 'sidebar-closed' : ''}`} 
+      {...props}
+    >
       <SidebarHeader>
         <div className="flex items-center gap-2 px-4 py-2">
           <div className="flex items-center justify-center rounded-lg aspect-square size-8 bg-sidebar-primary text-sidebar-primary-foreground">

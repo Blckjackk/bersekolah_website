@@ -619,15 +619,15 @@ export default function ManageAdminPage() {
         <Card>
         <CardContent className="p-0">
           {isLoading ? (
-            <div className="flex flex-col items-center justify-center p-8 gap-4">
+            <div className="flex flex-col items-center justify-center gap-4 p-8">
               <div className="w-16 h-16 border-4 rounded-full border-primary/20 border-t-primary animate-spin"></div>
               <p className="text-muted-foreground">Memuat data admin...</p>
             </div>
           ) : !isSuperAdmin ? (
-            <div className="flex flex-col items-center justify-center p-8 gap-2 text-center">
+            <div className="flex flex-col items-center justify-center gap-2 p-8 text-center">
               <Shield className="w-16 h-16 text-muted-foreground" />
               <h3 className="text-lg font-medium">Akses Terbatas</h3>
-              <p className="text-muted-foreground max-w-md">
+              <p className="max-w-md text-muted-foreground">
                 Hanya Super Admin yang dapat mengakses halaman Manajemen Admin. Anda akan dialihkan ke Dashboard.
               </p>
             </div>
@@ -686,7 +686,7 @@ export default function ManageAdminPage() {
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8">
+                    <TableCell colSpan={7} className="py-8 text-center">
                       {searchQuery 
                         ? "Tidak ada admin yang sesuai dengan pencarian Anda" 
                         : "Tidak ada admin yang terdaftar. Klik tombol 'Tambah Admin' untuk menambahkan admin baru."}

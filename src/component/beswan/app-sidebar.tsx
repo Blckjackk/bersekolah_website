@@ -15,8 +15,8 @@ import {
   MessageSquare,
   Clock,
   CheckCircle,
-  AlertCircle, // ✅ TAMBAHKAN untuk indikator finalisasi
-  Lock // ✅ TAMBAHKAN untuk lock icon
+  AlertCircle,
+  Lock
 } from "lucide-react"
 import { NavMain } from "./nav-main"
 import { NavUser } from "./nav-user"
@@ -29,6 +29,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
+import { useSidebar } from "@/contexts/SidebarContext"
 
 // ✅ TAMBAHKAN: Interface untuk application status
 interface ApplicationStatus {
@@ -206,6 +207,7 @@ const getNavData = (currentPath: string, applicationStatus: ApplicationStatus | 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const [currentPath, setCurrentPath] = useState("")
   const [applicationStatus, setApplicationStatus] = useState<ApplicationStatus | null>(null) // ✅ TAMBAHKAN state
+  const { isOpen, sidebarRef } = useSidebar(); // Get sidebar state from context
   
   // Track current path
   useEffect(() => {
@@ -246,12 +248,16 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     
     return () => clearInterval(interval)
   }, [])
-
   // Get nav data based on current path and application status
   const data = getNavData(currentPath, applicationStatus)
-
-  return (
-    <Sidebar variant="inset" {...props}>
+    return (
+    <Sidebar 
+      ref={sidebarRef}
+      id="main-sidebar"
+      variant="inset" 
+      className={`sidebar-container sidebar ${!isOpen ? "sidebar-closed" : ""}`} 
+      {...props}
+    >
         <SidebarHeader>
           <SidebarMenu>
             <SidebarMenuItem>
