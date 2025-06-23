@@ -16,12 +16,38 @@ import {
 } from "@heroui/react";
 import { Avatar } from "@heroui/react";
 import { ChevronDown, User, Settings, LogOut } from "lucide-react";
+// Import only for reference, we'll create a custom public fetch function
+import { fetchBeasiswaPeriods } from "@/lib/beasiswa-periods-service";
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userData, setUserData] = useState(null);
   const [activePath, setActivePath] = useState("/");
+  const [beasiswaPeriods, setBeasiswaPeriods] = useState([]);
+  const [isLoadingPeriods, setIsLoadingPeriods] = useState(true);
+  // Public function to fetch beasiswa periods without requiring auth
+  const fetchPublicBeasiswaPeriods = async () => {
+    try {
+      const baseURL = import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:8000/api';
+      const response = await fetch(`${baseURL}/public/beasiswa-periods`, {
+        headers: {
+          'Accept': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        console.warn(`API returned ${response.status} from ${baseURL}/public/beasiswa-periods`);
+        return { data: [] };
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error("Error fetching public periods:", error);
+      return { data: [] };
+    }
+  };
 
   // Menu navigasi utama
   const navItems = [
@@ -33,10 +59,9 @@ export default function Header() {
     { name: "Artikel", href: "/artikel" },
   ];
 
-  // ✅ UPDATED: Cek status login dengan prefix bersekolah_
+  // Initial setup
   useEffect(() => {
     const checkLoginStatus = () => {
-      // ✅ FIXED: Gunakan prefix bersekolah_ seperti di login/register
       const token = localStorage.getItem('bersekolah_auth_token');
       const userDataString = localStorage.getItem('bersekolah_user');
       
@@ -45,10 +70,8 @@ export default function Header() {
           const parsedUserData = JSON.parse(userDataString);
           setIsLoggedIn(true);
           setUserData(parsedUserData);
-          console.log("User logged in:", parsedUserData);
         } catch (error) {
           console.error("Error parsing user data:", error);
-          // Hapus data yang rusak
           localStorage.removeItem('bersekolah_auth_token');
           localStorage.removeItem('bersekolah_user');
           localStorage.removeItem('bersekolah_login_time');
@@ -56,17 +79,32 @@ export default function Header() {
       }
     };
     
-    // Deteksi current path untuk active item
     const detectActivePath = () => {
       const currentPath = window.location.pathname;
-      console.log("Current path:", currentPath);
       setActivePath(currentPath);
+    };      const fetchInitialPeriods = async () => {
+      setIsLoadingPeriods(true);
+      try {
+        console.log('Fetching beasiswa periods...');
+        // Get all periods using our public fetch function
+        const response = await fetchPublicBeasiswaPeriods();
+        
+        console.log('Received periods data:', response);
+        // Save all periods for hasActivePeriod() function
+        setBeasiswaPeriods(response.data || []);
+      } catch (error) {
+        console.error("Error fetching periods:", error);
+        setBeasiswaPeriods([]); // Set to empty array on error
+      } finally {
+        setIsLoadingPeriods(false);
+      }
     };
     
     checkLoginStatus();
     detectActivePath();
+    fetchInitialPeriods();
     
-    // Optional: tambahkan listener untuk perubahan URL (jika menggunakan SPA)
+    // Route change listener
     const handleRouteChange = () => {
       detectActivePath();
     };
@@ -76,6 +114,36 @@ export default function Header() {
       window.removeEventListener('popstate', handleRouteChange);
     };
   }, []);
+    // Polling effect to keep periods updated
+  useEffect(() => {
+    const checkPeriodsStatus = async () => {
+      try {
+        const response = await fetchPublicBeasiswaPeriods();
+        
+        // Update periods list
+        setBeasiswaPeriods(response.data || []);
+      } catch (error) {
+        console.error("Error checking periods:", error);
+      }
+    };
+
+    // Poll every 30 seconds
+    const intervalId = setInterval(checkPeriodsStatus, 30000);
+    
+    return () => clearInterval(intervalId);
+  }, []);
+  // Function to check if there's an active period - using the same logic as periode-beasiswa-page.tsx
+  const hasActivePeriod = () => {
+    if (!beasiswaPeriods || beasiswaPeriods.length === 0) return false;
+    // According to database structure, we only need to check status column
+    const hasActive = beasiswaPeriods.some(period => period.status === 'active');
+    console.log('Active periods check:', { 
+      periodsCount: beasiswaPeriods.length,
+      hasActive,
+      periods: beasiswaPeriods.map(p => ({ id: p.id, name: p.nama_periode, status: p.status }))
+    });
+    return hasActive;
+  };
 
   // Fungsi untuk mengecek apakah link aktif
   const isActive = (path) => {
@@ -92,11 +160,9 @@ export default function Header() {
     return false;
   };
 
-  // ✅ UPDATED: Handle logout dengan prefix bersekolah_ dan API call
+  // Handle logout
   const handleLogout = async () => {
     try {
-      console.log("User logging out...");
-      
       const token = localStorage.getItem('bersekolah_auth_token');
       
       if (token) {
@@ -114,11 +180,10 @@ export default function Header() {
           });
         } catch (error) {
           console.error('Error calling logout API:', error);
-          // Continue with local logout even if API fails
         }
       }
       
-      // ✅ FIXED: Hapus semua data dengan prefix bersekolah_
+      // Clear local storage
       localStorage.removeItem('bersekolah_auth_token');
       localStorage.removeItem('bersekolah_user');
       localStorage.removeItem('bersekolah_login_time');
@@ -127,13 +192,12 @@ export default function Header() {
       setIsLoggedIn(false);
       setUserData(null);
       
-      // Redirect ke halaman beranda
+      // Redirect
       window.location.href = '/';
-      
     } catch (error) {
       console.error('Error during logout:', error);
       
-      // Tetap hapus data lokal meskipun API error
+      // Clear storage anyway
       localStorage.removeItem('bersekolah_auth_token');
       localStorage.removeItem('bersekolah_user');
       localStorage.removeItem('bersekolah_login_time');
@@ -141,7 +205,8 @@ export default function Header() {
       window.location.href = '/';
     }
   };
-  // ✅ UPDATED: Dapatkan path dashboard berdasarkan role
+  
+  // Get dashboard path based on role
   const getDashboardPath = () => {
     if (!userData) return "/dashboard";
     
@@ -149,7 +214,7 @@ export default function Header() {
     return (role === "admin" || role === "superadmin") ? "/dashboard" : "/form-pendaftaran";
   };
 
-  // Dapatkan inisial untuk avatar
+  // Get initials for avatar
   const getInitials = () => {
     if (!userData?.name) return "U";
     
@@ -220,7 +285,7 @@ export default function Header() {
         </NavbarItem>
       </NavbarContent>
 
-      {/* ✅ UPDATED: Menu Login/Register atau User Profile Dropdown */}
+      {/* Menu Login/Register atau User Profile Dropdown */}
       <NavbarContent justify="end">
         {isLoggedIn ? (
           <Dropdown placement="bottom-end">
@@ -241,7 +306,6 @@ export default function Header() {
               </div>
             </DropdownTrigger>
             <DropdownMenu aria-label="User menu">
-              
               <DropdownItem key="dashboard" startContent={<Settings size={18} />}>
                 <Link href={getDashboardPath()} className="w-full">
                   Dashboard
@@ -266,17 +330,19 @@ export default function Header() {
               >
                 Masuk
               </Link>
-            </NavbarItem>
-            <NavbarItem>
-              <Button 
-                as={Link} 
-                className={isActive("/daftar") ? "bg-[#406386] text-white" : "bg-warning text-warning-foreground"}
-                href="/daftar" 
-                variant="flat"
-              >
-                Daftar
-              </Button>
-            </NavbarItem>
+            </NavbarItem>            {/* Only show the register button if there is an active period */}
+            {hasActivePeriod() && (
+              <NavbarItem>
+                <Button 
+                  as={Link} 
+                  className={isActive("/daftar") ? "bg-[#406386] text-white" : "bg-warning text-warning-foreground"}
+                  href="/daftar" 
+                  variant="flat"
+                >
+                  Daftar
+                </Button>
+              </NavbarItem>
+            )}
           </>
         )}
       </NavbarContent>
@@ -307,25 +373,26 @@ export default function Header() {
               >
                 Masuk
               </Link>
-            </NavbarMenuItem>
-            <NavbarMenuItem>
-              <Button 
-                as={Link} 
-                className={isActive("/daftar") ? "bg-[#406386] text-white" : "bg-warning text-warning-foreground"}
-                href="/daftar" 
-                variant="flat"
-                fullWidth
-              >
-                Daftar
-              </Button>
-            </NavbarMenuItem>
+            </NavbarMenuItem>            {/* Only show the register button for mobile if there is an active period */}
+            {hasActivePeriod() && (
+              <NavbarMenuItem>
+                <Button 
+                  as={Link} 
+                  className={isActive("/daftar") ? "bg-[#406386] text-white" : "bg-warning text-warning-foreground"}
+                  href="/daftar" 
+                  variant="flat"
+                  fullWidth
+                >
+                  Daftar
+                </Button>
+              </NavbarMenuItem>
+            )}
           </>
         )}
         
-        {/* UPDATED: Profile links untuk mobile jika sudah login */}
+        {/* Profile links untuk mobile jika sudah login */}
         {isLoggedIn && (
           <>
-            
             <NavbarMenuItem>
               <Link
                 className="w-full"
@@ -356,4 +423,3 @@ export default function Header() {
     </Navbar>
   );
 }
-

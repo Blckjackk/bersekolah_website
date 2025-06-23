@@ -316,17 +316,11 @@ export default function PeriodeBeasiswaPage() {
       </Badge>
     )
   }
-
   // Check if there are any active periods
   const hasActivePeriod = () => {
     if (!periods || periods.length === 0) return false
-    const now = new Date()
-    return periods.some(period => {
-      if (period.status !== 'active') return false
-      const startDate = new Date(period.mulai_pendaftaran)
-      const endDate = new Date(period.akhir_pendaftaran)
-      return period.is_active && now >= startDate && now <= endDate
-    })
+    // According to database structure, we only need to check status column
+    return periods.some(period => period.status === 'active')
   }
 
   const openCreateDialog = () => {
