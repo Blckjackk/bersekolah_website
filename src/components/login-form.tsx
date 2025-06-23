@@ -53,8 +53,7 @@ export function LoginForm({
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword)
   }
-  
-  // Handle form submission
+    // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
@@ -62,7 +61,10 @@ export function LoginForm({
     // ✅ ADDED: Clear general error saat submit
     setGeneralError("")
     
-    const baseURL = import.meta.env.PUBLIC_API_BASE_URL;
+    // ✅ FIXED: Gunakan URL lengkap API atau fallback ke URL default
+    // Pastikan ini sesuai dengan alamat API Laravel Anda
+    const baseURL = import.meta.env.PUBLIC_API_BASE_URL || "http://localhost:8000/api";
+    console.log("Base URL yang digunakan:", baseURL);
     
     try {
       console.log("Mengirim data login:", { email: formData.email });
@@ -75,10 +77,17 @@ export function LoginForm({
           'Accept': 'application/json',
         },
         body: JSON.stringify(formData)
-      })
-
-      const result = await response.json()
-      console.log("Response dari server:", result);
+      })      // ✅ FIXED: Tambahkan handling untuk response yang bukan JSON
+      let result;
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        result = await response.json();
+        console.log("Response dari server:", result);
+      } else {
+        const text = await response.text();
+        console.log("Response bukan JSON:", text.substring(0, 100) + "...");
+        throw new Error("Server mengembalikan respons yang bukan JSON");
+      }
       
       if (response.ok) {
         // Simpan token ke localStorage dengan prefix bersekolah_
@@ -149,10 +158,19 @@ export function LoginForm({
           variant: "destructive",
           duration: 5000,
         })
-      }
-    } catch (error) {
+      }    } catch (error) {
       console.error("Error saat submit:", error);
-      setGeneralError("Tidak dapat terhubung ke server. Periksa koneksi internet Anda.");
+      
+      // ✅ IMPROVED: Debug lebih detail tentang error
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        console.error("Network error:", error.message);
+        setGeneralError("Tidak dapat terhubung ke server API. Pastikan server Laravel Anda berjalan di http://localhost:8000.");
+      } else if (error instanceof SyntaxError && error.message.includes('JSON')) {
+        console.error("JSON parse error:", error.message);
+        setGeneralError("Server mengembalikan data dalam format yang tidak valid. Pastikan API mengembalikan JSON yang valid.");
+      } else {
+        setGeneralError("Tidak dapat terhubung ke server. Periksa koneksi internet Anda.");
+      }
       
       toast({
         title: "Login gagal",

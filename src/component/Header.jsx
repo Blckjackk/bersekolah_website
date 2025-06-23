@@ -242,11 +242,7 @@ export default function Header() {
               </div>
             </DropdownTrigger>
             <DropdownMenu aria-label="User menu">
-              <DropdownItem key="profile" startContent={<User size={18} />}>
-                <Link href={`${getDashboardPath()}/profil`} className="w-full">
-                  Profil Saya
-                </Link>
-              </DropdownItem>
+              
               <DropdownItem key="dashboard" startContent={<Settings size={18} />}>
                 <Link href={getDashboardPath()} className="w-full">
                   Dashboard
@@ -327,19 +323,10 @@ export default function Header() {
           </>
         )}
         
-        {/* ✅ UPDATED: Profile links untuk mobile jika sudah login */}
+        {/* UPDATED: Profile links untuk mobile jika sudah login */}
         {isLoggedIn && (
           <>
-            <NavbarMenuItem>
-              <Link
-                className="w-full"
-                color="foreground"
-                href={`${getDashboardPath()}/profil`}
-                size="lg"
-              >
-                Profil Saya
-              </Link>
-            </NavbarMenuItem>
+            
             <NavbarMenuItem>
               <Link
                 className="w-full"

@@ -340,8 +340,6 @@ export function NavUser() {
                 </a>
               </DropdownMenuItem>
             </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuSeparator />
             <DropdownMenuItem 
               onClick={handleLogout} 
               className="text-red-500 cursor-pointer hover:bg-red-50"
