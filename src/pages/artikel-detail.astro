@@ -1,0 +1,10 @@
+---
+import AppLayout from "../layout/app-layout.astro";
+import ArtikelDetail from "../component/artikel/ArtikelDetail";
+
+const id = Astro.url.searchParams.get('id');
+---
+
+<AppLayout title="Detail Artikel">
+  <ArtikelDetail articleId={id} client:load />
+</AppLayout>

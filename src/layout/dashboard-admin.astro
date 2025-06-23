@@ -1,0 +1,21 @@
+---
+import "../styles/global.css";
+
+import AdminDashboard from "./page-admin";
+---
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content={Astro.generator} />
+    <title>Yayasan Inspirasi Semangat Bersekolah</title>
+    <title>Bersekolah - Buka Pintu Pendidikan Bersama Kami</title>
+     <link rel="icon" href="assets/image/logo-bersekolah-08.png" type="image/x-icon">
+  </head>
+  <body>
+    <AdminDashboard client:visible>
+    <slot />
+    </AdminDashboard>
+  </body>
+</html>

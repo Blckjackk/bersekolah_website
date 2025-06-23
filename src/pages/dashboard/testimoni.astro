@@ -1,0 +1,139 @@
+---
+import DashboardAdmin from "../../layout/dashboard-admin.astro";
+import { Card, CardHeader, CardTitle, CardContent } from "../../components/ui/card";
+import { Button } from "../../components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "../../components/ui/table";
+---
+
+<DashboardAdmin>
+  <div class="container p-6 mx-auto">
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h1 class="text-2xl font-bold">Data Testimoni</h1>
+        <p class="mt-1 text-gray-500">Kelola data testimoni alumni dan beswan</p>
+      </div>
+      <div class="flex gap-2">
+        <a href="/dashboard/testimoni/create">
+          <Button variant="default" className="bg-[#406386]">+ Tambah Testimoni</Button>
+        </a>
+      </div>
+    </div>
+
+    <Card>
+      <CardContent className="p-0">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Foto</TableHead>
+              <TableHead>Nama</TableHead>
+              <TableHead>Angkatan</TableHead>
+              <TableHead>Sekarang Di</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Aksi</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody id="testimonial-table-body">
+            <TableRow>
+              <TableCell>Loading...</TableCell>
+              <TableCell></TableCell>
+              <TableCell></TableCell>
+              <TableCell></TableCell>
+              <TableCell></TableCell>
+              <TableCell></TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
+  </div>
+</DashboardAdmin>
+
+<script>
+import { TestimonialService, type Testimonial } from '../../lib/testimonial-service';
+
+function generateTableRow(testimonial: Testimonial): string {
+  const statusClass = testimonial.status === 'active' 
+    ? 'text-green-700 bg-green-100' 
+    : 'text-yellow-700 bg-yellow-100';
+
+  return `
+    <tr data-id="${testimonial.id}">
+      <td>
+        <img 
+          src="/ImageTemp/${testimonial.foto_testimoni}" 
+          alt="${testimonial.name}" 
+          class="object-cover w-10 h-10 rounded-full"
+        />
+      </td>
+      <td class="font-medium">${testimonial.name}</td>
+      <td>${testimonial.angkatan_beswan}</td>
+      <td>${testimonial.sekarang_dimana}</td>
+      <td>
+        <span class="px-2 py-1 text-xs ${statusClass} rounded-full">
+          ${testimonial.status === 'active' ? 'Active' : 'Inactive'}
+        </span>
+      </td>
+      <td>
+        <div class="flex gap-1">
+          <a href="/dashboard/testimoni/${testimonial.id}/edit" class="px-2 text-xs text-blue-700 bg-blue-100 rounded">
+            Edit
+          </a>
+          <button 
+            class="delete-btn px-2 text-xs text-red-700 bg-red-100 rounded" 
+            data-id="${testimonial.id}"
+          >
+            Hapus
+          </button>
+        </div>
+      </td>
+    </tr>
+  `;
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+  const tableBody = document.getElementById('testimonial-table-body');
+  if (!tableBody) return;
+
+  try {
+    const testimonials = await TestimonialService.getAllTestimonials();
+    
+    const rows = testimonials.map(generateTableRow).join('');
+    tableBody.innerHTML = rows;
+
+    // Add event listeners for delete buttons
+    document.querySelectorAll('.delete-btn').forEach((button: Element) => {
+      if (button instanceof HTMLButtonElement) {
+        button.addEventListener('click', async () => {
+          const id = Number(button.dataset.id);
+          if (!id || !confirm('Are you sure you want to delete this testimonial?')) return;
+          
+          try {
+            await TestimonialService.deleteTestimonial(id);
+            const row = button.closest('tr');
+            if (row) row.remove();
+          } catch (error) {
+            console.error('Failed to delete testimonial:', error);
+            alert('Failed to delete testimonial. Please try again.');
+          }
+        });
+      }
+    });
+  } catch (error) {
+    console.error('Failed to load testimonials:', error);
+    tableBody.innerHTML = `
+      <tr>
+        <td colspan="6" class="text-center text-red-500">
+          Failed to load testimonials. Please try refreshing the page.
+        </td>
+      </tr>
+    `;
+  }
+});
+</script>

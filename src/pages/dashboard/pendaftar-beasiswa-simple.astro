@@ -1,0 +1,55 @@
+---
+import "../../../src/styles/global.css";
+import PendaftarBeasiswaPage from "../../component/admin/pendaftar-beasiswa-page";
+---
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width" />
+    <title>Pendaftar Beasiswa - Simple</title>
+  </head>
+  <body>
+    <div class="p-8">
+      <h1 class="mb-6 text-3xl font-bold">Halaman Pendaftar Beasiswa - Versi Sederhana</h1>
+      <div class="p-4 bg-white rounded-lg shadow">
+        <PendaftarBeasiswaPage client:load />
+      </div>
+    </div>
+
+    <script>
+      // Debug script
+      console.log("Halaman pendaftar-beasiswa-simple dirender");
+      document.addEventListener('DOMContentLoaded', () => {
+        console.log("DOM sepenuhnya dimuat");
+        
+        // Check React component rendering
+        setTimeout(() => {
+          const reactComponents = document.querySelectorAll('[data-react-component]');
+          console.log("Komponen React terdeteksi:", reactComponents.length);
+        }, 1000);
+        
+        // Check authentication
+        const authToken = localStorage.getItem('bersekolah_auth_token');
+        console.log("Auth token:", authToken ? "Ada" : "Tidak ada");
+        
+        // Add debug info to page
+        const debugInfo = document.createElement('div');
+        debugInfo.style.margin = '20px 0';
+        debugInfo.style.padding = '15px';
+        debugInfo.style.backgroundColor = '#f8f9fa';
+        debugInfo.style.border = '1px solid #dee2e6';
+        debugInfo.style.borderRadius = '4px';
+        
+        debugInfo.innerHTML = `
+          <h3 style="margin-top: 0; font-size: 18px;">Debug Info</h3>
+          <p>Auth token: ${authToken ? "Ada ✓" : "Tidak ada ✗"}</p>
+          <p>User Agent: ${navigator.userAgent}</p>
+          <p>Waktu load: ${new Date().toLocaleTimeString()}</p>
+        `;
+        
+        document.body.appendChild(debugInfo);
+      });
+    </script>
+  </body>
+</html>

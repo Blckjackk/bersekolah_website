@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Pengaturan Akun - Admin Dashboard Bersekolah</title>
+    <link rel="stylesheet" href="assets/css/style.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container header-container">
+            <div class="logo">
+                <a href="index.html">
+                    <img src="assets/image/logo-bersekolah-08.png" alt="Bersekolah Logo">
+                </a>
+            </div>
+            <div class="admin-info">
+                <div class="notification-icon">
+                    <i class="fas fa-bell"></i>
+                    <span class="notification-badge">3</span>
+                </div>
+                <div class="admin-profile">
+                    <div class="admin-avatar">A</div>
+                    <div class="admin-name">Admin</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Layout -->
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-menu">
+                <a href="admin-dashboard.html" class="menu-item active">
+                    <div class="menu-icon">
+                        <i class="fas fa-tachometer-alt"></i>
+                    </div>
+                    <span>Dashboard</span>
+                </a>
+                <a href="admin-pendaftar-beasiswa.html" class="menu-item">
+                    <div class="menu-icon">
+                        <i class="fas fa-user-graduate"></i>
+                    </div>
+                    <span>Pendaftar Beasiswa</span>
+                </a>
+                <a href="admin-kelola-halaman.html" class="menu-item">
+                    <div class="menu-icon">
+                        <i class="fas fa-edit"></i>
+                    </div>
+                    <span>Kelola Halaman</span>
+                </a>
+                <a href="admin-mentor.html" class="menu-item">
+                    <div class="menu-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <span>Data Mentor</span>
+                </a>
+                <a href="admin-donasi.html" class="menu-item">
+                    <div class="menu-icon">
+                        <i class="fas fa-hand-holding-heart"></i>
+                    </div>
+                    <span>Donasi</span>
+                </a>
+                <a href="admin-pengaturan akun.html" class="menu-item">
+                    <div class="menu-icon">
+                        <i class="fas fa-cog"></i>
+                    </div>
+                    <span>Pengaturan Akun</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <h1 class="page-title">Pengaturan Akun</h1>
+
+            <div class="settings-form">
+                <form>
+                    <div class="form-group">
+                        <label for="admin-name">Nama Admin</label>
+                        <input type="text" id="admin-name" value="Admin Bersekolah" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="admin-email">Email</label>
+                        <input type="email" id="admin-email" value="admin@bersekolah.com" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="admin-password">Kata Sandi Baru</label>
+                        <input type="password" id="admin-password" placeholder="Masukkan kata sandi baru" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="admin-password-confirm">Konfirmasi Kata Sandi</label>
+                        <input type="password" id="admin-password-confirm" placeholder="Ulangi kata sandi baru" />
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

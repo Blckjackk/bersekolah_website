@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form Pendaftaran Beasiswa Bersekolah</title>
+    <style>
+        :root {
+            --primary: #406386;
+            --primary-dark: #354D7E;
+            --secondary: #85C2B1;
+            --secondary-dark: #71A499;
+            --accent: #697797;
+            --light: #F3F1EF;
+            --dark: #333333;
+            --success: #28a745;
+            --danger: #dc3545;
+            --gray: #f4f4f4;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        header img {
+            max-width: 200px;
+            margin-bottom: 15px;
+        }
+
+        h1 {
+            color: var(--primary);
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+                    h2 {
+            color: var(--primary);
+            font-size: 22px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--secondary);
+            padding-bottom: 10px;
+        }
+
+        p {
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+
+        .section {
+            background-color: white;
+            padding: 25px;
+            margin-bottom: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        input[type="text"],
+        input[type="date"],
+        input[type="tel"],
+        input[type="number"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        .required::after {
+            content: " *";
+            color: var(--danger);
+        }
+
+        .file-upload {
+            border: 2px dashed #ddd;
+            padding: 20px;
+            text-align: center;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .file-upload:hover {
+            border-color: var(--primary);
+            background-color: rgba(64, 99, 134, 0.05);
+        }
+
+        .upload-icon {
+            font-size: 30px;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .file-info {
+            font-size: 14px;
+            color: #777;
+            margin-top: 5px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 25px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .btn-secondary {
+            background-color: var(--accent);
+        }
+
+        .btn-secondary:hover {
+            background-color: #5a6683;
+        }
+
+        .buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+
+        .section-number {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            background-color: var(--accent);
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 30px;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .note {
+            background-color: var(--light);
+            padding: 15px;
+            border-left: 4px solid var(--secondary);
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+
+        .progress-container {
+            width: 100%;
+            background-color: #ddd;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+
+        .progress-bar {
+            height: 10px;
+            background-color: var(--secondary);
+            border-radius: 10px;
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .section {
+                padding: 15px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            h2 {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <img src="assets/image/logo-bersekolah-08.png" alt="Logo Bersekolah">
+            <h1>Pendaftaran Program Beasiswa Periode 2025</h1>
+
+        </header>
+
+        <div class="progress-container">
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+
+        <form id="scholarshipForm">
+            <!-- Section 1: Data Diri -->
+            <div class="section" id="section1">
+                <div class="section-title">
+                    <span class="section-number">1</span>
+                    <h2>Data Diri Calon Penerima Beasiswa Bersekolah</h2>
+                </div>
+
+                <div class="form-group">
+                    <label for="fullName" class="required">Nama Lengkap</label>
+                    <input type="text" id="fullName" name="fullName" required>
+                </div>
+
+                <input type="hidden" name="calon_beswan_id" value="1"> 
+
+                <div class="form-group">
+                    <label for="nickname">Nama Panggilan</label>
+                    <input type="text" id="nickname" name="nickname">
+                </div>
+
+                <div class="form-group">
+                    <label for="birthDate" class="required">Tanggal Lahir</label>
+                    <input type="date" id="birthDate" name="birthDate" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="address" class="required">Alamat Domisili</label>
+                    <textarea id="address" name="address" required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="gender" class="required">Jenis Kelamin</label>
+                    <select id="gender" name="gender" required>
+                        <option value="">Pilih Jenis Kelamin</option>
+                        <option value="male">Laki-laki</option>
+                        <option value="female">Perempuan</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="school" class="required">Asal Sekolah dan Kelas</label>
+                    <input type="text" id="school" name="school" placeholder="Contoh: SMA Negeri 3 Bogor kelas X" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="religion">Agama</label>
+                    <select id="religion" name="religion">
+                        <option value="">Pilih Agama</option>
+                        <option value="islam">Islam</option>
+                        <option value="kristen">Kristen</option>
+                        <option value="katolik">Katolik</option>
+                        <option value="hindu">Hindu</option>
+                        <option value="buddha">Buddha</option>
+                        <option value="konghucu">Konghucu</option>
+                        <option value="other">Lainnya</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="childOrder" class="required">Anak ke ... dari ... bersaudara</label>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="number" id="childNumber" name="childNumber" placeholder="Anak ke" min="1" required style="width: 48%;">
+                        <input type="number" id="totalSiblings" name="totalSiblings" placeholder="dari ... bersaudara" min="1" required style="width: 48%;">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="whatsapp" class="required">Nomor WhatsApp</label>
+                    <input type="tel" id="whatsapp" name="whatsapp" placeholder="Contoh: 08123456789" required>
+                </div>
+
+                <div class="buttons">
+                    <button type="button" onclick="nextSection(1, 2)" class="btn">Selanjutnya</button>
+                </div>
+            </div>
+
+            <!-- Section 2: Keluarga -->
+            <div class="section" id="section2" style="display: none;">
+                <div class="section-title">
+                    <span class="section-number">2</span>
+                    <h2>Keluarga Calon Penerima Beasiswa Bersekolah</h2>
+                </div>
+
+                <div class="form-group">
+                    <label for="fatherName">Nama Ayah</label>
+                    <input type="text" id="fatherName" name="fatherName">
+                </div>
+
+                <div class="form-group">
+                    <label for="fatherJob">Pekerjaan Ayah</label>
+                    <input type="text" id="fatherJob" name="fatherJob">
+                </div>
+
+                <div class="form-group">
+                    <label for="fatherIncome">Penghasilan Ayah</label>
+                    <input type="text" id="fatherIncome" name="fatherIncome" placeholder="Contoh: Rp2.000.000/bulan">
+                </div>
+
+                <div class="form-group">
+                    <label for="motherName">Nama Ibu</label>
+                    <input type="text" id="motherName" name="motherName">
+                </div>
+
+                <div class="form-group">
+                    <label for="motherJob">Pekerjaan Ibu</label>
+                    <input type="text" id="motherJob" name="motherJob">
+                </div>
+
+                <div class="form-group">
+                    <label for="motherIncome">Penghasilan Ibu</label>
+                    <input type="text" id="motherIncome" name="motherIncome" placeholder="Contoh: Rp1.500.000/bulan">
+                </div>
+
+                <div class="buttons">
+                    <button type="button" onclick="prevSection(2, 1)" class="btn btn-secondary">Sebelumnya</button>
+                    <button type="button" onclick="nextSection(2, 3)" class="btn">Selanjutnya</button>
+                </div>
+            </div>
+
+            <!-- Section 3: Dokumen Pendukung -->
+            <div class="section" id="section3" style="display: none;">
+                <div class="section-title">
+                    <span class="section-number">3</span>
+                    <h2>Dokumen Pendukung</h2>
+                </div>
+
+                <div class="note">
+                    <p>Pastikan file yang diunggah memiliki format JPG/JPEG atau PDF dengan ukuran maksimal 10 MB.</p>
+                </div>
+
+                <div class="form-group">
+                    <label for="studentCard" class="required">Kartu Pelajar/Surat Keterangan dari Sekolah</label>
+                    <div class="file-upload" onclick="document.getElementById('studentCard').click()">
+                        <div class="upload-icon">📄</div>
+                        <p>Klik untuk mengunggah atau seret file ke sini</p>
+                        <p class="file-info">Format: JPG/JPEG atau PDF (max. 10 MB)</p>
+                    </div>
+                    <input type="file" id="studentCard" name="studentCard" accept=".jpg,.jpeg,.pdf" style="display: none;" required>
+                    <p id="studentCardName" style="margin-top: 5px;"></p>
+                </div>
+
+                <div class="form-group">
+                    <label for="familyCard" class="required">Kartu Keluarga (KK)/Akte Lahir/KTP</label>
+                    <div class="file-upload" onclick="document.getElementById('familyCard').click()">
+                        <div class="upload-icon">📄</div>
+                        <p>Klik untuk mengunggah atau seret file ke sini</p>
+                        <p class="file-info">Format: JPG/JPEG atau PDF (max. 10 MB)</p>
+                    </div>
+                    <input type="file" id="familyCard" name="familyCard" accept=".jpg,.jpeg,.pdf" style="display: none;" required>
+                    <p id="familyCardName" style="margin-top: 5px;"></p>
+                </div>
+
+                <div class="form-group">
+                    <label for="photo" class="required">Foto Diri Close Up</label>
+                    <div class="file-upload" onclick="document.getElementById('photo').click()">
+                        <div class="upload-icon">📷</div>
+                        <p>Klik untuk mengunggah atau seret file ke sini</p>
+                        <p class="file-info">Format: JPG/JPEG (max. 10 MB)</p>
+                        <p class="file-info">Foto close up tanpa penutup wajah (masker, helm, dll)</p>
+                    </div>
+                    <input type="file" id="photo" name="photo" accept=".jpg,.jpeg" style="display: none;" required>
+                    <p id="photoName" style="margin-top: 5px;"></p>
+                </div>
+
+                <div class="form-group">
+                    <label for="instagramProof" class="required">Bukti Follow Akun Instagram @ber.sekolah</label>
+                    <div class="file-upload" onclick="document.getElementById('instagramProof').click()">
+                        <div class="upload-icon">📱</div>
+                        <p>Klik untuk mengunggah screenshot bukti follow</p>
+                        <p class="file-info">Format: JPG/JPEG (max. 10 MB)</p>
+                    </div>
+                    <input type="file" id="instagramProof" name="instagramProof" accept=".jpg,.jpeg" style="display: none;" required>
+                    <p id="instagramProofName" style="margin-top: 5px;"></p>
+                </div>
+
+                <div class="form-group">
+                    <label for="twibbonProof" class="required">Bukti Postingan Twibbon di Akun Instagram Anda</label>
+                    <div class="file-upload" onclick="document.getElementById('twibbonProof').click()">
+                        <div class="upload-icon">📱</div>
+                        <p>Klik untuk mengunggah screenshot postingan twibbon</p>
+                        <p class="file-info">Format: JPG/JPEG (max. 10 MB)</p>
+                    </div>
+                    <input type="file" id="twibbonProof" name="twibbonProof" accept=".jpg,.jpeg" style="display: none;" required>
+                    <p id="twibbonProofName" style="margin-top: 5px;"></p>
+                </div>
+
+                <div class="buttons">
+                    <button type="button" onclick="prevSection(3, 2)" class="btn btn-secondary">Sebelumnya</button>
+                    <button type="button" onclick="nextSection(3, 4)" class="btn">Selanjutnya</button>
+                </div>
+            </div>
+
+            <!-- Section 4: Esai -->
+            <div class="section" id="section4" style="display: none;">
+                <div class="section-title">
+                    <span class="section-number">4</span>
+                    <h2>Esai Calon Penerima Beasiswa Bersekolah</h2>
+                </div>
+
+                <div class="note">
+                    <p>Elaborasikan jawaban terbaikmu dari setiap pertanyaan di bawah ini. Pastikan semua jawaban merupakan buah pemikiran kamu sendiri! Di sini tidak ada jawaban yang salah dan benar ya.</p>
+                </div>
+
+                <div class="form-group">
+                    <label for="essay1" class="required">Ceritakan secara lengkap tentang dirimu dan keluargamu (termasuk di dalamnya organisasi/ekstrakurikuler/kegiatan yang kamu ikuti serta hal lain yang menarik dari dirimu)!</label>
+                    <textarea id="essay1" name="essay1" required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="essay2" class="required">Jelaskan dengan detail akan menjadi seperti apa dirimu di masa depan dan apa yang akan kamu lakukan ketika kamu sudah menjadi seperti yang kamu inginkan serta bagaimana rencana kamu untuk mewujudkannya!</label>
+                    <textarea id="essay2" name="essay2" required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="essay3" class="required">Ceritakan pengalaman/pencapaian dalam hidup kamu yang paling berkesan dan jelaskan secara lengkap bagaimana proses pencapaian tersebut serta hikmah yang kamu dapatkan dari pengalaman/pencapaian tersebut!</label>
+                    <textarea id="essay3" name="essay3" required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="essay4" class="required">Utarakan arti pendidikan menurut pandanganmu!</label>
+                    <textarea id="essay4" name="essay4" required></textarea>
+                </div>
+
+                <div class="buttons">
+                    <button type="button" onclick="prevSection(4, 3)" class="btn btn-secondary">Sebelumnya</button>
+                    <button type="submit" class="btn">Kirim Pendaftaran</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

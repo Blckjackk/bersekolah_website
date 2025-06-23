@@ -1,0 +1,190 @@
+---
+import AppLayout from "../layout/app-layout.astro";
+import MentorSection from '../component/tentang/MentorSection';
+---
+
+<AppLayout>
+    <!-- Hero Banner -->
+    <section class="relative flex items-center justify-center min-h-screen overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-br from-slate-900/95 via-[#406386]/90 to-[#406386]/85"></div>
+        <div 
+            class="absolute inset-0 bg-center bg-no-repeat bg-cover opacity-30" 
+            style="background-image: url('assets/image/IMG_3694.jpg');"
+        ></div>
+        <div class="container relative z-10 px-4 mx-auto text-center text-white sm:px-6 lg:px-8">
+            <div class="max-w-5xl mx-auto">
+                <h1 class="mb-4 text-3xl font-bold leading-tight sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl sm:mb-6">
+                    Di Balik Beasiswa, 
+                    <span class="block mt-2 text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-blue-200">
+                        Ada Kami yang Peduli!
+                    </span>
+                </h1>
+                <p class="max-w-4xl mx-auto mb-6 text-base font-light leading-relaxed sm:text-lg md:text-xl lg:text-2xl opacity-90 sm:mb-8">
+                    Program beasiswa untuk siswa dan mahasiswa berprestasi dengan pendampingan menyeluruh demi masa depan yang lebih baik.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Program Info Cards -->
+    <section class="py-12 sm:py-16 lg:py-20 bg-gradient-to-b from-gray-50 to-white">
+        <div class="container px-4 mx-auto sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 gap-6 mx-auto lg:grid-cols-2 sm:gap-8 max-w-7xl">
+                <!-- Program Beasiswa Card -->
+                <div class="p-6 transition-all duration-300 transform bg-white shadow-lg group rounded-2xl hover:shadow-2xl hover:-translate-y-1 sm:hover:-translate-y-2 sm:p-8">
+                    <div class="flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-[#406386] to-[#2d4a66] rounded-2xl mb-4 sm:mb-6 group-hover:scale-110 transition-transform duration-300">
+                        <svg class="w-6 h-6 text-white sm:w-8 sm:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="mb-3 text-xl font-bold leading-tight text-gray-900 sm:text-2xl sm:mb-4">
+                        Program Beasiswa Inspirasi Semangat Sekolah
+                    </h3>
+                    <p class="mb-4 text-sm leading-relaxed text-gray-600 sm:mb-6 sm:text-base">
+                        Beasiswa SMP dan SMA untuk pengembangan diri dengan pendampingan menyeluruh dari mentor berpengalaman.
+                    </p>
+                    <a href="/program" 
+                    class="inline-flex items-center px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-[#406386] to-[#2d4a66] text-white font-semibold rounded-full hover:from-[#2d4a66] hover:to-[#1a3347] transition-all duration-300 shadow-md hover:shadow-lg text-sm sm:text-base">
+                        Detail Program
+                        <svg class="w-3 h-3 ml-2 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </a>
+                </div>
+
+                <!-- Mentor Card -->
+                <div class="p-6 transition-all duration-300 transform bg-white shadow-lg group rounded-2xl hover:shadow-2xl hover:-translate-y-1 sm:hover:-translate-y-2 sm:p-8">
+                    <div class="flex items-center justify-center mb-4 transition-transform duration-300 w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-[#406386] to-[#2d4a66] rounded-2xl sm:mb-6 group-hover:scale-110">
+                        <svg class="w-6 h-6 text-white sm:w-8 sm:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="mb-3 text-xl font-bold leading-tight text-gray-900 sm:text-2xl sm:mb-4">
+                        Mentor Profesional
+                    </h3>
+                    <p class="mb-4 text-sm leading-relaxed text-gray-600 sm:mb-6 sm:text-base">
+                        Mendampingi para beswan mengembangkan diri dan mempersiapkan masa depan dengan bimbingan personal.
+                    </p>
+                    <a href="#mentor" 
+                    class="inline-flex items-center px-4 py-2 text-sm font-semibold text-white transition-all duration-300 rounded-full shadow-md sm:px-6 sm:py-3 bg-gradient-to-r from-[#406386] to-[#2d4a66] hover:from-[#2d4a66] hover:to-[#1a3347] hover:shadow-lg sm:text-base">
+                        Lihat Mentor
+                        <svg class="w-3 h-3 ml-2 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </a>
+
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- History Section -->
+    <section class="py-12 bg-white sm:py-16 lg:py-20">
+        <div class="container px-4 mx-auto sm:px-6 lg:px-8">
+            <div class="mb-12 text-center sm:mb-16">
+                <h2 class="mb-4 text-3xl font-bold text-gray-900 sm:text-4xl lg:text-5xl">
+                    <span class="text-[#406386]">
+                        Sejarah Yayasan
+                    </span>
+                </h2>
+                <div class="w-16 sm:w-24 h-1 bg-[#406386] rounded-full mx-auto"></div>
+            </div>
+            
+            <div class="mx-auto max-w-7xl">
+                <div class="grid items-center grid-cols-1 gap-8 lg:grid-cols-2 sm:gap-12">
+                    <div class="order-2 space-y-4 sm:space-y-6 lg:order-1">
+                        <h3 class="mb-4 text-2xl font-bold text-gray-900 sm:text-3xl sm:mb-6">
+                            Yayasan Inspirasi Semangat Sekolah
+                        </h3>
+                        
+                        <div class="space-y-3 text-sm leading-relaxed text-gray-700 sm:space-y-4 sm:text-base">
+                            <p>
+                                Pada <span class="font-semibold text-teal-600">Oktober 2019</span>, Beasiswa Semangat Sekolah lahir sebagai bentuk kepedulian untuk menumbuhkan semangat belajar siswa melalui bantuan uang pembinaan. Januari 2020 menjadi momen pertama program ini berjalan, dengan 10 siswa sebagai penerima awal.
+                            </p>
+                            
+                            <p>
+                                Dari sana, semangat terus menyebar, dan jumlah penerima bertambah setiap tahunnya. Di <span class="font-semibold text-teal-600">Oktober 2020</span>, program ini bertransformasi menjadi Beasiswa Inspirasi Semangat Sekolah.
+                            </p>
+                            
+                            <p>
+                                Tidak hanya memberikan dukungan finansial, beasiswa ini mulai menghadirkan kegiatan pengembangan diri serta pendampingan dari para mentor inspiratif. <span class="font-semibold text-teal-600">Tahun 2024</span> menjadi tonggak penting, saat program ini resmi berbadan hukum sebagai Yayasan Inspirasi Semangat Sekolah.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="relative order-1 lg:order-2">
+                        <div class="absolute inset-0 bg-gradient-to-br from-[#406386]/20 to-teal-500/20 rounded-2xl transform rotate-2 sm:rotate-3"></div>
+                        <img 
+                            src="../../ImageTemp/SejarahBersekolah.jpg" 
+                            alt="Sejarah Bersekolah" 
+                            class="relative object-cover w-full h-64 shadow-2xl rounded-2xl sm:h-80 lg:h-96"
+                        >
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Vision Mission Section -->
+    <section class="py-12 sm:py-16 lg:py-20 bg-gradient-to-br from-gray-50 via-blue-50/30 to-teal-50/30">
+        <div class="container px-4 mx-auto sm:px-6 lg:px-8">
+            <div class="mb-12 text-center sm:mb-16">
+                <h2 class="mb-4 text-3xl font-bold text-gray-900 sm:text-4xl lg:text-5xl">
+                    <span class="text-[#406386]">
+                        Visi Misi
+                    </span>
+                </h2>
+                <div class="w-16 sm:w-24 h-1 bg-[#406386] rounded-full mx-auto"></div>
+            </div>
+            
+            <div class="grid max-w-6xl grid-cols-1 gap-6 mx-auto lg:grid-cols-2 sm:gap-8">
+                <!-- Vision Card -->
+                <div class="bg-white rounded-2xl shadow-xl p-6 sm:p-8 border-l-4 border-[#406386] hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 sm:hover:-translate-y-2">
+                    <div class="flex items-center mb-4 sm:mb-6">
+                        <div class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-[#406386] to-[#2d4a66] rounded-xl flex items-center justify-center mr-3 sm:mr-4 flex-shrink-0">
+                            <svg class="w-5 h-5 text-white sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl sm:text-2xl font-bold text-[#406386]">Visi</h3>
+                    </div>
+                    <p class="text-sm leading-relaxed text-gray-700 sm:text-base">
+                        Menjadi yayasan terdepan dalam memberikan akses pendidikan berkualitas bagi siswa berprestasi dari keluarga kurang mampu, serta menciptakan generasi pemimpin masa depan yang berintegritas dan berkontribusi positif bagi masyarakat.
+                    </p>
+                </div>
+
+                <!-- Mission Card -->
+                <div class="p-6 transition-all duration-300 transform bg-white border-l-4 border-[#406386] shadow-xl rounded-2xl sm:p-8 hover:shadow-2xl hover:-translate-y-1 sm:hover:-translate-y-2">
+                    <div class="flex items-center mb-4 sm:mb-6">
+                        <div class="flex items-center justify-center flex-shrink-0 w-10 h-10 mr-3 sm:w-12 sm:h-12 bg-gradient-to-br from-[#406386] to-[#2d4a66] rounded-xl sm:mr-4">
+                            <svg class="w-5 h-5 text-white sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-bold text-[#406386] sm:text-2xl">Misi</h3>
+                    </div>
+                    <ul class="space-y-2 text-sm leading-relaxed text-gray-700 sm:space-y-3 sm:text-base">
+                        <li class="flex items-start">
+                            <span class="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-[#406386] rounded-full mt-2 mr-2 sm:mr-3 flex-shrink-0"></span>
+                            Memberikan beasiswa pendidikan yang berkelanjutan
+                        </li>
+                        <li class="flex items-start">
+                            <span class="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-[#406386] rounded-full mt-2 mr-2 sm:mr-3 flex-shrink-0"></span>
+                            Menyediakan program mentoring dan pengembangan diri
+                        </li>
+                        <li class="flex items-start">
+                            <span class="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-[#406386] rounded-full mt-2 mr-2 sm:mr-3 flex-shrink-0"></span>
+                            Membangun jaringan alumni yang kuat dan saling mendukung
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Mentor Section - React Component -->
+     
+    <MentorSection  client:load />
+</AppLayout>

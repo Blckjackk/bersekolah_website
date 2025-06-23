@@ -1,0 +1,142 @@
+---
+import DashboardAdmin from "../../../layout/dashboard-admin.astro";
+import { Card, CardHeader, CardTitle, CardContent } from "../../../components/ui/card";
+import { Button } from "../../../components/ui/button";
+import { Badge } from "../../../components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../../components/ui/tabs";
+
+// Single static data
+const beswan = {
+  id: "BSW001",
+  nama: "Ahmad Izzuddin",
+  email: "ahmad@email.com",
+  telepon: "08123456789",
+  status: "Pending",
+  program: "Beasiswa Penuh",
+  tanggal_daftar: "2025-05-27",
+  data_pribadi: {
+    tempat_lahir: "Jakarta",
+    tanggal_lahir: "2000-01-01",
+    jenis_kelamin: "Laki-laki",
+    alamat: "Jl. Contoh No. 123",
+    kota: "Jakarta Selatan",
+    provinsi: "DKI Jakarta",
+    kodepos: "12345"
+  },
+  data_pendidikan: {
+    universitas: "Universitas Indonesia",
+    fakultas: "Fakultas Teknik",
+    jurusan: "Teknik Informatika",
+    semester: "6",
+    ipk: "3.85"
+  },
+  data_orangtua: {
+    nama_ayah: "Budi Santoso",
+    pekerjaan_ayah: "Wiraswasta",
+    nama_ibu: "Siti Aminah",
+    pekerjaan_ibu: "Ibu Rumah Tangga",
+    penghasilan_total: "Rp 5.000.000"
+  },
+  berkas: {
+    cv: "/dokumen/cv.pdf",
+    ktp: "/dokumen/ktp.pdf",
+    transkrip: "/dokumen/transkrip.pdf",
+    surat_rekomendasi: "/dokumen/surat_rekomendasi.pdf",
+    sertifikat: ["/dokumen/sertifikat1.pdf", "/dokumen/sertifikat2.pdf"]
+  }
+} as const;
+
+const statusColor = {
+  "Pending": "bg-yellow-500",
+  "Diterima": "bg-green-500",
+  "Ditolak": "bg-red-500"
+}[beswan.status];
+---
+
+<DashboardAdmin>
+  <div class="container p-6 mx-auto">
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h1 class="text-2xl font-bold">Detail Pendaftar Beasiswa</h1>
+        <p class="text-gray-500">ID Pendaftar: {beswan.id}</p>
+      </div>
+      <Badge className={statusColor}>
+        {beswan.status}
+      </Badge>
+    </div>
+
+    <div class="flex gap-2 mb-6">
+      <Button variant="default">Terima</Button>
+      <Button variant="destructive">Tolak</Button>
+    </div>
+
+    <Tabs defaultValue="data-pribadi" className="w-full">
+      <TabsList className="mb-4">
+        <TabsTrigger value="data-pribadi">Data Pribadi</TabsTrigger>
+        <TabsTrigger value="data-pendidikan">Pendidikan</TabsTrigger>
+        <TabsTrigger value="data-orangtua">Orangtua</TabsTrigger>
+        <TabsTrigger value="berkas">Berkas</TabsTrigger>
+      </TabsList>
+
+      <TabsContent value="data-pribadi">
+        <Card>
+          <CardHeader><CardTitle>Data Pribadi</CardTitle></CardHeader>
+          <CardContent className="space-y-2">
+            <p><strong>Nama:</strong> {beswan.nama}</p>
+            <p><strong>Email:</strong> {beswan.email}</p>
+            <p><strong>Telepon:</strong> {beswan.telepon}</p>
+            <p><strong>Tempat & Tanggal Lahir:</strong> {beswan.data_pribadi.tempat_lahir}, {beswan.data_pribadi.tanggal_lahir}</p>
+            <p><strong>Alamat:</strong> {beswan.data_pribadi.alamat}, {beswan.data_pribadi.kota}, {beswan.data_pribadi.provinsi}, {beswan.data_pribadi.kodepos}</p>
+            <p><strong>Jenis Kelamin:</strong> {beswan.data_pribadi.jenis_kelamin}</p>
+          </CardContent>
+        </Card>
+      </TabsContent>
+
+      <TabsContent value="data-pendidikan">
+        <Card>
+          <CardHeader><CardTitle>Data Pendidikan</CardTitle></CardHeader>
+          <CardContent className="space-y-2">
+            <p><strong>Universitas:</strong> {beswan.data_pendidikan.universitas}</p>
+            <p><strong>Fakultas:</strong> {beswan.data_pendidikan.fakultas}</p>
+            <p><strong>Jurusan:</strong> {beswan.data_pendidikan.jurusan}</p>
+            <p><strong>Semester:</strong> {beswan.data_pendidikan.semester}</p>
+            <p><strong>IPK:</strong> {beswan.data_pendidikan.ipk}</p>
+          </CardContent>
+        </Card>
+      </TabsContent>
+
+      <TabsContent value="data-orangtua">
+        <Card>
+          <CardHeader><CardTitle>Data Orangtua</CardTitle></CardHeader>
+          <CardContent className="space-y-2">
+            <p><strong>Nama Ayah:</strong> {beswan.data_orangtua.nama_ayah}</p>
+            <p><strong>Pekerjaan Ayah:</strong> {beswan.data_orangtua.pekerjaan_ayah}</p>
+            <p><strong>Nama Ibu:</strong> {beswan.data_orangtua.nama_ibu}</p>
+            <p><strong>Pekerjaan Ibu:</strong> {beswan.data_orangtua.pekerjaan_ibu}</p>
+            <p><strong>Penghasilan Total:</strong> {beswan.data_orangtua.penghasilan_total}</p>
+          </CardContent>
+        </Card>
+      </TabsContent>
+
+      <TabsContent value="berkas">
+        <Card>
+          <CardHeader><CardTitle>Berkas</CardTitle></CardHeader>
+          <CardContent className="space-y-2">
+            <p><strong>CV:</strong> <a href={beswan.berkas.cv} class="text-blue-500 underline" target="_blank">Lihat</a></p>
+            <p><strong>KTP:</strong> <a href={beswan.berkas.ktp} class="text-blue-500 underline" target="_blank">Lihat</a></p>
+            <p><strong>Transkrip:</strong> <a href={beswan.berkas.transkrip} class="text-blue-500 underline" target="_blank">Lihat</a></p>
+            <p><strong>Surat Rekomendasi:</strong> <a href={beswan.berkas.surat_rekomendasi} class="text-blue-500 underline" target="_blank">Lihat</a></p>
+            <div>
+              <strong>Sertifikat:</strong>
+              <ul class="list-disc list-inside">
+                {beswan.berkas.sertifikat.map((sertifikat, index) => (
+                  <li><a href={sertifikat} class="text-blue-500 underline" target="_blank">Sertifikat {index + 1}</a></li>
+                ))}
+              </ul>
+            </div>
+          </CardContent>
+        </Card>
+      </TabsContent>
+    </Tabs>
+  </div>
+</DashboardAdmin>

@@ -1,0 +1,110 @@
+---
+import DashboardAdmin from "../../../layout/dashboard-admin.astro";
+import { Button } from "../../../components/ui/button";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+} from "../../../components/ui/card";
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from "../../../components/ui/form";
+import { Input } from "../../../components/ui/input";
+import { Textarea } from "../../../components/ui/textarea";
+---
+
+<DashboardAdmin>
+  <div class="p-6 space-y-6">
+    <div class="flex items-center justify-between">
+      <h1 class="text-2xl font-bold">Tambah FAQ</h1>
+      <a href="/dashboard/faq">
+        <Button variant="outline">Kembali</Button>
+      </a>
+    </div>
+
+    <Card>
+      <CardHeader>
+        <CardTitle>Data FAQ</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <form id="faq-form" class="space-y-6">
+          <div class="space-y-4">
+            <div class="space-y-2">
+              <label for="question" class="text-sm font-medium">Pertanyaan</label>
+              <input 
+                id="question"
+                name="question"
+                type="text"
+                class="w-full px-3 py-2 border rounded-md"
+                required
+              />
+            </div>
+
+            <div class="space-y-2">
+              <label for="answer" class="text-sm font-medium">Jawaban</label>
+              <textarea
+                id="answer"
+                name="answer"
+                rows="4"
+                class="w-full px-3 py-2 border rounded-md"
+                required
+              ></textarea>
+            </div>
+
+            <div class="space-y-2">
+              <label for="status" class="text-sm font-medium">Status</label>
+              <select
+                id="status"
+                name="status"
+                class="w-full px-3 py-2 border rounded-md"
+                required
+              >
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <Button type="submit" variant="default" className="bg-[#406386]">
+              Simpan FAQ
+            </Button>
+          </div>
+        </form>
+      </CardContent>
+    </Card>
+  </div>
+</DashboardAdmin>
+
+<script>
+import { FAQService } from '../../../lib/faq-service';
+
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.getElementById('faq-form') as HTMLFormElement;
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const formData = new FormData(form);
+    const faqData = {
+      question: formData.get('question') as string,
+      answer: formData.get('answer') as string,
+      status: formData.get('status') as 'active' | 'inactive'
+    };
+
+    try {
+      await FAQService.createFAQ(faqData);
+      window.location.href = '/dashboard/faq?success=created';
+    } catch (error) {
+      console.error('Failed to create FAQ:', error);
+      alert('Failed to save FAQ data. Please try again.');
+    }
+  });
+});
+</script>

@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Pendaftaran Beswan</title>
+    <link rel="stylesheet" href="/assets/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container header-container">
+            <div class="logo">
+                <a href="/">
+                    <img src="/assets/image/logo-bersekolah-08.png" alt="Bersekolah Logo">
+                </a>
+            </div>
+            <div class="admin-info">
+                <div class="notification-icon">
+                    <i class="fas fa-bell"></i>
+                    <span class="notification-badge">3</span>
+                </div>
+                <div class="admin-profile">
+                    <div class="admin-avatar">A</div>
+                    <div class="admin-name">Admin</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Layout -->
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-menu">
+                <a href="#data-diri" class="menu-item">
+                    <div class="menu-icon">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <span>Data Diri</span>
+                </a>
+                <a href="#keluarga" class="menu-item">
+                    <div class="menu-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <span>Keluarga</span>
+                </a>
+                <a href="#dokumen-pendukung" class="menu-item">
+                    <div class="menu-icon">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <span>Dokumen Pendukung</span>
+                </a>
+                <a href="#esai" class="menu-item">
+                    <div class="menu-icon">
+                        <i class="fas fa-pen"></i>
+                    </div>
+                    <span>Esai</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <h1 class="page-title">Data Beswan</h1>
+
+            <!-- Data Diri Section -->
+            <section id="data-diri" class="content-section">
+                <h2>Data Diri Calon Penerima Beasiswa</h2>
+                <table class="data-table">
+                    <tbody>
+                        <tr>
+                            <td>Nama Lengkap</td>
+                            <td>Ahmad Izzuddin</td>
+                        </tr>
+                        <tr>
+                            <td>Email</td>
+                            <td>ahmad@example.com</td>
+                        </tr>
+                        <tr>
+                            <td>Nomor Telepon</td>
+                            <td>08123456789</td>
+                        </tr>
+                        <tr>
+                            <td>Alamat</td>
+                            <td>Jl. Merdeka No. 123</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- Keluarga Section -->
+            <section id="keluarga" class="content-section" style="display: none;">
+                <h2>Keluarga Calon Penerima Beasiswa</h2>
+                <table class="data-table">
+                    <tbody>
+                        <tr>
+                            <td>Nama Ayah</td>
+                            <td>Hadi Izzuddin</td>
+                        </tr>
+                        <tr>
+                            <td>Pekerjaan Ayah</td>
+                            <td>Petani</td>
+                        </tr>
+                        <tr>
+                            <td>Nama Ibu</td>
+                            <td>Siti Aminah</td>
+                        </tr>
+                        <tr>
+                            <td>Pekerjaan Ibu</td>
+                            <td>Ibu Rumah Tangga</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- Dokumen Pendukung Section -->
+            <section id="dokumen-pendukung" class="content-section" style="display: none;">
+                <h2>Dokumen Pendukung</h2>
+                <ul>
+                    <li>KTP: <a href="#">Download</a></li>
+                    <li>Kartu Keluarga: <a href="#">Download</a></li>
+                    <li>Ijazah Terakhir: <a href="#">Download</a></li>
+                </ul>
+            </section>
+
+            <!-- Esai Section -->
+            <section id="esai" class="content-section" style="display: none;">
+                <h2>Esai Calon Penerima Beasiswa</h2>
+                <p>
+                    "Saya ingin mendapatkan beasiswa ini karena saya percaya pendidikan adalah kunci untuk masa depan yang lebih baik. 
+                    Dengan beasiswa ini, saya dapat melanjutkan pendidikan saya dan memberikan kontribusi kepada masyarakat."
+                </p>
+            </section>
+
+            <!-- Beswan Data Section -->
+            <div class="beswan-data">
+                <h2>Data Diri Beswan</h2>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Field</th>
+                            <th>Informasi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Nama Lengkap</td>
+                            <td>Ahmad Izzuddin</td>
+                        </tr>
+                        <tr>
+                            <td>Email</td>
+                            <td>ahmad@example.com</td>
+                        </tr>
+                        <tr>
+                            <td>Nomor Telepon</td>
+                            <td>08123456789</td>
+                        </tr>
+                        <tr>
+                            <td>Alamat</td>
+                            <td>Jl. Merdeka No. 123</td>
+                        </tr>
+                        <tr>
+                            <td>Status</td>
+                            <td>Lengkap</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="action-buttons">
+                    <button class="btn btn-primary">Edit Data</button>
+                    <button class="btn btn-secondary">Simpan</button>
+                </div>
+            </div>
+
+                <!-- Table Section -->
+                <div class="table-section">
+                    <h2>Data Beswan</h2>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>No</th>
+                                <th>Nama</th>
+                                <th>Email</th>
+                                <th>Status</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Example Row -->
+                            <tr>
+                                <td>1</td>
+                                <td>Ahmad Izzuddin</td>
+                                <td>ahmad@example.com</td>
+                                <td>Lengkap</td>
+                                <td><button class="btn btn-secondary">Detail</button></td>
+                            </tr>
+                            <!-- Add dynamic rows here -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Dashboard Section -->
+                <div class="dashboard-section">
+                    <h2>Dashboard Beswan</h2>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon blue">
+                                <i class="fas fa-user-graduate"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3>125</h3>
+                                <p>Total Pendaftar</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon green">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3>78</h3>
+                                <p>Beasiswa Diterima</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Data Mentor - Admin Dashboard Bersekolah</title>
+    <link rel="stylesheet" href="assets/css/style.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+</head>
+<body>
+    <!-- Header -->
+    <header class="admin-header">
+        <div class="container header-container">
+            <div class="logo">
+                <a href="index.html">
+                    <img src="assets/image/logo-bersekolah-08.png" alt="Bersekolah Logo">
+                </a>
+            </div>
+            <div class="admin-info">
+                <div class="notification-icon">
+                    <i class="fas fa-bell"></i>
+                    <span class="notification-badge">3</span>
+                </div>
+                <div class="admin-profile">
+                    <div class="admin-avatar">A</div>
+                    <div class="admin-name">Admin</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Layout -->
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-menu">
+                <a href="admin-dashboard.html" class="menu-item active">
+                    <div class="menu-icon">
+                        <i class="fas fa-tachometer-alt"></i>
+                    </div>
+                    <span>Dashboard</span>
+                </a>
+                <a href="admin-pendaftar-beasiswa.html" class="menu-item">
+                    <div class="menu-icon">
+                        <i class="fas fa-user-graduate"></i>
+                    </div>
+                    <span>Pendaftar Beasiswa</span>
+                </a>
+                <a href="admin-kelola-halaman.html" class="menu-item">
+                    <div class="menu-icon">
+                        <i class="fas fa-edit"></i>
+                    </div>
+                    <span>Kelola Halaman</span>
+                </a>
+                <a href="admin-mentor.html" class="menu-item">
+                    <div class="menu-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <span>Data Mentor</span>
+                </a>
+                <a href="admin-donasi.html" class="menu-item">
+                    <div class="menu-icon">
+                        <i class="fas fa-hand-holding-heart"></i>
+                    </div>
+                    <span>Donasi</span>
+                </a>
+                <a href="admin-pengaturan-akun.html" class="menu-item">
+                    <div class="menu-icon">
+                        <i class="fas fa-cog"></i>
+                    </div>
+                    <span>Pengaturan Akun</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <h1 class="page-title">Data Mentor</h1>
+
+            <!-- Mentor Table -->
+            <div class="table-card">
+                <div class="table-header">
+                    <div class="table-title">Daftar Mentor Aktif</div>
+                    <div class="table-actions">
+                        <button onclick="showAddMentorForm()" class="btn btn-primary">+ Tambah Mentor</button>
+                    </div>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Foto</th>
+                            <th>Nama</th>
+                            <th>Email</th>
+                            <th>Posisi</th>
+                            <th>Status</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="mentor-table-body">
+                        <tr>
+                            <td colspan="6" class="text-center">
+                                <div class="loading-spinner"></div>
+                                <p>Memuat data mentor...</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Add/Edit Mentor Modal -->
+            <div id="mentorModal" class="modal">
+                <div class="modal-content">
+                    <span class="close" onclick="closeModal()">&times;</span>
+                    <h2 id="modalTitle">Tambah Mentor Baru</h2>
+                    <form id="mentorForm">
+                        <input type="hidden" id="mentorId" name="id">
+                        
+                        <div class="form-group">
+                            <label for="name">Nama Lengkap</label>
+                            <input type="text" id="name" name="name" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" id="email" name="email" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="position">Posisi</label>
+                            <input type="text" id="position" name="position" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="description">Deskripsi</label>
+                            <textarea id="description" name="description" rows="4"></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="photo">Foto Profil</label>
+                            <input type="file" id="photo" name="photo" accept="image/*">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="status">Status</label>
+                            <select id="status" name="status">
+                                <option value="active">Aktif</option>
+                                <option value="inactive">Tidak Aktif</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="button" onclick="closeModal()" class="btn btn-secondary">Batal</button>
+                            <button type="submit" class="btn btn-primary">Simpan</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { MentorService } from './lib/mentor-service-updated';
+
+        // Make functions available globally
+        window.showAddMentorForm = showAddMentorForm;
+        window.closeModal = closeModal;
+        window.editMentor = editMentor;
+        window.deleteMentor = deleteMentor;
+
+        // Load mentors when page loads
+        document.addEventListener('DOMContentLoaded', loadMentors);
+
+        async function loadMentors() {
+            try {
+                const mentors = await MentorService.getAllMentors();
+                displayMentors(mentors);
+            } catch (error) {
+                console.error('Failed to load mentors:', error);
+                document.getElementById('mentor-table-body').innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center">
+                            <p class="text-red-500">Gagal memuat data mentor. Silakan coba lagi nanti.</p>
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        function displayMentors(mentors) {
+            const tableBody = document.getElementById('mentor-table-body');
+            
+            if (mentors.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center">Belum ada data mentor.</td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            tableBody.innerHTML = mentors.map((mentor, index) => `
+                <tr>
+                    <td>
+                        <img src="${mentor.photo || 'assets/image/default-avatar.png'}" alt="${mentor.name}" class="mentor-avatar">
+                    </td>
+                    <td>${mentor.name}</td>
+                    <td>${mentor.email}</td>
+                    <td>${mentor.position || 'Mentor'}</td>
+                    <td>
+                        <span class="status-badge ${mentor.status === 'active' ? 'status-active' : 'status-inactive'}">
+                            ${mentor.status === 'active' ? 'Aktif' : 'Tidak Aktif'}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            <button onclick="editMentor(${mentor.id})" class="btn-icon btn-edit">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button onclick="deleteMentor(${mentor.id})" class="btn-icon btn-delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function showAddMentorForm() {
+            document.getElementById('modalTitle').textContent = 'Tambah Mentor Baru';
+            document.getElementById('mentorForm').reset();
+            document.getElementById('mentorId').value = '';
+            document.getElementById('mentorModal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('mentorModal').style.display = 'none';
+        }
+
+        async function editMentor(id) {
+            try {
+                const mentor = await MentorService.getMentorById(id);
+                
+                document.getElementById('modalTitle').textContent = 'Edit Mentor';
+                document.getElementById('mentorId').value = mentor.id;
+                document.getElementById('name').value = mentor.name;
+                document.getElementById('email').value = mentor.email;
+                document.getElementById('position').value = mentor.position || '';
+                document.getElementById('description').value = mentor.description || '';
+                document.getElementById('status').value = mentor.status || 'active';
+                
+                document.getElementById('mentorModal').style.display = 'block';
+            } catch (error) {
+                console.error('Failed to load mentor details:', error);
+                alert('Gagal memuat detail mentor. Silakan coba lagi.');
+            }
+        }
+
+        async function deleteMentor(id) {
+            if (confirm('Apakah Anda yakin ingin menghapus mentor ini?')) {
+                try {
+                    await MentorService.deleteMentor(id);
+                    await loadMentors(); // Reload data
+                    alert('Mentor berhasil dihapus.');
+                } catch (error) {
+                    console.error('Failed to delete mentor:', error);
+                    alert('Gagal menghapus mentor. Silakan coba lagi.');
+                }
+            }
+        }
+
+        // Form submit handler
+        document.getElementById('mentorForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const mentorId = document.getElementById('mentorId').value;
+            
+            try {
+                if (mentorId) {
+                    // Update existing mentor
+                    await MentorService.updateMentor(parseInt(mentorId), Object.fromEntries(formData));
+                } else {
+                    // Create new mentor
+                    await MentorService.createMentor(Object.fromEntries(formData));
+                }
+                
+                closeModal();
+                await loadMentors(); // Reload data
+                alert(mentorId ? 'Mentor berhasil diperbarui.' : 'Mentor baru berhasil ditambahkan.');
+            } catch (error) {
+                console.error('Failed to save mentor:', error);
+                alert('Gagal menyimpan data mentor. Silakan coba lagi.');
+            }
+        });
+    </script>
+
+    <style>
+        .loading-spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #406386;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 20px;
+            border-radius: 8px;
+            width: 80%;
+            max-width: 600px;
+        }
+        
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .mentor-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        
+        .status-badge {
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .status-active {
+            background-color: #d1f8ea;
+            color: #0d9f6f;
+        }
+        
+        .status-inactive {
+            background-color: #ffeaea;
+            color: #e02020;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .btn-icon {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 4px;
+        }
+        
+        .btn-edit {
+            color: #406386;
+        }
+        
+        .btn-delete {
+            color: #e02020;
+        }
+    </style>
+</body>
+</html>

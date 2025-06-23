@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daftar - Bersekolah</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Reset CSS */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f5f5f5;
+            color: #333333;
+            line-height: 1.6;
+        }
+
+        /* Header Styles */
+        header {
+            background-color: #ffffff;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            padding: 15px 0;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo img {
+            height: 40px;
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+        }
+
+        nav ul li {
+            margin-left: 25px;
+        }
+
+        nav ul li a {
+            text-decoration: none;
+            color: #333333;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        nav ul li a:hover {
+            color: #406386;
+        }
+
+        .btn {
+            background-color: #406386;
+            color: #ffffff;
+            padding: 12px 24px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: background-color 0.3s, transform 0.3s;
+            border: none;
+            cursor: pointer;
+            display: inline-block;
+        }
+
+        .btn:hover {
+            background-color: #2c4a6e;
+            transform: translateY(-2px);
+        }
+
+        /* Register Section Styles */
+        .register-section {
+            padding: 120px 0 80px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+        }
+
+        .register-container {
+            display: flex;
+            justify-content: space-between;
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .register-image {
+            flex: 1;
+            background: url('assets/image/background_Bersekolah[1].jpg') center/cover;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 40px;
+        }
+
+        .register-image::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(to top, rgba(64, 99, 134, 0.8), rgba(64, 99, 134, 0.4));
+        }
+
+        .register-image-content {
+            position: relative;
+            color: #ffffff;
+        }
+
+        .register-image-content h2 {
+            font-size: 28px;
+            margin-bottom: 15px;
+        }
+
+        .register-image-content p {
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+
+        .register-form-container {
+            flex: 1;
+            padding: 40px;
+            max-height: 700px;
+            overflow-y: auto;
+        }
+
+        .register-form-header {
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .register-form-header h2 {
+            font-size: 28px;
+            color: #406386;
+            margin-bottom: 10px;
+        }
+
+        .register-form-header p {
+            color: #666666;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333333;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #dddddd;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: #406386;
+            outline: none;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        .terms-privacy {
+            margin: 20px 0;
+        }
+
+        .terms-privacy label {
+            display: flex;
+            align-items: flex-start;
+            color: #666666;
+            font-size: 14px;
+        }
+
+        .terms-privacy input[type="checkbox"] {
+            margin-right: 10px;
+            margin-top: 4px;
+        }
+
+        .terms-privacy a {
+            color: #406386;
+            text-decoration: none;
+        }
+
+        .terms-privacy a:hover {
+            text-decoration: underline;
+        }
+
+        .register-button {
+            width: 100%;
+            padding: 14px;
+            font-size: 16px;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .or-divider {
+            display: flex;
+            align-items: center;
+            margin: 25px 0;
+            color: #666666;
+        }
+
+        .or-divider::before,
+        .or-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background-color: #dddddd;
+        }
+
+        .or-divider span {
+            padding: 0 15px;
+        }
+
+        .social-register {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .social-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 20px;
+            border-radius: 6px;
+            border: 1px solid #dddddd;
+            background-color: #ffffff;
+            color: #333333;
+            text-decoration: none;
+            transition: background-color 0.3s;
+            width: 50%;
+        }
+
+        .social-btn i {
+            margin-right: 10px;
+        }
+
+        .social-btn.google:hover {
+            background-color: #f2f2f2;
+        }
+
+        .social-btn.facebook {
+            background-color: #1877f2;
+            color: #ffffff;
+            border: none;
+        }
+
+        .social-btn.facebook:hover {
+            background-color: #166fe5;
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 20px;
+            color: #666666;
+            font-size: 14px;
+        }
+
+        .login-link a {
+            color: #406386;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .login-link a:hover {
+            text-decoration: underline;
+        }
+
+        /* Role Selection */
+        .role-selection {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .role-option {
+            flex: 1;
+            border: 2px solid #dddddd;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .role-option:hover {
+            border-color: #b0c4de;
+        }
+
+        .role-option.active {
+            border-color: #406386;
+            background-color: rgba(64, 99, 134, 0.05);
+        }
+
+        .role-option i {
+            font-size: 24px;
+            color: #406386;
+            margin-bottom: 10px;
+        }
+
+        .role-option h4 {
+            margin-bottom: 5px;
+            color: #333333;
+        }
+
+        .role-option p {
+            font-size: 14px;
+            color: #666666;
+        }
+
+        /* Footer */
+        footer {
+            background-color: #284362;
+            color: #ffffff;
+            padding: 60px 0 20px;
+        }
+
+        .footer-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            margin-bottom: 40px;
+        }
+
+        .footer-column {
+            flex: 1;
+            min-width: 250px;
+            margin-bottom: 30px;
+        }
+
+        .footer-column .logo img {
+            height: 60px;
+        }
+
+        .footer-column h3 {
+            font-size: 18px;
+            margin-bottom: 20px;
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        .footer-column h3::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 50px;
+            height: 2px;
+            background-color: #ffffff;
+        }
+
+        .footer-links {
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-bottom: 10px;
+        }
+
+        .footer-links li a {
+            color: #ffffff;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer-links li a:hover {
+            color: #9ab3d0;
+        }
+
+        .social-links {
+            display: flex;
+            margin-top: 20px;
+        }
+
+        .social-links a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            margin-right: 10px;
+            color: #ffffff;
+            transition: background-color 0.3s;
+        }
+
+        .social-links a:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 14px;
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 900px) {
+            .register-container {
+                flex-direction: column;
+                max-width: 500px;
+            }
+            
+            .register-image {
+                min-height: 200px;
+            }
+            
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+            
+            .role-selection {
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 768px) {
+            nav ul {
+                display: none;
+            }
+            
+            .footer-container {
+                flex-direction: column;
+            }
+            
+            .register-image-content h2 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container header-container">
+            <div class="logo">
+                <a href="index.html">
+                    <img src="assets/image/logo-bersekolah-08.png" alt="Bersekolah Logo">
+                </a>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Beranda</a></li>
+                    <li><a href="about.html">Tentang Kami</a></li>
+                    <li><a href="scholarship.html">Program Beasiswa</a></li>
+                    <li><a href="donation.html">Donasi</a></li>
+                    <li><a href="info-contact.html">Kontak</a></li>
+                </ul>
+            </nav>
+            <div class="nav-donate">    
+                <a href="#" class="btn">Bergabung Bersama</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Register Section -->
+    <section class="register-section">
+        <div class="container">
+            <div class="register-container">
+                <div class="register-image">
+                    <div class="register-image-content">
+                        <h2>Bergabung dengan Komunitas Bersekolah</h2>
+                        <p>Dengan mendaftar, Anda membuka kesempatan baru untuk berkontribusi dalam meningkatkan kualitas pendidikan di Indonesia. Mari bersama-sama membuka pintu masa depan untuk generasi penerus bangsa.</p>
+                    </div>
+                </div>
+                <div class="register-form-container">
+                    <div class="register-form-header">
+                        <h2>Daftar Akun Baru</h2>
+                        <p>Isi data diri Anda untuk bergabung dengan Bersekolah</p>
+                    </div>
+                    
+                    <!-- Role Selection -->
+                    <div class="role-selection">
+                        <div class="role-option active" id="role-student">
+                            <i class="fas fa-user-graduate"></i>
+                            <h4>Pelajar</h4>
+                            <p>Daftar sebagai pencari beasiswa</p>
+                        </div>
+                        <div class="role-option" id="role-donor">
+                            <i class="fas fa-hand-holding-heart"></i>
+                            <h4>Donatur</h4>
+                            <p>Daftar untuk memberikan donasi</p>
+                        </div>
+                    </div>
+                    
+                    <form action="#" method="post" id="myForm">
+                        <!-- <div class="form-row">
+                            <div class="form-group">
+                                <label for="firstName">Nama Depan</label>
+                                <input type="text" id="firstName" name="firstName" placeholder="Masukkan nama depan" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="lastName">Nama Belakang</label>
+                                <input type="text" id="lastName" name="lastName" placeholder="Masukkan nama belakang" required>
+                            </div>
+                        </div> -->
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="name">Nama Lengkap</label>
+                                <input type="text" id="name" name="name" placeholder="Masukkan nama depan" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" id="email" name="email" placeholder="Masukkan email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="phone">Nomor Telepon</label>
+                            <input type="tel" id="phone" name="phone" placeholder="Masukkan nomor telepon" required>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="password">Kata Sandi</label>
+                                <input type="password" id="password" name="password" placeholder="Minimal 8 karakter" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="password_confirmation">Konfirmasi Kata Sandi</label>
+                                <input type="password" id="password_confirmation" name="password_confirmation" placeholder="Ulangi kata sandi" required>
+                            </div>
+                        </div>
+                        
+                        <!-- Student-specific fields (initially shown) -->
+                        <!-- <div id="student-fields">
+                            <div class="form-group">
+                                <label for="school">Nama Sekolah</label>
+                                <input type="text" id="school" name="school" placeholder="Masukkan nama sekolah">
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="education">Jenjang Pendidikan</label>
+                                    <select id="education" name="education">
+                                        <option value="" disabled selected>Pilih jenjang pendidikan</option>
+                                        <option value="smp">SMP</option>
+                                        <option value="sma">SMA/SMK</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="grade">Kelas</label>
+                                    <select id="grade" name="grade">
+                                        <option value="" disabled selected>Pilih kelas</option>
+                                        <option value="7">7 SMP</option>
+                                        <option value="8">8 SMP</option>
+                                        <option value="9">9 SMP</option>
+                                        <option value="10">10 SMA/SMK</option>
+                                        <option value="11">11 SMA/SMK</option>
+                                        <option value="12">12 SMA/SMK</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                         -->
+                        <!-- Donor-specific fields (initially hidden) -->
+                        <div id="donor-fields" style="display: none;">
+                            <div class="form-group">
+                                <label for="occupation">Pekerjaan</label>
+                                <input type="text" id="occupation" name="occupation" placeholder="Masukkan pekerjaan Anda">
+                            </div>
+                            <div class="form-group">
+                                <label for="organization">Instansi/Perusahaan (opsional)</label>
+                                <input type="text" id="organization" name="organization" placeholder="Masukkan nama instansi/perusahaan">
+                            </div>
+                        </div>
+                        
+                        <!-- <div class="terms-privacy">
+                            <label>
+                                <input type="checkbox" name="terms" required>
+                                Saya menyetujui <a href="#">Syarat dan Ketentuan</a> serta <a href="#">Kebijakan Privasi</a> Bersekolah
+                            </label>
+                        </div> -->
+                        
+                        <button type="submit" class="btn register-button">Daftar Sekarang</button>
+                        
+                        <div class="or-divider">
+                            <span>atau</span>
+                        </div>
+                        
+                        <div class="social-register">
+                            <a href="#" class="social-btn google">
+                                <i class="fab fa-google"></i> Google
+                            </a>
+                            <a href="#" class="social-btn facebook">
+                                <i class="fab fa-facebook-f"></i> Facebook
+                            </a>
+                        </div>
+                        
+                        <div class="login-link">
+                            Sudah memiliki akun? <a href="login.html">Masuk sekarang</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-container">
+                <div class="footer-column">
+                    <div class="logo">
+                        <img src="assets/image/logo footer.png" alt="Bersekolah Logo">
+                    </div>
+                    <p style="margin-top: 20px;">Kami berkomitmen membantu pelajar yang bersemangat mewujudkan mimpi melalui program beasiswa dan donasi yang transparan.</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+                <div class="footer-column">
+                    <h3>Tautan</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">Beranda</a></li>
+                        <li><a href="#">Tentang Kami</a></li>
+                        <li><a href="#">Program Beasiswa</a></li>
+                        <li><a href="#">Kontak</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Program</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">Beasiswa SMP</a></li>
+                        <li><a href="#">Beasiswa SMA</a></li>
+                        <li><a href="#">Program Mentoring</a></li>
+                        <li><a href="#">Program Donasi</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Yayasan Insipirasi Semangat Sekolah. Hak Cipta Dilindungi.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

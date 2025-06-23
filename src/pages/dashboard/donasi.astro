@@ -1,0 +1,76 @@
+---
+import DashboardAdmin from "../../layout/dashboard-admin.astro";
+import { Card, CardHeader, CardTitle, CardContent } from "../../components/ui/card";
+import { Button } from "../../components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "../../components/ui/table";
+---
+
+<DashboardAdmin>
+  <div class="container p-6 mx-auto">
+    <div class="flex items-center justify-between mb-6">
+      <h1 class="text-2xl font-bold">Data Donasi</h1>
+    </div>
+
+    <div class="grid gap-6 mb-6 md:grid-cols-2 lg:grid-cols-3">
+      <Card>
+        <CardHeader>
+          <CardTitle>Total Donasi</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div class="text-3xl font-bold">Rp 150.000.000</div>
+          <p class="text-sm text-muted-foreground">Total keseluruhan</p>
+        </CardContent>
+      </Card>
+    </div>
+
+    <div class="flex items-center justify-between mb-4">
+      <input
+        type="text"
+        placeholder="Cari donatur atau tanggal..."
+        class="w-1/2 px-3 py-2 border rounded-md"
+      />
+      <select class="px-3 py-2 border rounded-md">
+        <option>Status: Semua</option>
+        <option>Terverifikasi</option>
+        <option>Menunggu</option>
+      </select>
+    </div>
+
+
+    <Card className="px-4">
+      <CardContent className="p-0">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>No</TableHead>
+              <TableHead>Tanggal</TableHead>
+              <TableHead>Donatur</TableHead>
+              <TableHead>Jumlah</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Aksi</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            <TableRow>
+              <TableCell>1</TableCell>
+              <TableCell>2025-05-27</TableCell>
+              <TableCell>Anonim</TableCell>
+              <TableCell>Rp 1.000.000</TableCell>
+              <TableCell>Terverifikasi</TableCell>
+              <TableCell>
+                <Button variant="outline" size="sm">Detail</Button>
+              </TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
+  </div>
+</DashboardAdmin>

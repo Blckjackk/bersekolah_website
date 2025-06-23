@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tambah Halaman - Admin Dashboard Bersekolah</title>
+    <link rel="stylesheet" href="assets/css/style.css"> <!-- Pastikan path CSS benar -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="admin-header">
+        <div class="container header-container">
+            <div class="logo">
+                <a href="index.html">
+                    <img src="assets/image/logo-bersekolah-08.png" alt="Bersekolah Logo">
+                </a>
+            </div>
+            <div class="admin-info">
+                <div class="notification-icon">
+                    <i class="fas fa-bell"></i>
+                    <span class="notification-badge">3</span>
+                </div>
+                <div class="admin-profile">
+                    <div class="admin-avatar">A</div>
+                    <div class="admin-name">Admin</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Layout -->
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-menu">
+                <a href="admin-dashboard.html" class="menu-item">
+                    <div class="menu-icon">
+                        <i class="fas fa-tachometer-alt"></i>
+                    </div>
+                    <span>Dashboard</span>
+                </a>
+                <a href="admin-pendaftar-beasiswa.html" class="menu-item">
+                    <div class="menu-icon">
+                        <i class="fas fa-user-graduate"></i>
+                    </div>
+                    <span>Pendaftar Beasiswa</span>
+                </a>
+                <a href="admin-kelolaaman.html" class="menu-item">
+                    <div class="menu-icon">
+                        <i class="fas fa-edit"></i>
+                    </div>
+                    <span>Kelola Halaman</span>
+                </a>
+                <a href="admin-mentor.html" class="menu-item">
+                    <div class="menu-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <span>Data Mentor</span>
+                </a>
+                <a href="admin-donasi.html" class="menu-item">
+                    <div class="menu-icon">
+                        <i class="fas fa-hand-holding-heart"></i>
+                    </div>
+                    <span>Donasi</span>
+                </a>
+                <a href="admin-pengaturan-akun.html" class="menu-item">
+                    <div class="menu-icon">
+                        <i class="fas fa-cog"></i>
+                    </div>
+                    <span>Pengaturan Akun</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <h1 class="page-title">Tambah Halaman</h1>
+
+            <!-- Form Tambah Halaman -->
+            <div class="form-card">
+                <div class="form-header">
+                    <div class="form-title">Isi Data Halaman</div>
+                </div>
+                <form id="myForm" action="#" method="POST" class="form-content">
+                    <div class="form-group">
+                        <label for="judul_halaman">Judul Halaman</label>
+                        <input type="text" id="judul_halaman" name="judul_halaman" placeholder="Masukkan judul halaman" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="slug">Slug</label>
+                        <input type="text" id="slug" name="slug" placeholder="Masukkan slug halaman (contoh: tentang-kami)" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="status">Status</label>
+                        <select id="status" name="status">
+                            <option value="draft">Draft</option>
+                            <option value="published">Dipublikasikan</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="gambar">Gambar Halaman</label>
+                        <input type="file" id="gambar" name="gambar" accept="image/*">
+                    </div>
+
+                    <div class="form-group form-actions">
+                        <button type="submit" class="btn btn-success">Simpan</button>
+
+                        <a href="index.html" class="btn btn-secondary">Batal</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

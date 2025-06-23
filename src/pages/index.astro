@@ -1,0 +1,22 @@
+---
+import Hero from "../component/beranda/Hero";
+import AppLayout from "../layout/app-layout.astro";
+import About from "../component/beranda/About";
+import Program from "../component/beranda/Program";
+import Testimonial from "../component/beranda/Testimonial";
+import Faq from "@/component/beranda/Faq";
+
+import { Divider } from "@heroui/react";
+---
+
+<AppLayout>
+  <Hero client:visible />
+  <Divider client:visible />
+  <About client:visible />
+  <Divider client:visible />
+  <Program client:visible />
+  <Divider client:visible />
+  <Testimonial client:visible />
+  <Divider client:visible />
+  <Faq client:visible />
+</AppLayout>

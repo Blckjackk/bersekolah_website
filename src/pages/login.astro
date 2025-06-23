@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Bersekolah</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Reset CSS */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f5f5f5;
+            color: #333333;
+            line-height: 1.6;
+        }
+
+        /* Header Styles */
+        header {
+            background-color: #ffffff;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            padding: 15px 0;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo img {
+            height: 40px;
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+        }
+
+        nav ul li {
+            margin-left: 25px;
+        }
+
+        nav ul li a {
+            text-decoration: none;
+            color: #333333;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        nav ul li a:hover {
+            color: #406386;
+        }
+
+        .btn {
+            background-color: #406386;
+            color: #ffffff;
+            padding: 12px 24px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: background-color 0.3s, transform 0.3s;
+            border: none;
+            cursor: pointer;
+            display: inline-block;
+        }
+
+        .btn:hover {
+            background-color: #2c4a6e;
+            transform: translateY(-2px);
+        }
+
+        /* Login Section Styles */
+        .login-section {
+            padding: 120px 0 80px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+        }
+
+        .login-container {
+            display: flex;
+            justify-content: space-between;
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .login-image {
+            flex: 1;
+            background: url('assets/image/background_Bersekolah[1].jpg') center/cover;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 40px;
+        }
+
+        .login-image::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(to top, rgba(64, 99, 134, 0.8), rgba(64, 99, 134, 0.4));
+        }
+
+        .login-image-content {
+            position: relative;
+            color: #ffffff;
+        }
+
+        .login-image-content h2 {
+            font-size: 28px;
+            margin-bottom: 15px;
+        }
+
+        .login-image-content p {
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+
+        .login-form-container {
+            flex: 1;
+            padding: 50px 40px;
+        }
+
+        .login-form-header {
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .login-form-header h2 {
+            font-size: 28px;
+            color: #406386;
+            margin-bottom: 10px;
+        }
+
+        .login-form-header p {
+            color: #666666;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333333;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #dddddd;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            border-color: #406386;
+            outline: none;
+        }
+
+        .remember-forgot {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .remember-me {
+            display: flex;
+            align-items: center;
+        }
+
+        .remember-me input {
+            margin-right: 8px;
+        }
+
+        .forgot-password a {
+            color: #406386;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .forgot-password a:hover {
+            text-decoration: underline;
+        }
+
+        .login-button {
+            width: 100%;
+            padding: 14px;
+            font-size: 16px;
+            text-align: center;
+        }
+
+        .or-divider {
+            display: flex;
+            align-items: center;
+            margin: 25px 0;
+            color: #666666;
+        }
+
+        .or-divider::before,
+        .or-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background-color: #dddddd;
+        }
+
+        .or-divider span {
+            padding: 0 15px;
+        }
+
+        .social-login {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .social-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 20px;
+            border-radius: 6px;
+            border: 1px solid #dddddd;
+            background-color: #ffffff;
+            color: #333333;
+            text-decoration: none;
+            transition: background-color 0.3s;
+            width: 50%;
+        }
+
+        .social-btn i {
+            margin-right: 10px;
+        }
+
+        .social-btn.google:hover {
+            background-color: #f2f2f2;
+        }
+
+        .social-btn.facebook {
+            background-color: #1877f2;
+            color: #ffffff;
+            border: none;
+        }
+
+        .social-btn.facebook:hover {
+            background-color: #166fe5;
+        }
+
+        .register-link {
+            text-align: center;
+            margin-top: 20px;
+            color: #666666;
+            font-size: 14px;
+        }
+
+        .register-link a {
+            color: #406386;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .register-link a:hover {
+            text-decoration: underline;
+        }
+
+        /* Footer */
+        footer {
+            background-color: #284362;
+            color: #ffffff;
+            padding: 60px 0 20px;
+        }
+
+        .footer-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            margin-bottom: 40px;
+        }
+
+        .footer-column {
+            flex: 1;
+            min-width: 250px;
+            margin-bottom: 30px;
+        }
+
+        .footer-column .logo img {
+            height: 60px;
+        }
+
+        .footer-column h3 {
+            font-size: 18px;
+            margin-bottom: 20px;
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        .footer-column h3::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 50px;
+            height: 2px;
+            background-color: #ffffff;
+        }
+
+        .footer-links {
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-bottom: 10px;
+        }
+
+        .footer-links li a {
+            color: #ffffff;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer-links li a:hover {
+            color: #9ab3d0;
+        }
+
+        .social-links {
+            display: flex;
+            margin-top: 20px;
+        }
+
+        .social-links a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            margin-right: 10px;
+            color: #ffffff;
+            transition: background-color 0.3s;
+        }
+
+        .social-links a:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 14px;
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 900px) {
+            .login-container {
+                flex-direction: column;
+                max-width: 500px;
+            }
+            
+            .login-image {
+                min-height: 200px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            nav ul {
+                display: none;
+            }
+            
+            .footer-container {
+                flex-direction: column;
+            }
+            
+            .login-image-content h2 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container header-container">
+            <div class="logo">
+                <a href="index.html">
+                    <img src="assets/image/logo-bersekolah-08.png" alt="Bersekolah Logo">
+                </a>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Beranda</a></li>
+                    <li><a href="about.html">Tentang Kami</a></li>
+                    <li><a href="scholarship.html">Program Beasiswa</a></li>
+                    <li><a href="donation.html">Donasi</a></li>
+                    <li><a href="info-contact.html">Kontak</a></li>
+                </ul>
+            </nav>
+            <div class="nav-donate">    
+                <a href="#" class="btn">Bergabung Bersama</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Login Section -->
+    <section class="login-section">
+        <div class="container">
+            <div class="login-container">
+                <div class="login-image">
+                    <div class="login-image-content">
+                        <h2>Selamat Datang Kembali</h2>
+                        <p>Masuk untuk melanjutkan perjalanan pendidikan bersama Bersekolah. Bersama-sama kita buka pintu masa depan untuk generasi penerus bangsa.</p>
+                    </div>
+                </div>
+                <div class="login-form-container">
+                    <div class="login-form-header">
+                        <h2>Masuk ke Akun Anda</h2>
+                        <p>Masukkan detail akun Anda untuk melanjutkan</p>
+                    </div>
+                    <form action="#" method="post">
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" id="email" name="email" placeholder="Masukkan email Anda" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="password">Kata Sandi</label>
+                            <input type="password" id="password" name="password" placeholder="Masukkan kata sandi Anda" required>
+                        </div>
+                        <div class="remember-forgot">
+                            <div class="remember-me">
+                                <input type="checkbox" id="remember" name="remember">
+                                <label for="remember">Ingat saya</label>
+                            </div>
+                            <div class="forgot-password">
+                                <a href="#">Lupa kata sandi?</a>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn login-button">Masuk</button>
+                        <div class="or-divider">
+                            <span>atau</span>
+                        </div>
+                        <div class="social-login">
+                            <a href="#" class="social-btn google">
+                                <i class="fab fa-google"></i> Google
+                            </a>
+                            <a href="#" class="social-btn facebook">
+                                <i class="fab fa-facebook-f"></i> Facebook
+                            </a>
+                        </div>
+                        <div class="register-link">
+                            Belum memiliki akun? <a href="#">Daftar sekarang</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-container">
+                <div class="footer-column">
+                    <div class="logo">
+                        <img src="assets/image/logo footer.png" alt="Bersekolah Logo">
+                    </div>
+                    <p style="margin-top: 20px;">Kami berkomitmen membantu pelajar yang bersemangat mewujudkan mimpi melalui program beasiswa dan donasi yang transparan.</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+                <div class="footer-column">
+                    <h3>Tautan</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">Beranda</a></li>
+                        <li><a href="#">Tentang Kami</a></li>
+                        <li><a href="#">Program Beasiswa</a></li>
+                        <li><a href="#">Kontak</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Program</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">Beasiswa SMP</a></li>
+                        <li><a href="#">Beasiswa SMA</a></li>
+                        <li><a href="#">Program Mentoring</a></li>
+                        <li><a href="#">Program Donasi</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Yayasan Insipirasi Semangat Sekolah. Hak Cipta Dilindungi.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

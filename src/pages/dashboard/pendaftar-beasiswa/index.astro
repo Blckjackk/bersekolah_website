@@ -1,0 +1,100 @@
+---
+import DashboardAdmin from "@/layout/dashboard-admin.astro";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+
+type Status = "Pending" | "Diterima" | "Ditolak";
+
+const applicants = [
+  {
+    id: "BSW101",
+    name: "Nadia Aulia",
+    program: "Beasiswa Penuh",
+    university: "Universitas Padjadjaran",
+    gpa: "3.90",
+    status: "Diterima",
+    applicationDate: "2025-05-20",
+  },
+  {
+    id: "BSW102",
+    name: "Rizky Pratama",
+    program: "Beasiswa Parsial",
+    university: "Universitas Brawijaya",
+    gpa: "3.75",
+    status: "Pending",
+    applicationDate: "2025-05-22",
+  },
+  {
+    id: "BSW103",
+    name: "Dewi Maharani",
+    program: "Beasiswa Penuh",
+    university: "Universitas Airlangga",
+    gpa: "3.88",
+    status: "Ditolak",
+    applicationDate: "2025-05-23",
+  },
+];
+
+const getStatusColor = (status: Status) => {
+  const colors: Record<Status, string> = {
+    "Pending": "bg-yellow-100 text-yellow-800",
+    "Diterima": "bg-green-100 text-green-800",
+    "Ditolak": "bg-red-100 text-red-800",
+  };
+  return colors[status];
+};
+---
+
+<DashboardAdmin>
+  <div class="container py-6 mx-auto">
+    <div class="mb-6">
+      <h1 class="text-2xl font-bold tracking-tight">Data Pendaftar Beasiswa</h1>
+      <p class="text-muted-foreground">
+        Berikut daftar peserta yang mendaftar program beasiswa tahun ini.
+      </p>
+    </div>
+
+    <Card>
+      <CardContent>
+        <div class="relative overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Nama</TableHead>
+                <TableHead>Program</TableHead>
+                <TableHead>Universitas</TableHead>
+                <TableHead>IPK</TableHead>
+                <TableHead>Tanggal Daftar</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Aksi</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {applicants.map(applicant => (
+                <TableRow>
+                  <TableCell>{applicant.name}</TableCell>
+                  <TableCell>{applicant.program}</TableCell>
+                  <TableCell>{applicant.university}</TableCell>
+                  <TableCell>{applicant.gpa}</TableCell>
+                  <TableCell>{applicant.applicationDate}</TableCell>
+                  <TableCell>
+                    <Badge className={getStatusColor(applicant.status as Status)}>
+                      {applicant.status}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <a href={`/admin/pendaftar-beasiswa/${applicant.id}`}>
+                      <Button variant="outline" size="sm">Detail</Button>
+                    </a>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      </CardContent>
+    </Card>
+  </div>
+</DashboardAdmin>

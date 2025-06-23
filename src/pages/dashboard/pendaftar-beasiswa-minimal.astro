@@ -1,0 +1,24 @@
+---
+import "../../../src/styles/global.css";
+import MinimalPendaftarPage from "../../component/admin/minimal-pendaftar-page";
+---
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width" />
+    <title>Pendaftar Beasiswa - Minimal</title>
+  </head>
+  <body>
+    <div class="p-8">
+      <h1 class="mb-6 text-3xl font-bold">Halaman Pendaftar Beasiswa - Versi Minimal</h1>
+      <div class="p-4 mb-8 bg-yellow-50 border border-yellow-200 rounded-lg">
+        <p>Ini adalah halaman minimal untuk menguji apakah komponen React dapat dirender dengan benar.</p>
+      </div>
+      
+      <div class="p-4 bg-white rounded-lg shadow">
+        <MinimalPendaftarPage client:load />
+      </div>
+    </div>
+  </body>
+</html>

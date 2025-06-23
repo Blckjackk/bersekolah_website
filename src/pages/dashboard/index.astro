@@ -1,0 +1,217 @@
+---
+import DashboardAdmin from "../../layout/dashboard-admin.astro";
+import { Card, CardHeader, CardTitle, CardContent } from "../../components/ui/card";
+import { Button } from "../../components/ui/button";
+import { DashboardService } from '../../lib/dashboard-service';
+
+// Fetch data from the API
+const dashboardStats = await DashboardService.getQuickActionStats();
+const applicationStats = await DashboardService.getApplicationStats();
+
+// Format dates for display
+const formatDate = (dateString) => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('id-ID', { 
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+};
+---
+
+<DashboardAdmin>
+  <div class="container p-6 mx-auto">
+    <h1 class="mb-8 text-2xl font-bold tracking-tight">Dashboard Admin</h1>
+
+    <!-- Stats Overview -->
+    <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-medium text-muted-foreground">Total Pendaftar</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div class="flex items-center">
+            <div class="mr-4 rounded-full p-2 bg-blue-100">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5 text-blue-600"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+            </div>
+            <div>
+              <div class="text-3xl font-bold" id="total-pendaftar">{dashboardStats.total_pendaftar || 0}</div>
+              <p class="text-xs text-muted-foreground" id="pendaftar-change">Data terkini</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-medium text-muted-foreground">Beswan Aktif</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div class="flex items-center">
+            <div class="mr-4 rounded-full p-2 bg-green-100">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5 text-green-600"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg>
+            </div>
+            <div>
+              <div class="text-3xl font-bold" id="total-beswan">{dashboardStats.total_beswan || 0}</div>
+              <p class="text-xs text-muted-foreground" id="beswan-info">Penerima beasiswa</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-medium text-muted-foreground">Total Mentor</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div class="flex items-center">
+            <div class="mr-4 rounded-full p-2 bg-purple-100">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5 text-purple-600"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+            </div>
+            <div>
+              <div class="text-3xl font-bold" id="total-mentor">{dashboardStats.total_mentor || 0}</div>
+              <p class="text-xs text-muted-foreground">Total mentor aktif</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-medium text-muted-foreground">Dokumen Terupload</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div class="flex items-center">
+            <div class="mr-4 rounded-full p-2 bg-amber-100">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5 text-amber-600"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+            </div>
+            <div>
+              <div class="text-3xl font-bold" id="total-dokumen">{dashboardStats.total_dokumen || 0}</div>
+              <p class="text-xs text-muted-foreground" id="dokumen-info">Dokumen terupload</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+
+    <div class="grid gap-6 mt-6 md:grid-cols-7">
+      <!-- Application Status Grid -->
+      <div class="md:col-span-4">
+        <Card>
+          <CardHeader>
+            <CardTitle>Status Pendaftaran Beasiswa</CardTitle>
+          </CardHeader>
+          <CardContent>            <div class="grid grid-cols-3 gap-4 mb-6">
+              <div class="p-4 text-center bg-yellow-50 rounded-lg">
+                <p class="mb-1 text-sm text-yellow-600">Menunggu</p>
+                <p class="text-2xl font-bold text-yellow-600" id="app-pending">{applicationStats.pending || 0}</p>
+              </div>
+              <div class="p-4 text-center bg-green-50 rounded-lg">
+                <p class="mb-1 text-sm text-green-600">Diterima</p>
+                <p class="text-2xl font-bold text-green-600" id="app-approved">{applicationStats.approved || 0}</p>
+              </div>
+              <div class="p-4 text-center bg-red-50 rounded-lg">
+                <p class="mb-1 text-sm text-red-600">Ditolak</p>
+                <p class="text-2xl font-bold text-red-600" id="app-rejected">{applicationStats.rejected || 0}</p>
+              </div>
+            </div>
+
+            <!-- Periode Stats -->
+            <div>
+              <h3 class="text-sm font-medium mb-2">Pendaftar per Periode</h3>
+              <div id="periode-stats" class="space-y-3">
+                {applicationStats.by_period && applicationStats.by_period.length > 0 ? (
+                  applicationStats.by_period.map((period) => (
+                    <div class="flex items-center space-x-2">
+                      <div class="flex-1">
+                        <p class="text-xs font-medium mb-1">{period.period_name}</p>
+                        <div class="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+                          <div class="h-full bg-blue-500" style={`width: ${Math.min(100, period.count/10*100)}%`}></div>
+                        </div>
+                      </div>
+                      <span class="text-xs text-gray-600 min-w-[80px] text-right">{period.count} pendaftar</span>
+                    </div>
+                  ))
+                ) : (
+                  <div class="flex items-center space-x-2">
+                    <div class="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+                      <div class="h-full bg-gray-300" style="width: 0%"></div>
+                    </div>
+                    <span class="text-xs text-gray-600 min-w-[80px] text-right">Tidak ada data</span>
+                  </div>
+                )}
+              </div>
+              </div>
+            </div>
+
+            <div class="mt-4 text-right">
+              <a href="/dashboard/data-pendaftar">
+                <Button variant="outline" size="sm">Lihat Semua Pendaftar</Button>
+              </a>
+            </div>
+          </CardContent>
+        </Card>
+      </div>      <!-- Quick Actions -->
+      <div class="md:col-span-3">
+        <Card>
+          <CardHeader>
+            <CardTitle>Panel Admin</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div class="mb-6 p-4 rounded-lg bg-blue-50">
+              <h3 class="text-md font-semibold text-blue-700 mb-2">Selamat Datang di Panel Admin</h3>
+              <p class="text-sm text-blue-600">Panel ini memberikan akses ke semua fungsionalitas manajemen konten dan beasiswa. Gunakan menu cepat di bawah untuk akses fungsi utama.</p>
+            </div>            <div class="mt-6">
+              <h4 class="text-sm font-medium mb-3">Statistik Lainnya</h4>
+              
+              <div class="grid grid-cols-2 gap-3 mb-4">
+                <div class="p-3 border rounded-lg bg-green-50 border-green-100">
+                  <div class="flex items-center mb-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1 text-green-600"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                    <span class="text-sm font-medium text-green-700">Dokumen Terverifikasi</span>
+                  </div>
+                  <p class="text-xl font-bold text-green-700">{dashboardStats.dokumen_terverifikasi || 0}</p>
+                </div>
+                <div class="p-3 border rounded-lg bg-blue-50 border-blue-100">
+                  <div class="flex items-center mb-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1 text-blue-600"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                    <span class="text-sm font-medium text-blue-700">Konten Aktif</span>
+                  </div>
+                  <p class="text-xl font-bold text-blue-700">{dashboardStats.konten_aktif || 0}</p>
+                </div>
+              </div>
+
+              <h4 class="text-sm font-medium mb-2">Aksi Cepat</h4>
+              <div class="grid grid-cols-2 gap-2">
+                <a href="/dashboard/data-pendaftar">
+                  <Button variant="outline" className="w-full justify-start text-xs h-auto py-1.5" size="sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1 h-3 w-3"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                    Pendaftar
+                  </Button>
+                </a>
+                <a href="/dashboard/content">
+                  <Button variant="outline" className="w-full justify-start text-xs h-auto py-1.5" size="sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1 h-3 w-3"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                    Konten
+                  </Button>
+                </a>
+                <a href="/dashboard/data-mentor">
+                  <Button variant="outline" className="w-full justify-start text-xs h-auto py-1.5" size="sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1 h-3 w-3"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                    Mentor
+                  </Button>
+                </a>
+                <a href="/dashboard/periode-beasiswa">
+                  <Button variant="outline" className="w-full justify-start text-xs h-auto py-1.5" size="sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1 h-3 w-3"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"></rect><line x1="16" x2="16" y1="2" y2="6"></line><line x1="8" x2="8" y1="2" y2="6"></line><line x1="3" x2="21" y1="10" y2="10"></line><path d="M8 14h.01"></path><path d="M12 14h.01"></path><path d="M16 14h.01"></path><path d="M8 18h.01"></path><path d="M12 18h.01"></path><path d="M16 18h.01"></path></svg>
+                    Periode
+                  </Button>
+                </a>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  </div>
+</DashboardAdmin>
+
+<!-- Legacy client-side script removed - data now fetched server-side -->

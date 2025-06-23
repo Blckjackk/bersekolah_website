@@ -1,0 +1,212 @@
+---
+import DashboardAdmin from "../../../layout/dashboard-admin.astro";
+import { Button } from "../../../components/ui/button";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+} from "../../../components/ui/card";
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from "../../../components/ui/form";
+import { Input } from "../../../components/ui/input";
+import { Textarea } from "../../../components/ui/textarea";
+import { Select } from "../../../components/ui/select";
+---
+
+<DashboardAdmin>
+  <div class="p-6 space-y-6">
+    <div class="flex items-center justify-between">
+      <h1 class="text-2xl font-bold">Tambah Mentor</h1>
+      <a href="/dashboard/data-mentor">
+        <Button variant="outline">Kembali</Button>
+      </a>
+    </div>
+
+    <Card>
+      <CardHeader>
+        <CardTitle>Data Mentor</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <form id="mentor-form" class="space-y-6">
+          <div class="grid gap-4 md:grid-cols-2">
+            <div class="space-y-2">
+              <label for="name" class="text-sm font-medium">Nama Lengkap</label>
+              <input 
+                id="name"
+                name="name"
+                type="text"
+                class="w-full px-3 py-2 border rounded-md"
+                required
+              />
+            </div>
+
+            <div class="space-y-2">
+              <label for="position" class="text-sm font-medium">Posisi</label>
+              <input 
+                id="position"
+                name="position"
+                type="text"
+                class="w-full px-3 py-2 border rounded-md"
+                required
+              />
+            </div>
+
+            <div class="space-y-2">
+              <label for="email" class="text-sm font-medium">Email</label>
+              <input 
+                id="email"
+                name="email"
+                type="email"
+                class="w-full px-3 py-2 border rounded-md"
+                required
+              />
+            </div>
+
+            <div class="space-y-2">
+              <label for="phone" class="text-sm font-medium">Nomor Telepon</label>
+              <input 
+                id="phone"
+                name="phone"
+                type="tel"
+                class="w-full px-3 py-2 border rounded-md"
+                required
+              />
+            </div>
+
+            <div class="space-y-2">
+              <label for="location" class="text-sm font-medium">Lokasi</label>
+              <input 
+                id="location"
+                name="location"
+                type="text"
+                class="w-full px-3 py-2 border rounded-md"
+                required
+              />
+            </div>
+
+            <div class="space-y-2">
+              <label for="status" class="text-sm font-medium">Status</label>
+              <select 
+                id="status"
+                name="status"
+                class="w-full px-3 py-2 border rounded-md"
+                required
+              >
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="space-y-2">
+            <label for="description" class="text-sm font-medium">Deskripsi</label>
+            <textarea 
+              id="description"
+              name="description"
+              rows="4"
+              class="w-full px-3 py-2 border rounded-md"
+              required
+            ></textarea>
+          </div>
+
+          <div class="space-y-2">
+            <label for="skills" class="text-sm font-medium">Keahlian (pisahkan dengan koma)</label>
+            <input 
+              id="skills"
+              name="skills"
+              type="text"
+              class="w-full px-3 py-2 border rounded-md"
+              placeholder="e.g. Leadership, Mentoring, Public Speaking"
+              required
+            />
+          </div>
+
+          <div class="space-y-2">
+            <label for="achievements" class="text-sm font-medium">Pencapaian</label>
+            <textarea 
+              id="achievements"
+              name="achievements"
+              rows="4"
+              class="w-full px-3 py-2 border rounded-md"
+              required
+            ></textarea>
+          </div>
+
+          <div class="grid gap-4 md:grid-cols-2">
+            <div class="space-y-2">
+              <label for="studentsHelped" class="text-sm font-medium">Jumlah Siswa yang Dibimbing</label>
+              <input 
+                id="studentsHelped"
+                name="studentsHelped"
+                type="number"
+                class="w-full px-3 py-2 border rounded-md"
+                required
+              />
+            </div>
+
+            <div class="space-y-2">
+              <label for="yearsExperience" class="text-sm font-medium">Pengalaman (tahun)</label>
+              <input 
+                id="yearsExperience"
+                name="yearsExperience"
+                type="number"
+                class="w-full px-3 py-2 border rounded-md"
+                required
+              />
+            </div>
+          </div>
+
+          <div>
+            <Button type="submit" variant="default" className="bg-[#406386]">
+              Simpan Data Mentor
+            </Button>
+          </div>
+        </form>
+      </CardContent>
+    </Card>
+  </div>
+</DashboardAdmin>
+
+<script>
+import { MentorService } from '../../../lib/mentor-service';
+
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.getElementById('mentor-form') as HTMLFormElement;
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const formData = new FormData(form);
+    const mentorData = {
+      name: formData.get('name') as string,
+      position: formData.get('position') as string,
+      description: formData.get('description') as string,
+      email: formData.get('email') as string,
+      phone: formData.get('phone') as string,
+      location: formData.get('location') as string,
+      skills: (formData.get('skills') as string).split(',').map(s => s.trim()),
+      achievements: formData.get('achievements') as string,
+      studentsHelped: parseInt(formData.get('studentsHelped') as string),
+      yearsExperience: parseInt(formData.get('yearsExperience') as string),
+      status: formData.get('status') as 'active' | 'inactive',
+      photo: null, // This should be handled properly with file uploads
+      created_at: new Date().toISOString()
+    };
+
+    try {
+      await MentorService.createMentor(mentorData);
+      window.location.href = '/dashboard/data-mentor?success=created';
+    } catch (error) {
+      console.error('Failed to create mentor:', error);
+      alert('Failed to save mentor data. Please try again.');
+    }
+  });
+});
+</script>

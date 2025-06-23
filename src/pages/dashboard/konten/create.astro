@@ -1,0 +1,191 @@
+---
+import DashboardAdmin from "../../../layout/dashboard-admin.astro";
+import { Button } from "../../../components/ui/button";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+} from "../../../components/ui/card";
+import { Label } from "../../../components/ui/label";
+import { Input } from "../../../components/ui/input";
+import { Textarea } from "../../../components/ui/textarea";
+---
+
+<DashboardAdmin>
+  <div class="p-6 space-y-6">
+    <div class="flex items-center justify-between">
+      <h1 class="text-2xl font-bold">Tambah Konten</h1>
+      <a href="/dashboard/konten">
+        <Button variant="outline">Kembali</Button>
+      </a>
+    </div>
+
+    <Card>
+      <CardHeader>
+        <CardTitle>Data Konten</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <form id="content-form" class="space-y-6">
+          <div class="space-y-4">
+            <div class="space-y-2">
+              <label for="title" class="text-sm font-medium">Judul</label>
+              <input 
+                id="title"
+                name="title"
+                type="text"
+                class="w-full px-3 py-2 border rounded-md"
+                required
+              />
+            </div>
+
+            <div class="space-y-2">
+              <label for="category" class="text-sm font-medium">Kategori</label>
+              <select
+                id="category"
+                name="category"
+                class="w-full px-3 py-2 border rounded-md"
+                required
+              >
+                <option value="artikel">Artikel</option>
+                <option value="berita">Berita</option>
+                <option value="pengumuman">Pengumuman</option>
+                <option value="kegiatan">Kegiatan</option>
+              </select>
+            </div>
+
+            <div class="space-y-2">
+              <label for="content" class="text-sm font-medium">Konten</label>
+              <textarea
+                id="content"
+                name="content"
+                rows="10"
+                class="w-full px-3 py-2 border rounded-md"
+                required
+              ></textarea>
+            </div>
+
+            <div class="space-y-2">
+              <label for="featured_image" class="text-sm font-medium">Featured Image</label>
+              <input
+                id="featured_image"
+                name="featured_image"
+                type="file"
+                accept="image/*"
+                class="w-full px-3 py-2 border rounded-md"
+              />
+              <p class="text-xs text-gray-500">Ukuran maksimal gambar: 2MB. Format: JPG, PNG</p>
+            </div>
+
+            <div class="space-y-4">
+              <h3 class="text-sm font-medium">SEO Settings</h3>
+              <div class="grid gap-4 p-4 border rounded-md md:grid-cols-2">
+                <div class="space-y-2">
+                  <label for="seo_title" class="text-sm">SEO Title</label>
+                  <input
+                    id="seo_title"
+                    name="seo_title"
+                    type="text"
+                    class="w-full px-3 py-2 border rounded-md"
+                  />
+                </div>
+                <div class="space-y-2">
+                  <label for="seo_keywords" class="text-sm">SEO Keywords</label>
+                  <input
+                    id="seo_keywords"
+                    name="seo_keywords"
+                    type="text"
+                    class="w-full px-3 py-2 border rounded-md"
+                    placeholder="keyword1, keyword2, keyword3"
+                  />
+                </div>
+                <div class="space-y-2 md:col-span-2">
+                  <label for="seo_description" class="text-sm">SEO Description</label>
+                  <textarea
+                    id="seo_description"
+                    name="seo_description"
+                    rows="2"
+                    class="w-full px-3 py-2 border rounded-md"
+                  ></textarea>
+                </div>
+              </div>
+            </div>
+
+            <div class="space-y-2">
+              <label for="status" class="text-sm font-medium">Status</label>
+              <select
+                id="status"
+                name="status"
+                class="w-full px-3 py-2 border rounded-md"
+                required
+              >
+                <option value="draft">Draft</option>
+                <option value="published">Published</option>
+                <option value="archived">Archived</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <Button type="submit" variant="default" className="bg-[#406386]">
+              Simpan Konten
+            </Button>
+          </div>
+        </form>
+      </CardContent>
+    </Card>
+  </div>
+</DashboardAdmin>
+
+<script>
+import { ContentService } from '../../../lib/content-service';
+import slugify from 'slugify';
+
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.getElementById('content-form') as HTMLFormElement;
+
+  // Auto-fill SEO fields when title changes
+  const titleInput = form.querySelector('#title') as HTMLInputElement;
+  titleInput?.addEventListener('input', (e) => {
+    const target = e.target as HTMLInputElement;
+    const title = target.value;
+    
+    // Auto-fill SEO title if empty
+    const seoTitleInput = form.querySelector('#seo_title') as HTMLInputElement;
+    if (seoTitleInput && !seoTitleInput.value) {
+      seoTitleInput.value = title;
+    }
+  });
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const formData = new FormData(form);
+    
+    // Add generated slug
+    const title = formData.get('title') as string;
+    const slug = slugify(title, {
+      lower: true,
+      strict: true,
+      locale: 'id'
+    });
+    formData.append('slug', slug);
+
+    // Set default values for optional fields
+    if (!formData.get('seo_title')) {
+      formData.set('seo_title', title);
+    }
+    if (!formData.get('seo_description')) {
+      formData.set('seo_description', (formData.get('content') as string).slice(0, 160));
+    }
+
+    try {
+      await ContentService.createContent(formData);
+      window.location.href = '/dashboard/konten?success=created';
+    } catch (error) {
+      console.error('Failed to create content:', error);
+      alert('Failed to save content. Please try again.');
+    }
+  });
+});
+</script>

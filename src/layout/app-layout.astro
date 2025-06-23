@@ -1,0 +1,25 @@
+---
+import "../styles/heroui.css";
+
+import Header from "../component/Header";
+import Footer from "../component/Footer";
+---
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content={Astro.generator} />
+    <title>Yayasan Inspirasi Semangat Bersekolah</title>
+
+    <title>Bersekolah - Buka Pintu Pendidikan Bersama Kami</title>
+     <link rel="icon" href="assets/image/logo-bersekolah-08.png" type="image/x-icon">
+    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"> -->
+    <!-- <link rel="stylesheet" href="assets/css/style.css" type="text/css"> -->
+  </head>
+  <body>
+    <Header client:visible />
+    <slot />
+    <Footer client:visible />
+  </body>
+</html>
