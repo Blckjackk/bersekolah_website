@@ -171,3 +171,25 @@ export async function deleteBeasiswaPeriod(id: number | string): Promise<{ succe
 
   return await response.json();
 }
+
+export async function togglePeriodActive(id: number | string): Promise<BeasiswaPeriodResponse> {
+  const token = localStorage.getItem('bersekolah_auth_token');
+  if (!token) {
+    throw new Error('No authentication token');
+  }
+
+  const response = await fetch(`${API_URL}/beasiswa-periods/${id}/toggle-active`, {
+    method: 'PATCH',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Accept': 'application/json'
+    }
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || 'Failed to toggle period activation status');
+  }
+
+  return await response.json();
+}

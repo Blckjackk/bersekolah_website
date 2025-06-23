@@ -317,7 +317,30 @@ export default function PeriodeBeasiswaPage() {
     )
   }
 
+  // Check if there are any active periods
+  const hasActivePeriod = () => {
+    if (!periods || periods.length === 0) return false
+    const now = new Date()
+    return periods.some(period => {
+      if (period.status !== 'active') return false
+      const startDate = new Date(period.mulai_pendaftaran)
+      const endDate = new Date(period.akhir_pendaftaran)
+      return period.is_active && now >= startDate && now <= endDate
+    })
+  }
+
   const openCreateDialog = () => {
+    // Check if there's an active period before opening the dialog
+    if (hasActivePeriod()) {
+      toast({
+        title: "⚠️ Tidak dapat membuat periode baru",
+        description: "Sudah ada periode beasiswa yang aktif saat ini. Nonaktifkan atau tutup periode aktif terlebih dahulu.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    // Continue with normal flow
     setFormData({
       tahun: new Date().getFullYear(),
       nama_periode: '',
@@ -415,8 +438,7 @@ export default function PeriodeBeasiswaPage() {
             Kelola periode pendaftaran beasiswa
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button 
+        <div className="flex gap-2">          <Button 
             variant="outline" 
             size="sm"
             onClick={() => fetchData(true)}
@@ -428,6 +450,8 @@ export default function PeriodeBeasiswaPage() {
           <Button 
             onClick={openCreateDialog}
             className="bg-[#406386] hover:bg-[#365577]"
+            disabled={hasActivePeriod()}
+            title={hasActivePeriod() ? "Tidak dapat membuat periode baru karena ada periode aktif" : "Tambah periode baru"}
           >
             <Plus className="w-4 h-4 mr-2" />
             Tambah Periode
@@ -448,8 +472,7 @@ export default function PeriodeBeasiswaPage() {
             </div>
           </CardContent>
         </Card>
-        
-        <Card>
+          <Card className={hasActivePeriod() ? "border-green-500" : ""}>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -457,8 +480,14 @@ export default function PeriodeBeasiswaPage() {
                 <p className="text-2xl font-bold text-green-600">
                   {periods.filter(p => p.status === 'active').length}
                 </p>
+                {hasActivePeriod() && (
+                  <Badge variant="outline" className="mt-1 text-green-700 bg-green-100 border-green-200">
+                    <CheckCircle2 className="w-3 h-3 mr-1" />
+                    Aktif Saat Ini
+                  </Badge>
+                )}
               </div>
-              <CheckCircle2 className="w-8 h-8 text-green-500" />
+              <CheckCircle2 className={`w-8 h-8 ${hasActivePeriod() ? 'text-green-600' : 'text-green-500'}`} />
             </div>
           </CardContent>
         </Card>

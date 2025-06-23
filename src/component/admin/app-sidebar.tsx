@@ -90,8 +90,7 @@ const data = {
         },
       ],
     },
-    {
-      title: "Konten & Halaman",
+    {      title: "Konten & Halaman",
       url: "#",
       icon: BookOpen,      items: [        {
           title: "Kelola Konten",
@@ -112,6 +111,7 @@ const data = {
           url: "/dashboard/faq",
           icon: MessageSquare,
         },
+
       ],
     },    {
       title: "Data Mentor",
@@ -123,23 +123,7 @@ const data = {
       url: "/dashboard/data-testimoni",
       icon: MessageSquare,
     },
-    {
-      title: "Donasi",
-      url: "/dashboard/donasi",
-      icon: Heart,
-      items: [
-        {
-          title: "Daftar Donasi",
-          url: "/dashboard/donasi",
-          icon: DollarSign,
-        },
-        {
-          title: "Laporan Donasi",
-          url: "/dashboard/donasi/laporan",
-          icon: BarChart3,
-        },
-      ],
-    },
+    
     {
       title: "Pengaturan",
       url: "/dashboard/pengaturan",
