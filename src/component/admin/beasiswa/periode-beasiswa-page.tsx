@@ -876,7 +876,7 @@ export default function PeriodeBeasiswaPage() {
                 <Label htmlFor="edit_status">Status</Label>
                 <Select
                   value={formData.status}
-                  onValueChange={(value: 'draft' | 'active' | 'closed') => 
+                  onValueChange={(value: 'active' | 'closed') => 
                     setFormData(prev => ({ ...prev, status: value }))
                   }
                 >
@@ -884,7 +884,6 @@ export default function PeriodeBeasiswaPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="draft">Draft</SelectItem>
                     <SelectItem value="active">Aktif</SelectItem>
                     <SelectItem value="closed">Ditutup</SelectItem>
                   </SelectContent>
