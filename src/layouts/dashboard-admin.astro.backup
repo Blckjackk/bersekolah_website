@@ -9,9 +9,8 @@ import AdminDashboard from "./page-admin";
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width" />
     <meta name="generator" content={Astro.generator} />
-    <title>Yayasan Inspirasi Semangat Bersekolah</title>
     <title>Bersekolah - Buka Pintu Pendidikan Bersama Kami</title>
-     <link rel="icon" href="assets/image/logo-bersekolah-08.png" type="image/x-icon">
+     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   </head>
   <body>
     <AdminDashboard client:visible>

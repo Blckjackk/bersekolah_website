@@ -363,12 +363,12 @@ export default function MentorPage() {
                     <TableCell>
                       <div className="relative w-10 h-10 overflow-hidden rounded-full">
                         <img 
-                          src={mentor.photo ? `/${mentor.photo}` : '/ImageTemp/default-avatar.png'} 
+                          src={mentor.photo && `/${mentor.photo}`} 
                           alt={mentor.name}
                           className="object-cover w-full h-full"
                           onError={(e) => {
                             const target = e.target as HTMLImageElement;
-                            target.src = '/ImageTemp/default-avatar.png';
+                            target.src = '';
                           }}
                         />
                       </div>
@@ -518,7 +518,7 @@ export default function MentorPage() {
                       className="object-cover w-full h-full"
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
-                        target.src = '/ImageTemp/default-avatar.png';
+                        target.src = '';
                       }}
                     />
                   </div>
@@ -557,12 +557,12 @@ export default function MentorPage() {
             {selectedMentor && (
               <div className="flex items-center gap-4 p-4 border rounded-md bg-muted/50">
                 <div className="relative w-16 h-16 overflow-hidden rounded-full">
-                  <img                    src={selectedMentor.photo ? `/${selectedMentor.photo}` : '/ImageTemp/default-avatar.png'}
+                  <img                    src={selectedMentor.photo ? `/${selectedMentor.photo}` : ''}
                     alt={selectedMentor.name}
                     className="object-cover w-full h-full"
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
-                      target.src = '/ImageTemp/default-avatar.png';
+                      target.src = '';
                     }}
                   />
                 </div>

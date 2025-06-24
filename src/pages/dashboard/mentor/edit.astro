@@ -1,12 +1,12 @@
 ---
-import DashboardAdmin from "../../../../layout/dashboard-admin.astro";
-import { Button } from "../../../../components/ui/button";
+import DashboardAdmin from "../../../layouts/dashboard-admin.astro";
+import { Button } from "../../../components/ui/button";
 import {
   Card,
   CardHeader,
   CardTitle,
   CardContent,
-} from "../../../../components/ui/card";
+} from "../../../components/ui/card";
 ---
 
 <DashboardAdmin>
@@ -304,7 +304,7 @@ import {
 </template>
 
 <script>
-import { MentorService } from '../../../../lib/mentor-service';
+import { MentorService } from '../../../lib/mentor-service';
 
 const getMentorId = () => {
   const path = window.location.pathname;

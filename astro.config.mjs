@@ -5,6 +5,14 @@ import react from "@astrojs/react";
 export default defineConfig({
   vite: {
     plugins: [tailwindcss()],
+    resolve: {
+      alias: {
+        '@': '/src'
+      }
+    },
+    esbuild: {
+      target: 'es2020'
+    },
     server: {
       host: true,
       proxy: {

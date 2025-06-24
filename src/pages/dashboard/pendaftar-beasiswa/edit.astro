@@ -1,7 +1,7 @@
 ---
-import DashboardAdmin from "../../../../layout/dashboard-admin.astro";
-import { Card, CardHeader, CardTitle, CardContent } from "../../../../components/ui/card";
-import { Button } from "../../../../components/ui/button";
+import DashboardAdmin from "../../../layouts/dashboard-admin.astro";
+import { Card, CardHeader, CardTitle, CardContent } from "../../../components/ui/card";
+import { Button } from "../../../components/ui/button";
 
 ---
 
@@ -287,7 +287,7 @@ import { Button } from "../../../../components/ui/button";
 </template>
 
 <script>
-import { ApplicantService } from '../../../../lib/applicant-service';
+import { ApplicantService } from '../../../lib/applicant-service';
 
 const getApplicantId = () => {
   const path = window.location.pathname;

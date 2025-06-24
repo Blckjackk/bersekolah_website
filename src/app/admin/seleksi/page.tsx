@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { navigate } from 'astro:transitions/client'
 import AdminSeleksiPage from '@/component/admin/aplikasi/seleksi-page'
 import { Loader2, ShieldAlert } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
