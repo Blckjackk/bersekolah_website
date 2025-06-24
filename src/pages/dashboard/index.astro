@@ -334,48 +334,47 @@ const formatDate = (dateString: string) => {
         pending: 0,
         approved: 0,
         rejected: 0
-      };
-
-      // Process consolidated stats endpoint if available (preferred method)
+      };      // Try to use consolidated stats endpoint first, but don't rely exclusively on it
+      let consolidatedSuccess = false;
+      
       if (successfulResponses['/dashboard/consolidated-stats']) {
         const consolidatedData = successfulResponses['/dashboard/consolidated-stats'];
         console.log('Processing consolidated stats data:', consolidatedData);
 
-        if (consolidatedData.success && consolidatedData.data) {
-          const data = consolidatedData.data;
-          
-          // Extract dashboard stats
-          if (data.dashboard) {
-            console.log('Processing consolidated dashboard stats:', data.dashboard);
-            dashboardStats.total_pendaftar = data.dashboard.total_pendaftar || 0;
-            dashboardStats.total_mentor = data.dashboard.total_mentor || 0;
-            dashboardStats.total_dokumen = data.dashboard.total_dokumen || 0;
-            dashboardStats.dokumen_terverifikasi = data.dashboard.dokumen_terverifikasi || 0;
-          }
-          
-          // Extract application stats
-          if (data.applications) {
-            console.log('Processing consolidated application stats:', data.applications);
-            appStats.total = data.applications.total || 0;
-            appStats.pending = data.applications.pending || 0;
-            appStats.approved = data.applications.diterima || 0;
-            appStats.rejected = data.applications.ditolak || 0;
-          }
+        try {
+          if (consolidatedData.success && consolidatedData.data) {
+            const data = consolidatedData.data;
+            
+            // Extract dashboard stats
+            if (data.dashboard) {
+              console.log('Processing consolidated dashboard stats:', data.dashboard);
+              dashboardStats.total_pendaftar = data.dashboard.total_pendaftar || 0;
+              dashboardStats.total_mentor = data.dashboard.total_mentor || 0;
+              dashboardStats.total_dokumen = data.dashboard.total_dokumen || 0;
+              dashboardStats.dokumen_terverifikasi = data.dashboard.dokumen_terverifikasi || 0;
+            }
+            
+            // Extract application stats
+            if (data.applications) {
+              console.log('Processing consolidated application stats:', data.applications);
+              appStats.total = data.applications.total || 0;
+              appStats.pending = data.applications.pending || 0;
+              appStats.approved = data.applications.diterima || 0;
+              appStats.rejected = data.applications.ditolak || 0;
+            }
 
-          // No need to process fallback endpoints since we got everything we need
-          console.log('Successfully processed consolidated stats');
-          // Update UI directly
-          updateElementText('total-pendaftar', dashboardStats.total_pendaftar);
-          updateElementText('total-mentor', dashboardStats.total_mentor);
-          updateElementText('total-dokumen', dashboardStats.total_dokumen);
-          updateElementText('app-pending', appStats.pending);
-          updateElementText('app-approved', appStats.approved);
-          updateElementText('app-rejected', appStats.rejected);
-          
-          // Exit early since we got all the data we need
-          return;
+            consolidatedSuccess = true;
+            console.log('Successfully processed consolidated stats');
+          }
+        } catch (e) {
+          console.error('Error processing consolidated stats:', e);
+          // Will continue with individual endpoints
         }
       }
+      
+      // We'll continue to process the individual endpoints even if consolidated was successful,
+      // but will only use their values if we're missing something from consolidated stats
+      // This gives us the most robust solution
       
       // FALLBACK: Process individual endpoints if consolidated endpoint failed
       console.warn('Consolidated stats endpoint failed or returned incomplete data. Using fallback endpoints...');
@@ -542,15 +541,28 @@ const formatDate = (dateString: string) => {
         
         console.log('Final application stats to display:', appStats);
       }
+        // Update the UI with best available statistics from all sources
+      console.log('Final dashboard stats to display:', dashboardStats);
+      console.log('Final application stats to display:', appStats);
       
-      // Update the UI with all collected statistics
-      console.log('Updating UI with dashboard stats:', dashboardStats);
+      // If we still have empty values, try to infer them from other stats
+      if (dashboardStats.total_pendaftar === 0 && appStats.total > 0) {
+        dashboardStats.total_pendaftar = appStats.total;
+      }
+      
+      // If there's no total but we have individual status counts, calculate the total
+      if (appStats.total === 0 && (appStats.pending > 0 || appStats.approved > 0 || appStats.rejected > 0)) {
+        appStats.total = appStats.pending + appStats.approved + appStats.rejected;
+      }
+      
+      // Update the UI with our best available data
       updateElementText('total-pendaftar', dashboardStats.total_pendaftar);
       updateElementText('total-mentor', dashboardStats.total_mentor);
-      updateElementText('total-dokumen', dashboardStats.total_dokumen);      console.log('Updating UI with application stats:', appStats);
+      updateElementText('total-dokumen', dashboardStats.total_dokumen);
       updateElementText('app-pending', appStats.pending);
       updateElementText('app-approved', appStats.approved);
-      updateElementText('app-rejected', appStats.rejected);    
+      updateElementText('app-rejected', appStats.rejected);
+    
     } catch (error) {
       console.error('Error refreshing dashboard data:', error);
       
