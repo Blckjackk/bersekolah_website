@@ -23,21 +23,21 @@ interface FAQ {
   id: number
   pertanyaan: string
   jawaban: string
-  status: 'draft' | 'published'
+  status: 'draft' | 'published' | 'archived'
   created_at: string
   updated_at: string
 }
 
 export default function FaqDashboard() {
-  const [faqs, setFaqs] = useState<FAQ[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const [faqs, setFaqs] = useState<FAQ[]>([]), [isLoading, setIsLoading] = useState(true)
   const [showDialog, setShowDialog] = useState(false)
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [currentFaq, setCurrentFaq] = useState<FAQ | null>(null)
   const [formData, setFormData] = useState({
     pertanyaan: "",
     jawaban: "",
-    status: "draft" as "draft" | "published"
+    status: "draft" as "draft" | "published" | "archived"
   })
   const { toast } = useToast()
 
@@ -154,17 +154,16 @@ export default function FaqDashboard() {
       })
     }
   }
-
   // ✅ Delete FAQ
-  const deleteFaq = async (id: number) => {
-    if (!confirm('Apakah Anda yakin ingin menghapus FAQ ini?')) return
-
+  const deleteFaq = async () => {
+    if (!currentFaq) return
+    
     try {
       const token = localStorage.getItem('bersekolah_auth_token')
       if (!token) throw new Error('No authentication token')
 
       const baseURL = import.meta.env.PUBLIC_API_BASE_URL
-      const response = await fetch(`${baseURL}/admin/faqs/${id}`, {
+      const response = await fetch(`${baseURL}/admin/faqs/${currentFaq.id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -174,11 +173,12 @@ export default function FaqDashboard() {
       })
 
       if (response.ok) {
-        setFaqs(prev => prev.filter(faq => faq.id !== id))
+        setFaqs(prev => prev.filter(faq => faq.id !== currentFaq.id))
         toast({
           title: "Berhasil",
           description: "FAQ berhasil dihapus.",
         })
+        setShowDeleteDialog(false)
       } else {
         throw new Error('Failed to delete FAQ')
       }
@@ -190,6 +190,12 @@ export default function FaqDashboard() {
         variant: "destructive",
       })
     }
+  }
+  
+  // Open delete dialog
+  const openDeleteDialog = (faq: FAQ) => {
+    setCurrentFaq(faq)
+    setShowDeleteDialog(true)
   }
 
   // ✅ Dialog handlers
@@ -231,11 +237,15 @@ export default function FaqDashboard() {
   useEffect(() => {
     fetchFaqs()
   }, [])
-
   const getStatusBadge = (status: string) => {
-    return status === 'published' 
-      ? <Badge variant="default">Published</Badge>
-      : <Badge variant="secondary">Draft</Badge>
+    switch (status) {
+      case 'published':
+        return <Badge variant="default" className="bg-green-600">Published</Badge>;
+      case 'archived':
+        return <Badge variant="outline" className="text-purple-700 border-purple-200 bg-purple-50">Archived</Badge>;
+      default:
+        return <Badge variant="secondary">Draft</Badge>;
+    }
   }
 
   if (isLoading) {
@@ -309,11 +319,10 @@ export default function FaqDashboard() {
                     >
                       <Edit className="w-4 h-4 mr-1" />
                       Edit
-                    </Button>
-                    <Button 
+                    </Button>                    <Button 
                       variant="destructive" 
                       size="sm"
-                      onClick={() => deleteFaq(faq.id)}
+                      onClick={() => openDeleteDialog(faq)}
                     >
                       <Trash2 className="w-4 h-4 mr-1" />
                       Hapus
@@ -361,17 +370,23 @@ export default function FaqDashboard() {
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="status">Status</Label>
-              <Select value={formData.status} onValueChange={(value: "draft" | "published") => setFormData(prev => ({ ...prev, status: value }))}>
+              <Label htmlFor="status">Status</Label>              <Select
+                value={formData.status}
+                onValueChange={(value: 'draft' | 'published' | 'archived') =>
+                  setFormData(prev => ({ ...prev, status: value }))
+                }
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Pilih status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="draft">Draft</SelectItem>
+                  {!isEditing && <SelectItem value="draft">Draft</SelectItem>}
                   <SelectItem value="published">Published</SelectItem>
+                  <SelectItem value="archived">Archived</SelectItem>
                 </SelectContent>
               </Select>
             </div>
+
           </form>
           
           <DialogFooter>
@@ -380,6 +395,33 @@ export default function FaqDashboard() {
             </Button>
             <Button onClick={handleSubmit} className="bg-[#406386] hover:bg-[#375573]">
               {isEditing ? 'Perbarui' : 'Simpan'}
+            </Button>
+          </DialogFooter>        </DialogContent>
+      </Dialog>
+      
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Konfirmasi Hapus</DialogTitle>
+            <DialogDescription>
+              Apakah Anda yakin ingin menghapus FAQ ini? Tindakan ini tidak dapat dibatalkan.
+            </DialogDescription>
+          </DialogHeader>
+          
+          {currentFaq && (
+            <div className="p-4 my-4 border border-red-200 rounded-md bg-red-50/50">
+              <p className="font-medium">{currentFaq.pertanyaan}</p>
+              <p className="mt-2 text-sm text-gray-500 line-clamp-2">{currentFaq.jawaban}</p>
+            </div>
+          )}
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>
+              Batal
+            </Button>
+            <Button variant="destructive" onClick={deleteFaq}>
+              Hapus
             </Button>
           </DialogFooter>
         </DialogContent>
