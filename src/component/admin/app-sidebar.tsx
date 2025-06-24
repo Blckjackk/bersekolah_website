@@ -98,10 +98,11 @@ const data = {
           icon: BookOpen,
         },
         {
-          title: "Kelola Halaman",
-          url: "/dashboard/kelola-halaman",
+          title: "Kelola Artikel",
+          url: "/dashboard/kelola-artikel",
           icon: FileText,
-        },        {
+        },        
+        {
           title: "Pengumuman",
           url: "/dashboard/pengumuman-react",
           icon: Bell,

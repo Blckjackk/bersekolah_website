@@ -59,7 +59,7 @@ import {
 import { HalamanService } from "@/lib/halaman-service";
 import type { Halaman } from "@/lib/halaman-service";
 
-export default function KelolaHalamanPage() {
+export default function KelolaArtikelPage({ defaultCategory = "news" }: { defaultCategory?: string }) {
   // State for pages data
   const [halaman, setHalaman] = useState<Halaman[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -72,13 +72,12 @@ export default function KelolaHalamanPage() {
   const [editDialog, setEditDialog] = useState(false);
   const [deleteDialog, setDeleteDialog] = useState(false);
   const [selectedPage, setSelectedPage] = useState<Halaman | null>(null);
-  
-  // Form states
+    // Form states
   const [formData, setFormData] = useState({
     judul_halaman: "",
     slug: "",
     deskripsi: "",
-    category: "article",
+    category: defaultCategory, // Use the provided defaultCategory
     status: "draft",
     gambar: null as File | null,
   });
@@ -167,14 +166,13 @@ export default function KelolaHalamanPage() {
       });
     }
   };
-  
-  // Open create dialog
+    // Open create dialog
   const openCreateDialog = () => {
     setFormData({
       judul_halaman: "",
       slug: "",
       deskripsi: "",
-      category: "article",
+      category: defaultCategory, // Use the provided defaultCategory
       status: "draft",
       gambar: null
     });
@@ -392,8 +390,8 @@ export default function KelolaHalamanPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold">Kelola Halaman</h1>
-          <p className="text-gray-600">Kelola konten dan halaman website</p>
+          <h1 className="text-2xl font-bold">Kelola Artikel</h1>
+          <p className="text-gray-600">Kelola konten dan artikel website</p>
         </div>
         <div className="flex items-center space-x-2">
           <Button 
@@ -480,7 +478,6 @@ export default function KelolaHalamanPage() {
                       )}
                       <div>
                         <p className="font-medium">{page.judul_halaman}</p>
-                        <p className="text-xs text-gray-500">ID: {page.id}</p>
                       </div>
                     </div>
                   </TableCell>
@@ -534,7 +531,7 @@ export default function KelolaHalamanPage() {
       
       {/* Create Dialog */}
       <Dialog open={createDialog} onOpenChange={setCreateDialog}>
-        <DialogContent className="sm:max-w-[550px]">
+        <DialogContent className="w-[95vw] sm:w-full sm:max-w-[550px] max-h-[95vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Tambah Halaman Baru</DialogTitle>
             <DialogDescription>
@@ -579,10 +576,14 @@ export default function KelolaHalamanPage() {
                     <SelectValue placeholder="Pilih kategori" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="article">Artikel</SelectItem>
-                    <SelectItem value="page">Halaman</SelectItem>
-                    <SelectItem value="event">Event</SelectItem>
                     <SelectItem value="news">Berita</SelectItem>
+                    <SelectItem value="bertumbuh">Bertumbuh</SelectItem>
+                    <SelectItem value="berolahraga">Berolahraga</SelectItem>
+                    <SelectItem value="bercerita">bercerita</SelectItem>
+                    <SelectItem value="bersekolah_fest">Bersekolah Fest</SelectItem>
+                    <SelectItem value="berkunjung">Berkunjung</SelectItem>
+                    <SelectItem value="bertemu">Bertemu</SelectItem>
+                    <SelectItem value="beribadah">Beribadah</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -651,14 +652,18 @@ export default function KelolaHalamanPage() {
       
       {/* Edit Dialog */}
       <Dialog open={editDialog} onOpenChange={setEditDialog}>
-        <DialogContent className="sm:max-w-[550px]">
+        <DialogContent
+          className="w-[95vw] sm:w-full sm:max-w-[550px] max-h-[95vh] overflow-y-auto"
+        >
           <DialogHeader>
             <DialogTitle>Edit Halaman</DialogTitle>
             <DialogDescription>
               Perbarui informasi halaman
             </DialogDescription>
           </DialogHeader>
+
           <div className="grid gap-4 py-4">
+            {/* --- Input Judul --- */}
             <div>
               <Label htmlFor="edit_judul_halaman">Judul Halaman</Label>
               <Input
@@ -670,6 +675,8 @@ export default function KelolaHalamanPage() {
                 className="mt-1"
               />
             </div>
+
+            {/* --- Slug --- */}
             <div>
               <Label htmlFor="edit_slug">Slug</Label>
               <Input
@@ -684,7 +691,9 @@ export default function KelolaHalamanPage() {
                 URL halaman: example.com/{formData.slug}
               </p>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+
+            {/* --- Grid Kategori & Status --- */}
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
                 <Label htmlFor="edit_category">Kategori</Label>
                 <Select
@@ -696,13 +705,18 @@ export default function KelolaHalamanPage() {
                     <SelectValue placeholder="Pilih kategori" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="article">Artikel</SelectItem>
-                    <SelectItem value="page">Halaman</SelectItem>
-                    <SelectItem value="event">Event</SelectItem>
                     <SelectItem value="news">Berita</SelectItem>
+                    <SelectItem value="bertumbuh">Bertumbuh</SelectItem>
+                    <SelectItem value="berolahraga">Berolahraga</SelectItem>
+                    <SelectItem value="bercerita">bercerita</SelectItem>
+                    <SelectItem value="bersekolah_fest">Bersekolah Fest</SelectItem>
+                    <SelectItem value="berkunjung">Berkunjung</SelectItem>
+                    <SelectItem value="bertemu">Bertemu</SelectItem>
+                    <SelectItem value="beribadah">Beribadah</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
+
               <div>
                 <Label htmlFor="edit_status">Status</Label>
                 <Select
@@ -714,13 +728,14 @@ export default function KelolaHalamanPage() {
                     <SelectValue placeholder="Pilih status" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="draft">Draft</SelectItem>
                     <SelectItem value="published">Published</SelectItem>
                     <SelectItem value="archived">Archived</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
+
+            {/* --- Deskripsi --- */}
             <div>
               <Label htmlFor="edit_deskripsi">Konten / Deskripsi</Label>
               <Textarea
@@ -732,6 +747,8 @@ export default function KelolaHalamanPage() {
                 className="h-40 mt-1"
               />
             </div>
+
+            {/* --- Gambar --- */}
             <div>
               <Label htmlFor="edit_gambar">Gambar</Label>
               <Input
@@ -745,9 +762,9 @@ export default function KelolaHalamanPage() {
               {selectedPage?.gambar && (
                 <div className="mt-2">
                   <p className="mb-1 text-xs text-gray-500">Gambar Saat Ini:</p>
-                  <img 
-                    src={selectedPage.gambar || ''} 
-                    alt={selectedPage.judul_halaman} 
+                  <img
+                    src={selectedPage.gambar || ''}
+                    alt={selectedPage.judul_halaman}
                     className="object-cover w-32 h-32 border rounded"
                   />
                   <p className="mt-1 text-xs text-gray-500">
@@ -757,15 +774,16 @@ export default function KelolaHalamanPage() {
               )}
             </div>
           </div>
+
           <DialogFooter>
-            <Button 
+            <Button
               variant="outline"
               onClick={() => setEditDialog(false)}
               disabled={isSubmitting}
             >
               Batal
             </Button>
-            <Button 
+            <Button
               onClick={handleUpdateHalaman}
               disabled={isSubmitting}
               className="bg-[#406386] hover:bg-[#355475]"
@@ -775,6 +793,7 @@ export default function KelolaHalamanPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
       
       {/* Delete Dialog */}
       <Dialog open={deleteDialog} onOpenChange={setDeleteDialog}>

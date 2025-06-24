@@ -1,0 +1,8 @@
+---
+import DashboardAdmin from "../../layout/dashboard-admin.astro";
+import KelolaArtikelPage from "@/component/admin/kelola-artikel-page";
+---
+
+<DashboardAdmin title="Kelola Artikel - Admin Dashboard Bersekolah">
+  <KelolaArtikelPage client:load defaultCategory="news" />
+</DashboardAdmin>
