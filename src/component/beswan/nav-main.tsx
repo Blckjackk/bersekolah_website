@@ -23,6 +23,7 @@ export interface NavItem {
   title: string
   url: string
   disabled?: boolean
+  isActive?: boolean
   badge?: {
     icon: LucideIcon
     color: string
@@ -66,30 +67,39 @@ export function NavMain({
                   {item.items?.map((subItem) => (
                     <SidebarMenuSubItem key={subItem.title}>
                       <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <SidebarMenuSubButton 
-                              asChild={!subItem.disabled}
-                              className={`${subItem.disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
-                            >
-                              {subItem.disabled ? (
-                                // ✅ Render as span jika disabled
+                        <Tooltip>                          <TooltipTrigger asChild>
+                            {subItem.disabled ? (
+                              <SidebarMenuSubButton 
+                                isActive={false}
+                                className={`opacity-50 cursor-not-allowed`}
+                              >
                                 <span className="flex items-center justify-between w-full">
                                   <span>{subItem.title}</span>
                                   {subItem.badge && (
                                     <subItem.badge.icon className={`h-4 w-4 ${subItem.badge.color}`} />
                                   )}
                                 </span>
-                              ) : (
-                                // ✅ Render as link jika enabled
-                                <a href={subItem.url} className="flex items-center justify-between w-full">
+                              </SidebarMenuSubButton>
+                            ) : (
+                              <SidebarMenuSubButton 
+                                asChild
+                                isActive={subItem.isActive}
+                                className={`${subItem.isActive ? 'bg-sidebar-accent/30 font-medium border-l-2 border-primary' : 'hover:bg-sidebar-accent/10'}`}
+                              >                                <a 
+                                  href={subItem.url} 
+                                  className="flex items-center justify-between w-full cursor-pointer"
+                                  onClick={subItem.isActive ? (e) => {
+                                    e.preventDefault();
+                                    window.location.href = subItem.url;
+                                  } : undefined}
+                                >
                                   <span>{subItem.title}</span>
                                   {subItem.badge && (
                                     <subItem.badge.icon className={`h-4 w-4 ${subItem.badge.color}`} />
                                   )}
                                 </a>
-                              )}
-                            </SidebarMenuSubButton>
+                              </SidebarMenuSubButton>
+                            )}
                           </TooltipTrigger>
                           {subItem.badge && (
                             <TooltipContent>

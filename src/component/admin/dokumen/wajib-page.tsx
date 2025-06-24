@@ -220,32 +220,35 @@ export default function AdminDokumenWajibPage() {
       setIsUpdating(false)
     }
   }
-
   const handlePreview = (doc: Document) => {
-    const baseUrl = import.meta.env.PUBLIC_API_BASE_URL_NO_API
+    const baseUrl = import.meta.env.PUBLIC_API_BASE_URL_NO_API || 'http://localhost:8000';
     
-    let directFileUrl = doc.file_path
+    let directFileUrl = doc.file_path;
     
     if (directFileUrl.startsWith('http')) {
-      const url = new URL(directFileUrl)
-      if (url.host !== '127.0.0.1:8000') {
-        directFileUrl = directFileUrl.replace(url.origin, baseUrl)
+      // URL sudah lengkap, tapi perlu validasi domain
+      const url = new URL(directFileUrl);
+      if (url.host !== '127.0.0.1:8000' && !url.host.includes(baseUrl.replace('http://', '').replace('https://', ''))) {
+        directFileUrl = directFileUrl.replace(url.origin, baseUrl);
       }
     } else {
+      // Jalur relatif, perlu ditambahkan baseUrl
       if (directFileUrl.startsWith('/storage/')) {
-        directFileUrl = `${baseUrl}${directFileUrl}`
+        directFileUrl = `${baseUrl}${directFileUrl}`;
       } else if (directFileUrl.startsWith('storage/')) {
-        directFileUrl = `${baseUrl}/${directFileUrl}`
+        directFileUrl = `${baseUrl}/${directFileUrl}`;
       } else {
-        directFileUrl = `${baseUrl}/storage/${directFileUrl}`
+        directFileUrl = `${baseUrl}/storage/${directFileUrl}`;
       }
     }
+    
+    console.log('Preview URL:', directFileUrl);
     
     setSelectedDoc({
       ...doc,
       file_path: directFileUrl
-    })
-    setPreviewDialog(true)
+    });
+    setPreviewDialog(true);
   }
 
   const handleVerify = (doc: Document, status: 'verified' | 'rejected') => {
@@ -530,12 +533,13 @@ export default function AdminDokumenWajibPage() {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-2">
-                      {isFilePDF(doc.file_name) ? 
+                    <div className="flex items-center gap-2">                      {isFilePDF(doc.file_name) ? 
                         <FileText className="w-4 h-4 text-red-400" /> : 
                         <FileText className="w-4 h-4 text-blue-400" />
                       }
                       <span className="truncate max-w-[200px]" title={doc.file_name}>
+                        {doc.file_name}
+                      </span><span className="truncate max-w-[200px]" title={doc.file_name}>
                         {doc.file_name}
                       </span>
                     </div>
@@ -607,9 +611,7 @@ export default function AdminDokumenWajibPage() {
             </div>
           )}
         </CardContent>
-      </Card>
-
-      {/* Dialog Preview */}
+      </Card>      {/* Dialog Preview */}
       <Dialog open={previewDialog} onOpenChange={setPreviewDialog}>
         <DialogContent className="max-w-6xl w-[95vw] h-[90vh] flex flex-col">
           <DialogHeader>
@@ -619,6 +621,7 @@ export default function AdminDokumenWajibPage() {
                 <div className="flex flex-col gap-2 text-sm">
                   <span>Pendaftar: <strong>{selectedDoc.user.name}</strong></span>
                   <span>Jenis: <strong>{getDocumentTypeName(selectedDoc.document_type)}</strong></span>
+                  <span>File: <strong>{selectedDoc.file_name}</strong></span>
                 </div>
               )}
             </DialogDescription>
@@ -626,11 +629,12 @@ export default function AdminDokumenWajibPage() {
           
           <div className="flex-1 min-h-0 overflow-hidden border rounded-lg">
             {selectedDoc && (
-              selectedDoc.file_path.toLowerCase().endsWith('.pdf') ? (
+              isFilePDF(selectedDoc.file_name) ? (
                 <iframe 
                   src={selectedDoc.file_path} 
                   className="w-full h-full" 
                   title="Document Preview"
+                  sandbox="allow-scripts allow-same-origin allow-forms"
                 />
               ) : (
                 <div className="flex items-center justify-center w-full h-full bg-gray-50">
@@ -638,20 +642,28 @@ export default function AdminDokumenWajibPage() {
                     src={selectedDoc.file_path} 
                     alt="Document Preview" 
                     className="object-contain max-w-full max-h-full"
+                    onError={(e) => {
+                      console.error('Image failed to load:', selectedDoc.file_path);
+                      e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNMTIgMjJDNi40NzcgMjIgMiAxNy41MjMgMiAxMkMyIDYuNDc3IDYuNDc3IDIgMTIgMkMxNy41MjMgMiAyMiA2LjQ3NyAyMiAxMkMyMiAxNy41MjMgMTcuNTIzIDIyIDEyIDIyWk0xMiAyMEMxNi40MTggMjAgMjAgMTYuNDE4IDIwIDEyQzIwIDcuNTgyIDE2LjQxOCA0IDEyIDRDNy41ODIgNCA0IDcuNTgyIDQgMTJDNCAxNi40MTggNy41ODIgMjAgMTIgMjBaTTExIDd2MkgxM1Y3SDExWk0xMSAxN0gxM1YxMUgxMVYxN1oiIGZpbGw9IiNmZjAwMDAiLz48L3N2Zz4=';
+                      e.currentTarget.classList.add('w-24', 'h-24');
+                    }}
                   />
                 </div>
               )
             )}
           </div>
           
-          <DialogFooter>
+          <DialogFooter className="gap-2 sm:gap-0">
             <Button variant="outline" onClick={() => setPreviewDialog(false)}>
               Tutup
             </Button>
             {selectedDoc && (
-              <Button onClick={() => window.open(selectedDoc.file_path, '_blank')}>
+              <Button 
+                onClick={() => window.open(selectedDoc.file_path, '_blank')}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
                 <Download className="w-4 h-4 mr-1" />
-                Download
+                Download / Buka di Tab Baru
               </Button>
             )}
           </DialogFooter>

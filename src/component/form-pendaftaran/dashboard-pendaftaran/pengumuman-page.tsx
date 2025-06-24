@@ -423,14 +423,6 @@ export default function PengumumanPage() {
 					<p className="text-muted-foreground">
 						Informasi penting terkait program beasiswa Yayasan Bersekolah
 					</p>
-					
-					{/* Data source indicator */}
-					<div className="flex items-center mt-1 text-xs">
-						<span className={`inline-block w-2 h-2 rounded-full mr-2 ${error ? "bg-yellow-400" : "bg-green-500"}`}></span>
-						<span className="text-muted-foreground">
-							Sumber data: {error ? "Cache Lokal" : "Database API"}
-						</span>
-					</div>
 				</div>
 				
 				<div className="flex items-center gap-2">
@@ -523,14 +515,7 @@ export default function PengumumanPage() {
 					)}
 				</TabsContent>
 			</Tabs>
-					{filteredAnnouncements.length > 0 && (
-				<div className="pt-4 text-sm text-center text-muted-foreground">
-					Menampilkan {filteredAnnouncements.length} dari {announcements.length} pengumuman
-					<div className="mt-1 text-xs opacity-70">
-						Sumber data: {error ? "Cache Lokal" : "Database API"} · API URL: {ApiConfig.baseURL}/announcements
-					</div>
-				</div>
-			)}
+		
 		</div>
 	)
 }
