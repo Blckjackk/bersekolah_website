@@ -567,12 +567,7 @@ export default function SeleksiBeasiswaPage() {
             <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
-          {selectedApplications.length > 0 && (
-            <Button onClick={() => setBulkDialog(true)}>
-              <Edit className="w-4 h-4 mr-2" />
-              Update Massal ({selectedApplications.length})
-            </Button>
-          )}
+          
         </div>
       </div>
 
@@ -582,8 +577,8 @@ export default function SeleksiBeasiswaPage() {
         {statisticsError && (
           <Card className="col-span-full">
             <CardContent className="p-6">
-              <div className="flex items-center justify-center text-center space-x-2">
-                <AlertCircle className="h-6 w-6 text-red-500" />
+              <div className="flex items-center justify-center space-x-2 text-center">
+                <AlertCircle className="w-6 h-6 text-red-500" />
                 <p className="text-red-500">{statisticsError}</p>
                 <Button 
                   variant="outline" 
@@ -593,12 +588,12 @@ export default function SeleksiBeasiswaPage() {
                 >
                   {isRefreshing ? (
                     <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                       Memuat...
                     </>
                   ) : (
                     <>
-                      <RefreshCw className="mr-2 h-4 w-4" />
+                      <RefreshCw className="w-4 h-4 mr-2" />
                       Coba Lagi
                     </>
                   )}
@@ -712,7 +707,7 @@ export default function SeleksiBeasiswaPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Semua Status</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="menunggu_review">Menunggu Review</SelectItem>
                   <SelectItem value="lolos_berkas">Lolos Berkas</SelectItem>
                   <SelectItem value="lolos_wawancara">Lolos Wawancara</SelectItem>
                   <SelectItem value="diterima">Diterima</SelectItem>
