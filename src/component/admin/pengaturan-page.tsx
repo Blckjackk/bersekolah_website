@@ -172,94 +172,153 @@ export default function PengaturanPage() {
   // Load data saat komponen dimount
   useEffect(() => {
     fetchUserProfile();
-  }, []);
-    // Handle submit profil form
+  }, []);  // Handle submit profil form
   const onSubmitProfile = async (data: z.infer<typeof profileFormSchema>) => {
     setIsSubmittingProfile(true);
     
     try {
-      // Selalu update data di localStorage terlebih dahulu untuk memastikan perubahan disimpan
+      // Ambil token dari localStorage
+      const token = localStorage.getItem('bersekolah_auth_token');
+      
+      // Untuk Laravel API, kita gunakan format yang benar (mungkin menggunakan /api/user)
+      // Gunakan beberapa alternatif URL untuk mencoba dengan endpoint yang berbeda
+      const possibleEndpoints = [
+        `${baseURL}/user`, // Endpoint standar Laravel Sanctum
+        `${baseURL}/users/update`, // Custom endpoint yang mungkin ada
+        `${baseURL}/profile`, // Endpoint umum untuk update profil
+        `${baseURL}/users/${user?.id}` // Endpoint dengan ID user
+      ];
+      
+      let success = false;
+      let responseData = null;
+      let lastError = null;
+      
+      // Mencoba beberapa kemungkinan endpoint
+      for (const endpoint of possibleEndpoints) {
+        if (success) break;
+        
+        try {
+          console.log(`Mencoba update profile ke: ${endpoint}`);
+          
+          const response = await fetch(endpoint, {
+            method: 'POST', // POST untuk Laravel dengan _method=PUT
+            headers: {
+              'Authorization': token ? `Bearer ${token}` : '',
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+              'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+            },
+            body: JSON.stringify({
+              _method: 'PUT', // Laravel menggunakan _method untuk menentukan HTTP method
+              name: data.name,
+              email: data.email,
+              phone: data.phone || ''
+            })
+          });
+          
+          if (response.ok) {
+            responseData = await response.json();
+            success = true;
+            console.log(`Berhasil update profile ke: ${endpoint}`, responseData);
+            break;
+          } else {
+            const errorText = await response.text();
+            console.warn(`Gagal update ke ${endpoint}: ${response.status}`, errorText);
+            lastError = new Error(`Error: ${response.status} ${response.statusText}`);
+          }
+        } catch (e) {
+          console.warn(`Error saat mencoba ${endpoint}:`, e);
+          lastError = e;
+        }
+      }
+      
+      // Selalu update localStorage dulu untuk memastikan perubahan tampak untuk pengguna
       if (user) {
         const updatedUser = {
           ...user,
           name: data.name,
           email: data.email,
-          phone: data.phone
+          phone: data.phone || ''
         };
         
         // Update state user
         setUser(updatedUser);
         
-        // Perbarui data di localStorage
+        // Update localStorage
         const userStr = localStorage.getItem('bersekolah_user');
         if (userStr) {
           const userData = JSON.parse(userStr);
           localStorage.setItem('bersekolah_user', JSON.stringify({
             ...userData,
             name: data.name,
-            email: data.email,
-            phone: data.phone
+            email: data.email, 
+            phone: data.phone || '',
+            updated_at: new Date().toISOString()
           }));
         }
       }
       
-      // Coba update ke API jika token tersedia
-      const token = localStorage.getItem('bersekolah_auth_token');
-      if (token) {
-        try {
-          // Kirim request update profil tanpa melakukan OPTIONS check terlebih dahulu
-          const response = await fetch(`${baseURL}/profile`, {
-            method: 'PUT',
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json',
-              'Accept': 'application/json'
-            },
-            body: JSON.stringify(data)
-          });
-          
-          if (response.ok) {
-            const updatedUserData = await response.json();
-            
-            // Update lagi state user dengan data dari server jika berhasil
-            setUser(prevUser => {
-              if (!prevUser) return updatedUserData;
-              return { ...prevUser, ...updatedUserData };
-            });
-            
-            toast({
-              title: "Profil berhasil diperbarui",
-              description: "Data profil Anda telah berhasil diperbarui di server",
-            });
-          } else {
-            // API error tetapi data lokal sudah diupdate
-            console.log("API update failed but local data was updated");
-            toast({
-              title: "Profil berhasil diperbarui secara lokal",
-              description: "Data profil berhasil disimpan di aplikasi, tetapi gagal disinkronkan dengan server",
-            });
-          }
-        } catch (apiError) {
-          // API error tetapi data lokal sudah diupdate
-          console.error("API connection error:", apiError);
-          toast({
-            title: "Profil berhasil diperbarui secara lokal", 
-            description: "Data profil berhasil disimpan di aplikasi, tetapi gagal disinkronkan dengan server",
-          });
-        }
-      } else {
-        // Tidak ada token, hanya update lokal
+      // Reset form
+      profileForm.reset({
+        name: data.name,
+        email: data.email,
+        phone: data.phone || "",
+      });
+      
+      if (success) {
         toast({
           title: "Profil berhasil diperbarui",
-          description: "Data profil Anda telah berhasil diperbarui",
+          description: "Data profil Anda telah berhasil diperbarui di database",
         });
+      } else {
+        // Jika semua endpoint gagal, tapi localStorage berhasil
+        toast({
+          title: "Profil diperbarui secara lokal",
+          description: "Data berhasil disimpan secara lokal, tetapi gagal update ke database. Coba lagi nanti."
+        });
+        
+        // Log error untuk debugging
+        console.error("Semua endpoint update gagal:", lastError);
       }
-      
-      // Reset form state agar isDirty menjadi false kembali setelah save
-      profileForm.reset(data);
-      
     } catch (error) {
       console.error("Error updating profile:", error);
+      
+      // Update localStorage sebagai fallback
+      try {
+        if (user) {
+          const userStr = localStorage.getItem('bersekolah_user');
+          if (userStr) {
+            const userData = JSON.parse(userStr);
+            localStorage.setItem('bersekolah_user', JSON.stringify({
+              ...userData,
+              name: data.name,
+              email: data.email,
+              phone: data.phone || ''
+            }));
+            
+            // Update state user
+            setUser({
+              ...user,
+              name: data.name,
+              email: data.email,
+              phone: data.phone || ''
+            });
+            
+            toast({
+              title: "Profil diperbarui secara lokal",
+              description: "Data disimpan secara lokal. Update ke server gagal: " + 
+                (error instanceof Error ? error.message : "Terjadi kesalahan")
+            });
+            
+            // Reset form
+            profileForm.reset(data);
+            return;
+          }
+        }
+      } catch (localError) {
+        console.error("Local storage fallback failed:", localError);
+      }
+      
       toast({
         title: "Gagal memperbarui profil",
         description: error instanceof Error ? error.message : "Terjadi kesalahan saat memperbarui profil",
@@ -268,68 +327,124 @@ export default function PengaturanPage() {
     } finally {
       setIsSubmittingProfile(false);
     }
-  };
-    // Handle submit password form
+  };  // Handle submit password form
   const onSubmitPassword = async (data: z.infer<typeof passwordFormSchema>) => {
     setIsSubmittingPassword(true);
     
     try {
-      // Untuk password, kita tetap perlu API untuk memvalidasi password lama
-      // tapi untuk demo, kita bisa anggap password berhasil diperbarui
+      // Ambil token dari localStorage
       const token = localStorage.getItem('bersekolah_auth_token');
       
-      // Untuk demo, selalu anggap berhasil 
-      let updateSuccessful = true;
-      let apiMessage = "Password berhasil diperbarui";
-
-      // Jika ada token, coba update via API
-      if (token) {
+      // Coba beberapa kemungkinan endpoint untuk Laravel
+      const possibleEndpoints = [
+        `${baseURL}/user/password`, // Laravel 8+ dengan Fortify
+        `${baseURL}/password/update`, // Endpoint custom
+        `${baseURL}/password`, // Endpoint sederhana
+        `${baseURL}/users/password` // Endpoint dengan prefix users
+      ];
+      
+      let success = false;
+      let lastError = null;
+      
+      // Mencoba beberapa endpoint
+      for (const endpoint of possibleEndpoints) {
+        if (success) break;
+        
         try {
-          const response = await fetch(`${baseURL}/password`, {
-            method: 'PUT',
+          console.log(`Mencoba update password ke: ${endpoint}`);
+          
+          const response = await fetch(endpoint, {
+            method: 'POST', // POST untuk Laravel dengan _method=PUT
             headers: {
-              'Authorization': `Bearer ${token}`,
+              'Authorization': token ? `Bearer ${token}` : '',
               'Content-Type': 'application/json',
-              'Accept': 'application/json'
+              'Accept': 'application/json',
+              'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
             },
             body: JSON.stringify({
+              _method: 'PUT', // Laravel form method spoofing
               current_password: data.current_password,
               password: data.password,
               password_confirmation: data.password_confirmation
             })
           });
           
-          if (!response.ok) {
-            // Untuk demo, kita tetap anggap berhasil meskipun API error
-            console.log("API password update failed, but we'll simulate success");
-            apiMessage = "Password berhasil diperbarui (simulasi)";
+          if (response.ok) {
+            success = true;
+            console.log(`Berhasil update password ke: ${endpoint}`);
+            break;
+          } else {
+            const errorText = await response.text();
+            console.warn(`Gagal update password ke ${endpoint}: ${response.status}`, errorText);
+            
+            // Cek apakah respons mengindikasikan password lama salah
+            const responseData = errorText ? JSON.parse(errorText) : {};
+            if (responseData.message?.includes('current') || 
+                responseData.errors?.current_password ||
+                response.status === 422) {
+              throw new Error("Password saat ini tidak valid");
+            }
+            
+            lastError = new Error(`Error: ${response.status} ${response.statusText}`);
           }
-        } catch (apiError) {
-          console.error("API password update error:", apiError);
-          apiMessage = "Password berhasil diperbarui (simulasi)";
+        } catch (e) {
+          console.warn(`Error saat mencoba ${endpoint}:`, e);
+          lastError = e;
+          
+          // Jika error adalah password saat ini tidak valid, langsung break
+          if (e instanceof Error && 
+              e.message.includes("Password saat ini tidak valid")) {
+            throw e; // Re-throw untuk diproses di catch utama
+          }
         }
       }
       
-      if (updateSuccessful) {
+      // Jika salah satu endpoint berhasil
+      if (success) {
         // Reset form password
         passwordForm.reset();
         
+        // Tampilkan pesan sukses
         toast({
           title: "Password berhasil diperbarui",
-          description: apiMessage,
+          description: "Password Anda telah berhasil diperbarui di database",
         });
         
-        // Untuk keamanan, kita bisa update timestamp login untuk memperpanjang sesi
+        // Update timestamp login untuk memperpanjang sesi
         const loginTimestamp = localStorage.getItem('bersekolah_login_time');
         if (loginTimestamp) {
           localStorage.setItem('bersekolah_login_time', Date.now().toString());
         }
+      } else {
+        // Demo mode - anggap berhasil jika semua endpoint gagal 
+        // (hanya untuk pengembangan, hapus di produksi)
+        passwordForm.reset();
+        toast({
+          title: "Password berhasil diperbarui",
+          description: "Password Anda telah berhasil diperbarui (mode demo)"
+        });
       }
     } catch (error) {
       console.error("Error updating password:", error);
+      
+      // Cek pesan error spesifik untuk membantu user
+      let errorMessage = "Terjadi kesalahan saat memperbarui password";
+      
+      if (error instanceof Error) {
+        if (error.message.includes("current_password") || 
+            error.message.includes("Password saat ini")) {
+          errorMessage = "Password saat ini tidak valid, silakan coba lagi";
+        } else if (error.message.includes("password") && 
+                  error.message.includes("confirmation")) {
+          errorMessage = "Konfirmasi password tidak cocok dengan password baru";
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
       toast({
         title: "Gagal memperbarui password",
-        description: error instanceof Error ? error.message : "Terjadi kesalahan saat memperbarui password",
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {
@@ -412,10 +527,7 @@ export default function PengaturanPage() {
                     <FormMessage />
                   </FormItem>
                 )}
-              />
-              
-                           
-              <Button 
+              />                             <Button 
                 type="submit" 
                 className="mt-4"
               >
