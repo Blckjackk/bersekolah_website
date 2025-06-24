@@ -334,116 +334,247 @@ export default function PengaturanPage() {
     try {
       // Ambil token dari localStorage
       const token = localStorage.getItem('bersekolah_auth_token');
+        // Untuk keperluan demo/pengembangan, cek apakah ini adalah password default
+      const userStr = localStorage.getItem('bersekolah_user');
+      const userData = userStr ? JSON.parse(userStr) : null;
       
-      // Coba beberapa kemungkinan endpoint untuk Laravel
-      const possibleEndpoints = [
-        `${baseURL}/user/password`, // Laravel 8+ dengan Fortify
-        `${baseURL}/password/update`, // Endpoint custom
-        `${baseURL}/password`, // Endpoint sederhana
-        `${baseURL}/users/password` // Endpoint dengan prefix users
-      ];
+      // Di Laravel, validasi password lama biasanya dilakukan otomatis oleh backend
+      // Tidak perlu verifikasi dua kali karena endpoint update password sudah melakukannya
+      // Kita skip fase verifikasi terpisah dan langsung ke update password
       
-      let success = false;
-      let lastError = null;
+      // Untuk development, kita akan anggap password valid jika menggunakan password default
+      let passwordValid = false;
       
-      // Mencoba beberapa endpoint
-      for (const endpoint of possibleEndpoints) {
-        if (success) break;
-        
-        try {
-          console.log(`Mencoba update password ke: ${endpoint}`);
-          
-          const response = await fetch(endpoint, {
-            method: 'POST', // POST untuk Laravel dengan _method=PUT
-            headers: {
-              'Authorization': token ? `Bearer ${token}` : '',
-              'Content-Type': 'application/json',
-              'Accept': 'application/json',
-              'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
-            },
-            body: JSON.stringify({
-              _method: 'PUT', // Laravel form method spoofing
-              current_password: data.current_password,
-              password: data.password,
-              password_confirmation: data.password_confirmation
-            })
-          });
-          
-          if (response.ok) {
-            success = true;
-            console.log(`Berhasil update password ke: ${endpoint}`);
-            break;
-          } else {
-            const errorText = await response.text();
-            console.warn(`Gagal update password ke ${endpoint}: ${response.status}`, errorText);
-            
-            // Cek apakah respons mengindikasikan password lama salah
-            const responseData = errorText ? JSON.parse(errorText) : {};
-            if (responseData.message?.includes('current') || 
-                responseData.errors?.current_password ||
-                response.status === 422) {
-              throw new Error("Password saat ini tidak valid");
-            }
-            
-            lastError = new Error(`Error: ${response.status} ${response.statusText}`);
-          }
-        } catch (e) {
-          console.warn(`Error saat mencoba ${endpoint}:`, e);
-          lastError = e;
-          
-          // Jika error adalah password saat ini tidak valid, langsung break
-          if (e instanceof Error && 
-              e.message.includes("Password saat ini tidak valid")) {
-            throw e; // Re-throw untuk diproses di catch utama
-          }
-        }
+      if (import.meta.env.DEV && data.current_password === "admin123") {
+        console.log("Mode pengembangan: Password default terdeteksi, verifikasi dilewati");
+        passwordValid = true;
+      } else {
+        // Di production, kita akan anggap password akan divalidasi oleh backend
+        // Karena hampir semua framework Laravel sudah melakukan validasi password lama
+        passwordValid = true;
       }
       
-      // Jika salah satu endpoint berhasil
-      if (success) {
-        // Reset form password
-        passwordForm.reset();
+      // Update password dengan endpoint yang tersedia
+      try {
+        console.log("Memulai proses update password");        // Langsung coba beberapa endpoint potensial dan gunakan yang pertama berhasil
+        const endpoints = [
+          `${baseURL}/change-password`,            // Custom endpoint paling umum
+          `${baseURL}/update-password`,            // Custom endpoint alternatif
+          `${baseURL}/password/update`,            // Laravel Breeze pattern
+          `${baseURL}/profile/password`,           // Laravel pola profile/password 
+          `${baseURL}/users/${user?.id}/password`, // Custom endpoint dengan ID
+          `${baseURL}/password`,                   // Endpoint sederhana
+          `${baseURL}/users/password`,             // Users prefix
+          `${baseURL}/user/password`,              // Standar Laravel
+        ];
         
-        // Tampilkan pesan sukses
-        toast({
-          title: "Password berhasil diperbarui",
-          description: "Password Anda telah berhasil diperbarui di database",
-        });
+        let response = null;
+        let success = false;
+        let responseData = null;
         
-        // Update timestamp login untuk memperpanjang sesi
-        const loginTimestamp = localStorage.getItem('bersekolah_login_time');
-        if (loginTimestamp) {
-          localStorage.setItem('bersekolah_login_time', Date.now().toString());
+        for (const endpoint of endpoints) {
+          try {
+            console.log(`Mencoba update password ke: ${endpoint}`);
+              // Coba berbagai format request yang diterima Laravel
+            console.log(`Mencoba dengan format JSON ke: ${endpoint}`);
+            
+            const res = await fetch(endpoint, {
+              method: 'POST',
+              headers: {
+                'Authorization': token ? `Bearer ${token}` : '',
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+              },              body: JSON.stringify({
+                current_password: data.current_password,
+                password: data.password,
+                password_confirmation: data.password_confirmation
+              })
+            });
+            
+            // Ambil response data
+            try {
+              responseData = await res.json();
+            } catch (e) {
+              // Jika tidak bisa parse JSON, tetap lanjutkan
+            }
+            
+            // Jika berhasil, break loop
+            if (res.ok) {
+              response = res;
+              success = true;
+              console.log(`Berhasil update password ke: ${endpoint}`);
+              break;
+            }
+            
+            // Jika mendapat 404, coba endpoint berikutnya
+            if (res.status === 404) {
+              console.log(`Endpoint ${endpoint} tidak ditemukan, mencoba yang lain...`);
+              continue;
+            }
+            
+            // Jika error bukan 404, itu mungkin respons yang valid (seperti validasi error)
+            // Set response untuk diproses di luar loop
+            response = res;
+            break;
+          } catch (e) {
+            console.warn(`Error saat mencoba ${endpoint}:`, e);
+          }
         }
-      } else {
-        // Demo mode - anggap berhasil jika semua endpoint gagal 
-        // (hanya untuk pengembangan, hapus di produksi)
-        passwordForm.reset();
-        toast({
-          title: "Password berhasil diperbarui",
-          description: "Password Anda telah berhasil diperbarui (mode demo)"
-        });
+        
+        // Handle hasil request
+        if (success) {
+          console.log("Password berhasil diperbarui");
+          passwordForm.reset();
+          
+          toast({
+            title: "Password Berhasil Diperbarui",
+            description: "Password Anda telah berhasil diperbarui dan akan berlaku untuk login berikutnya"
+          });
+          
+          // Update timestamp login untuk memperpanjang sesi
+          const loginTimestamp = localStorage.getItem('bersekolah_login_time');
+          if (loginTimestamp) {
+            localStorage.setItem('bersekolah_login_time', Date.now().toString());
+          }
+          return;
+        }
+          // Jika tidak ada endpoint yang sukses tapi kita dapat response (error validasi), cek error
+        if (!success && response && responseData) {
+          // Cek apakah password lama salah
+          if (responseData.errors?.current_password || 
+              (responseData.message && responseData.message.includes("current password"))) {
+            console.error("Password saat ini salah:", responseData);
+            toast({
+              title: "Password Saat Ini Salah",
+              description: "Password yang Anda masukkan tidak sesuai dengan password saat ini",
+              variant: "destructive"
+            });
+            return;
+          }
+          
+          // Tampilkan pesan error lainnya
+          toast({
+            title: "Gagal Memperbarui Password",
+            description: responseData.message || "Terjadi kesalahan validasi pada form",
+            variant: "destructive"
+          });
+          return;
+        }
+        
+        // Mode development fallback
+        if (import.meta.env.DEV && !success) {
+          // Fallback untuk development
+          console.log("Mode pengembangan: Update password dijalankan secara lokal");
+          
+          // Simpan update timestamp di localStorage
+          const loginTime = localStorage.getItem('bersekolah_login_time');
+          if (loginTime) {
+            localStorage.setItem('bersekolah_login_time', Date.now().toString());
+          }
+          
+          // Reset form dan tampilkan pesan sukses
+          passwordForm.reset();
+          
+          toast({
+            title: "Password Diperbarui (Mode Dev)",
+            description: "Password dianggap berhasil diperbarui (simulasi)",
+          });
+          return;
+        }        // Jika semua upaya gagal, coba satu pendekatan langsung ke backend 
+        if (!success) {
+          try {
+            // Coba endpoint backend-compatible
+            console.log("Semua endpoint gagal, mencoba direct API call ke backend...");
+            
+            // Buat FormData untuk kompatibilitas dengan backend (multipart/form-data)
+            const formData = new FormData();
+            formData.append('_method', 'PATCH'); // PATCH method untuk update resource
+            formData.append('current_password', data.current_password);
+            formData.append('password', data.password);
+            formData.append('password_confirmation', data.password_confirmation);
+            
+            // Coba kirim ke backend endpoint tanpa /api prefix (kompatibel dengan Laravel standar)
+            const directEndpoint = baseURL.replace('/api', '') + '/user/password';
+            console.log(`Mencoba direct endpoint: ${directEndpoint}`);
+            
+            const directResponse = await fetch(directEndpoint, {
+              method: 'POST',
+              headers: {
+                'Authorization': token ? `Bearer ${token}` : '',
+                'Accept': 'application/json'
+              },
+              body: formData
+            });
+            
+            if (directResponse.ok) {
+              console.log("Berhasil update password dengan direct endpoint");
+              passwordForm.reset();
+              
+              toast({
+                title: "Password Berhasil Diperbarui",
+                description: "Password Anda telah berhasil diperbarui dan akan berlaku untuk login berikutnya"
+              });
+              return;
+            } else {
+              // Jika masih gagal, tampilkan pesan error umum
+              toast({
+                title: "Gagal Memperbarui Password",
+                description: "Tidak dapat mengakses endpoint API untuk update password. Silakan coba lagi nanti atau hubungi administrator.",
+                variant: "destructive"
+              });
+            }
+          } catch (directError) {
+            console.error("Error dengan direct endpoint:", directError);
+            
+            toast({
+              title: "Gagal Memperbarui Password",
+              description: "Tidak dapat mengakses endpoint API untuk update password. Silakan coba lagi nanti atau hubungi administrator.",
+              variant: "destructive"
+            });
+          }
+        }
+      } catch (updateError) {
+        console.error("Update password error:", updateError);
+        
+        // Fallback untuk mode pengembangan
+        if (import.meta.env.DEV) {
+          passwordForm.reset();
+          toast({
+            title: "Password Diperbarui (Mode Demo)",
+            description: "Password Anda dianggap berhasil diperbarui dalam mode pengembangan",
+          });
+        } else {
+          toast({
+            title: "Error",
+            description: "Terjadi kesalahan saat memproses permintaan",
+            variant: "destructive",
+          });
+        }
       }
     } catch (error) {
       console.error("Error updating password:", error);
       
       // Cek pesan error spesifik untuk membantu user
       let errorMessage = "Terjadi kesalahan saat memperbarui password";
+      let errorTitle = "Gagal Memperbarui Password";
       
       if (error instanceof Error) {
         if (error.message.includes("current_password") || 
             error.message.includes("Password saat ini")) {
-          errorMessage = "Password saat ini tidak valid, silakan coba lagi";
+          errorTitle = "Password Saat Ini Salah";
+          errorMessage = "Password yang Anda masukkan tidak cocok dengan password saat ini, silakan coba lagi";
         } else if (error.message.includes("password") && 
                   error.message.includes("confirmation")) {
-          errorMessage = "Konfirmasi password tidak cocok dengan password baru";
+          errorTitle = "Konfirmasi Password Tidak Cocok";
+          errorMessage = "Konfirmasi password harus sama dengan password baru";
         } else {
           errorMessage = error.message;
         }
       }
       
       toast({
-        title: "Gagal memperbarui password",
+        title: errorTitle,
         description: errorMessage,
         variant: "destructive"
       });
