@@ -104,7 +104,7 @@ const data = {
         },        
         {
           title: "Pengumuman",
-          url: "/dashboard/pengumuman-react",
+          url: "/dashboard/pengumuman",
           icon: Bell,
         },
         {
