@@ -648,13 +648,7 @@ export default function PeriodeBeasiswaPage() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => {
-                          // View detail
-                          console.log('View detail:', period)
-                        }}>
-                          <Eye className="w-4 h-4 mr-2" />
-                          Lihat Detail
-                        </DropdownMenuItem>
+                        
                         <DropdownMenuItem onClick={() => openEditDialog(period)}>
                           <Edit className="w-4 h-4 mr-2" />
                           Edit
