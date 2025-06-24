@@ -60,7 +60,22 @@ export function NavUser() {
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
   
-  // Fetch data user dari API
+  // Coba load user dari localStorage saat inisialisasi
+  useEffect(() => {
+    try {
+      const cachedUser = localStorage.getItem('bersekolah_user');
+      if (cachedUser) {
+        const parsedUser = JSON.parse(cachedUser);
+        if (parsedUser && parsedUser.name && parsedUser.email) {
+          console.log("Menggunakan cached user data untuk tampilan awal:", parsedUser);
+          setUser(parsedUser);
+        }
+      }
+    } catch (e) {
+      console.error("Error parsing cached user data during init:", e);
+    }
+  }, []);
+    // Fetch data user dari API
   const fetchUserData = async () => {
     try {
       const token = localStorage.getItem('bersekolah_auth_token');
@@ -83,24 +98,25 @@ export function NavUser() {
         },
       });
 
-      console.log('User API response status:', response.status);
-
-      if (response.ok) {
+      console.log('User API response status:', response.status);if (response.ok) {
         const result = await response.json();
         console.log('User API response:', result);
         
-        if (result.user) {
+        // Periksa apakah datanya berada di result.user atau langsung di result
+        const userResponse = result.user || result;
+        
+        if (userResponse && userResponse.id) {
           const userData = {
-            id: result.user.id,
-            name: result.user.nama_lengkap || result.user.name || result.user.email,
-            email: result.user.email,
-            phone: result.user.phone,
-            role: result.user.role || 'Siswa',
-            avatar: result.user.avatar || '/assets/image/users/default-avatar.jpg',
-            status: result.user.status,
-            created_at: result.user.created_at,
-            updated_at: result.user.updated_at,
-            nama_lengkap: result.user.nama_lengkap,
+            id: userResponse.id,
+            name: userResponse.nama_lengkap || userResponse.name || userResponse.email,
+            email: userResponse.email,
+            phone: userResponse.phone,
+            role: userResponse.role || 'Siswa',
+            avatar: userResponse.avatar || '/assets/image/users/default-avatar.jpg',
+            status: userResponse.status,
+            created_at: userResponse.created_at,
+            updated_at: userResponse.updated_at,
+            nama_lengkap: userResponse.nama_lengkap,
           };
           
           console.log('Processed user data:', userData);
@@ -142,7 +158,6 @@ export function NavUser() {
       setIsLoading(false);
     }
   };
-
   // Fallback ke data cache jika API gagal
   const tryGetCachedUser = () => {
     try {
@@ -150,7 +165,13 @@ export function NavUser() {
       if (cachedUser) {
         const parsedUser = JSON.parse(cachedUser);
         console.log("Menggunakan cached user data:", parsedUser);
-        setUser(parsedUser);
+        
+        // Pastikan data user valid sebelum menggunakannya
+        if (parsedUser && parsedUser.name && parsedUser.email) {
+          setUser(parsedUser);
+        } else {
+          console.log("Cached user data tidak lengkap");
+        }
       } else {
         // Fallback ke old localStorage keys jika ada
         const oldUser = localStorage.getItem('user');
@@ -165,6 +186,9 @@ export function NavUser() {
           };
           
           setUser(userWithDefaults);
+          
+          // Upgrade ke format penyimpanan baru
+          localStorage.setItem('bersekolah_user', JSON.stringify(userWithDefaults));
         } else {
           console.log("Tidak ada cached user data");
         }
@@ -173,10 +197,25 @@ export function NavUser() {
       console.error("Error parsing cached user data:", error);
     }
   };
-  
-  // Mengambil data user saat komponen dimuat
+    // Mengambil data user saat komponen dimuat
   useEffect(() => {
     fetchUserData();
+    
+    // Tambahkan event listener untuk login berhasil
+    const handleLoginSuccess = (e: any) => {
+      console.log('Login success event received:', e.detail);
+      if (e.detail && e.detail.user) {
+        setUser(e.detail.user);
+        setIsLoading(false);
+      }
+    };
+    
+    window.addEventListener('bersekolah:login-success', handleLoginSuccess);
+    
+    // Cleanup event listener
+    return () => {
+      window.removeEventListener('bersekolah:login-success', handleLoginSuccess);
+    };
   }, []);
   
   // Fungsi untuk mendapatkan inisial dari nama user
