@@ -44,12 +44,89 @@ const formatDate = (dateString: string) => {
 };
 ---
 
-<DashboardAdmin>
-  <div class="w-full px-4 py-6 lg:px-8">
-    <h1 class="mb-8 text-2xl font-bold tracking-tight">Dashboard Admin</h1>
+<DashboardAdmin>  <div class="w-full px-4 py-6 lg:px-8">
+    <h1 class="mb-6 text-2xl font-bold tracking-tight">Dashboard Admin</h1>
 
+    <!-- Welcome Card for Admin -->
+    <Card className="mb-6">
+      <CardHeader>
+        <CardTitle>Selamat Datang, <span id="admin-name">Admin</span>!</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div class="p-4 border border-blue-100 rounded-lg bg-blue-50">
+          <h3 class="mb-2 text-lg font-medium text-blue-800">Sambutan untuk Admin Bersekolah</h3>
+          <p class="text-blue-700">
+            Selamat datang di Dashboard Admin Beasiswa Bersekolah! Dashboard ini menyediakan semua informasi dan alat yang diperlukan untuk mengelola program beasiswa dengan efektif.
+            Pantau status pendaftaran, verifikasi dokumen, manajemen jadwal wawancara, dan pengumuman keputusan beasiswa di satu tempat.
+          </p>
+          <p class="mt-2 text-blue-700">
+            Jika Anda membutuhkan bantuan lebih lanjut, silakan hubungi tim dukungan IT atau lihat video tutorial di bawah ini.
+          </p>
+        </div>
+      </CardContent>
+    </Card>
+    
+    <!-- Video Tutorial Section -->
+    <Card className="mb-6">
+      <CardHeader>
+        <CardTitle>Video Tutorial Admin</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div class="grid gap-4 md:grid-cols-2">
+          <!-- Video Tutorial 1 -->
+          <div class="overflow-hidden border rounded-lg shadow-sm">
+            <div class="bg-gray-100 aspect-video">
+              <iframe 
+                class="w-full h-full"
+                src="https://www.youtube.com/embed/qU1I3_olv38"
+                title="Tutorial Verifikasi Dokumen"
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen>
+              </iframe>
+            </div>
+            <div class="p-4">
+              <h4 class="mb-1 font-medium">Tutorial Verifikasi Dokumen</h4>
+              <p class="text-sm text-muted-foreground">Panduan lengkap untuk memverifikasi dokumen pendaftaran beasiswa.</p>
+              <button 
+                id="tutorial-1-button"
+                class="w-full px-3 py-1 mt-2 text-sm font-medium text-gray-700 transition-colors bg-white border rounded-md hover:bg-gray-100"
+                onclick="window.open('https://www.youtube.com/watch?v=qU1I3_olv38', '_blank')"
+              >
+                Buka di YouTube
+              </button>
+            </div>
+          </div>
+          
+          <!-- Video Tutorial 2 -->
+          <div class="overflow-hidden border rounded-lg shadow-sm">
+            <div class="bg-gray-100 aspect-video">
+              <iframe 
+                class="w-full h-full"
+                src="https://www.youtube.com/embed/LbmxCLpg3jU"
+                title="Manajemen Jadwal Wawancara"
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen>
+              </iframe>
+            </div>
+            <div class="p-4">
+              <h4 class="mb-1 font-medium">Manajemen Jadwal Wawancara</h4>
+              <p class="text-sm text-muted-foreground">Cara mengatur jadwal wawancara dan mengirim notifikasi kepada calon penerima beasiswa.</p>
+              <button 
+                id="tutorial-2-button"
+                class="w-full px-3 py-1 mt-2 text-sm font-medium text-gray-700 transition-colors bg-white border rounded-md hover:bg-gray-100"
+                onclick="window.open('https://www.youtube.com/watch?v=LbmxCLpg3jU', '_blank')"
+              >
+                Buka di YouTube
+              </button>
+            </div>          </div>
+        </div>
+      </CardContent>
+    </Card>
+    
     <!-- Full-Width Stats Overview -->
-    <div class="grid w-full grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    <div class="grid w-full grid-cols-1 gap-6 mb-6 sm:grid-cols-2 lg:grid-cols-3">
       <!-- Total Pendaftar -->
       <Card>
         <CardHeader className="pb-2">
@@ -133,97 +210,11 @@ const formatDate = (dateString: string) => {
                 <p class="text-2xl font-bold text-red-600" id="app-rejected">{applicationStats.rejected || 0}</p>
               </div>
             </div>
-
-            <!-- Periode Stats -->
-            <div>
-              <h3 class="mb-2 text-sm font-medium">Pendaftar per Periode</h3>              <div id="periode-stats" class="space-y-3">
-                {applicationStats.by_period && applicationStats.by_period.length > 0 
-                  ? applicationStats.by_period.map((period) => (
-                    <div class="flex items-center space-x-2">
-                      <div class="flex-1">
-                        <p class="mb-1 text-xs font-medium">{period.period_name}</p>
-                        <div class="w-full h-2 overflow-hidden bg-gray-100 rounded-full">
-                          <div class="h-full bg-blue-500" style={`width: ${Math.min(100, (period.count/Math.max(1, applicationStats.total || 1))*100)}%`}></div>
-                        </div>
-                      </div>
-                      <span class="text-xs text-gray-600 min-w-[80px] text-right">{period.count} pendaftar</span>
-                    </div>
-                  ))
-                  : <div class="flex items-center space-x-2">
-                      <div class="w-full h-2 overflow-hidden bg-gray-100 rounded-full">
-                        <div class="h-full bg-gray-300" style="width: 0%"></div>
-                      </div>
-                      <span class="text-xs text-gray-600 min-w-[80px] text-right">Tidak ada data</span>
-                    </div>
-                }
-              </div>
-              </div>
-            </div>
-
-            
+                      
           </CardContent>
         </Card>
       </div>      <!-- Quick Actions -->
-      <div class="md:col-span-3">
-        <Card>
-          <CardHeader>
-            <CardTitle>Panel Admin</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div class="p-4 mb-6 rounded-lg bg-blue-50">
-              <h3 class="mb-2 font-semibold text-blue-700 text-md">Selamat Datang di Panel Admin</h3>
-              <p class="text-sm text-blue-600">Panel ini memberikan akses ke semua fungsionalitas manajemen konten dan beasiswa. Gunakan menu cepat di bawah untuk akses fungsi utama.</p>
-            </div>            <div class="mt-6">
-              <h4 class="mb-3 text-sm font-medium">Statistik Lainnya</h4>
-              
-              <div class="grid grid-cols-2 gap-3 mb-4">
-                <div class="p-3 border border-green-100 rounded-lg bg-green-50">
-                  <div class="flex items-center mb-1">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1 text-green-600"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-                    <span class="text-sm font-medium text-green-700">Dokumen Terverifikasi</span>
-                  </div>
-                  <p class="text-xl font-bold text-green-700">{dashboardStats.dokumen_terverifikasi || 0}</p>
-                </div>
-                <div class="p-3 border border-blue-100 rounded-lg bg-blue-50">
-                  <div class="flex items-center mb-1">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1 text-blue-600"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                    <span class="text-sm font-medium text-blue-700">Konten Aktif</span>
-                  </div>
-                  <p class="text-xl font-bold text-blue-700">{dashboardStats.konten_aktif || 0}</p>
-                </div>
-              </div>
-
-              <h4 class="mb-2 text-sm font-medium">Aksi Cepat</h4>
-              <div class="grid grid-cols-2 gap-2">
-                <a href="/dashboard/data-pendaftar">
-                  <Button variant="outline" className="w-full justify-start text-xs h-auto py-1.5" size="sm">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3 h-3 mr-1"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                    Pendaftar
-                  </Button>
-                </a>
-                <a href="/dashboard/content">
-                  <Button variant="outline" className="w-full justify-start text-xs h-auto py-1.5" size="sm">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3 h-3 mr-1"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                    Konten
-                  </Button>
-                </a>
-                <a href="/dashboard/data-mentor">
-                  <Button variant="outline" className="w-full justify-start text-xs h-auto py-1.5" size="sm">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3 h-3 mr-1"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                    Mentor
-                  </Button>
-                </a>
-                <a href="/dashboard/periode-beasiswa">
-                  <Button variant="outline" className="w-full justify-start text-xs h-auto py-1.5" size="sm">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3 h-3 mr-1"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"></rect><line x1="16" x2="16" y1="2" y2="6"></line><line x1="8" x2="8" y1="2" y2="6"></line><line x1="3" x2="21" y1="10" y2="10"></line><path d="M8 14h.01"></path><path d="M12 14h.01"></path><path d="M16 14h.01"></path><path d="M8 18h.01"></path><path d="M12 18h.01"></path><path d="M16 18h.01"></path></svg>
-                    Periode
-                  </Button>
-                </a>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      
     </div>
   </div>
 </DashboardAdmin>
@@ -584,7 +575,39 @@ const formatDate = (dateString: string) => {
       }
       console.groupEnd();
     }
+  };  // Function to get user profile data
+  const fetchUserProfile = async () => {
+    try {
+      const token = localStorage.getItem('bersekolah_auth_token');
+      if (!token) throw new Error('No authentication token');
+
+      const baseURL = import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:8000/api';
+      const response = await fetch(`${baseURL}/user`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const user = await response.json();
+        
+        // Update admin name in welcome message
+        const adminNameElement = document.getElementById('admin-name');
+        if (adminNameElement && user.name) {
+          adminNameElement.textContent = user.name;
+          console.log('Updated admin name to:', user.name);
+        } else {
+          console.log('Could not update admin name:', adminNameElement ? 'No user name found' : 'Element not found');
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+    }
   };
+
   // Initialize when DOM is ready
   document.addEventListener('DOMContentLoaded', () => {
     // Debug: Verify all expected DOM elements exist
@@ -594,7 +617,8 @@ const formatDate = (dateString: string) => {
       'total-dokumen', 
       'app-pending', 
       'app-approved', 
-      'app-rejected'
+      'app-rejected',
+      'admin-name'
     ];
     
     console.group('DOM Elements Check');
@@ -616,6 +640,8 @@ const formatDate = (dateString: string) => {
 
     if (checkAuth()) {
       console.log('Authentication successful, fetching dashboard data...');
+      // Fetch user profile to update admin name
+      fetchUserProfile();
       // Refresh data when page loads to ensure latest stats
       refreshDashboardData();
     } else {
