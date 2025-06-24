@@ -41,60 +41,62 @@ const getStatusText = (status: Status) => {
       <p class="text-muted-foreground">
         Berikut daftar peserta yang mendaftar program beasiswa tahun ini.
       </p>
-    </div>    <Card className="mb-6">
-      <CardContent>
-        <div class="flex flex-wrap gap-4">
-            <Card className="w-full sm:w-[calc(33%-8px)] md:w-[calc(25%-12px)]">
-              <CardContent className="p-4">
-                <div class="flex items-center justify-between">
-                  <div>
-                    <h3 class="text-sm font-medium text-muted-foreground">Total Pendaftar</h3>
-                    <p id="total-applicants" class="text-2xl font-bold">0</p>
-                  </div>
-                  <div class="p-2 bg-blue-100 rounded-full">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                    </svg>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card className="w-full sm:w-[calc(33%-8px)] md:w-[calc(25%-12px)]">
-              <CardContent className="p-4">
-                <div class="flex items-center justify-between">
-                  <div>
-                    <h3 class="text-sm font-medium text-muted-foreground">Total Dokumen</h3>
-                    <p id="total-documents" class="text-2xl font-bold">0</p>
-                  </div>
-                  <div class="p-2 bg-green-100 rounded-full">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            
-                 
-            <Card className="w-full sm:w-[calc(33%-8px)] md:w-[calc(25%-12px)]">
-              <CardContent className="p-4">
-                <div class="flex items-center justify-between">
-                  <div>
-                    <h3 class="text-sm font-medium text-muted-foreground">Beswan Diterima</h3>
-                    <p id="total-accepted" class="text-2xl font-bold">0</p>
-                  </div>
-                  <div class="p-2 bg-green-100 rounded-full">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </div>
-                </div>
-              </CardContent>            
-            </Card>
+    </div>    <Card className="mb-6">  <CardContent>
+    <div class="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
+      <!-- Total Beswan -->
+      <Card className="w-full">
+        <CardContent className="p-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-sm font-medium text-muted-foreground">Total Beswan</h3>
+              <p id="total-beswan" class="text-2xl font-bold">0</p>
+            </div>
+            <div class="p-2 bg-blue-100 rounded-full">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+            </div>
           </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+
+      <!-- Total Dokumen -->
+      <Card className="w-full">
+        <CardContent className="p-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-sm font-medium text-muted-foreground">Total Dokumen</h3>
+              <p id="total-documents" class="text-2xl font-bold">0</p>
+            </div>
+            <div class="p-2 bg-green-100 rounded-full">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <!-- Beswan Diterima -->
+      <Card className="w-full">
+        <CardContent className="p-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-sm font-medium text-muted-foreground">Beswan Diterima</h3>
+              <p id="total-diterima" class="text-2xl font-bold">0</p>
+            </div>
+            <div class="p-2 bg-green-100 rounded-full">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  </CardContent>
+</Card>
+
     
     <Card>
       <CardContent>
@@ -224,14 +226,35 @@ const getStatusText = (status: Status) => {
       throw error;
     }
   };
-    // Function to fetch dashboard stats directly from API endpoints
+  // Function to fetch dashboard stats directly from API endpoints
   const fetchDashboardStats = async () => {
     try {
       console.log('Fetching dashboard stats...');
       
-      // Try consolidated endpoint first (most efficient)
+      // Try the new beswan/count endpoint first
       try {
-        console.log('Fetching consolidated stats...');
+        console.log('Fetching beswan count data...');
+        const beswanCountResponse = await fetchAPI('/beswan/count');
+        
+        if (beswanCountResponse && beswanCountResponse.data) {
+          console.log('Successfully fetched beswan count data:', beswanCountResponse);
+          const data = beswanCountResponse.data;
+          
+          // Update the dashboard stats with the beswan count data
+          updateElementText('total-beswan', data.total_beswan || 0);
+          updateElementText('total-documents', data.total_documents || 0);
+          updateElementText('total-diterima', data.total_diterima || 0);
+          
+          // No need for fallback if beswan/count endpoint succeeds
+          return;
+        }
+      } catch (beswanCountError) {
+        console.warn('Beswan count endpoint failed, using fallback endpoints:', beswanCountError);
+      }
+      
+      // Try consolidated endpoint as fallback
+      try {
+        console.log('Fetching consolidated stats as fallback...');
         const consolidatedResponse = await fetchAPI('/dashboard/consolidated-stats');
         
         if (consolidatedResponse && consolidatedResponse.data) {
@@ -240,40 +263,27 @@ const getStatusText = (status: Status) => {
           
           // Extract dashboard stats
           if (data.dashboard) {
-            updateElementText('total-applicants', data.dashboard.total_pendaftar || 0);
-            updateElementText('total-mentors', data.dashboard.total_mentor || 0);
+            updateElementText('total-beswan', data.dashboard.total_pendaftar || 0);
             updateElementText('total-documents', data.dashboard.total_dokumen || 0);
           }
           
           // Extract application stats
           if (data.applications) {
-            updateElementText('total-accepted', data.applications.diterima || 0);
+            updateElementText('total-diterima', data.applications.diterima || 0);
           }
           
-          // No need for fallback if consolidated endpoint succeeds
+          // No need for further fallback if consolidated endpoint succeeds
           return;
         }
       } catch (consolidatedError) {
-        console.warn('Consolidated stats failed, using fallback endpoints:', consolidatedError);
+        console.warn('Consolidated stats failed, using individual fallback endpoints:', consolidatedError);
       }
       
-      // FALLBACK: Individual endpoints if consolidated fails
-      console.log('Using fallback endpoints...');
+      // FALLBACK: Individual endpoints if both primary methods fail
+      console.log('Using individual fallback endpoints...');
       
-      // 1. Fetch total mentors
-      const mentorsResponse = await fetchAPI('/mentors/total');
-      let mentorCount = 0;
-      if (mentorsResponse?.data?.total) {
-        mentorCount = mentorsResponse.data.total;
-      } else if (mentorsResponse?.total) {
-        mentorCount = mentorsResponse.total;
-      } else if (typeof mentorsResponse === 'number') {
-        mentorCount = mentorsResponse;
-      }
-      updateElementText('total-mentors', mentorCount);
-      
-      // 2. Fetch document statistics
-      const documentsResponse = await fetchAPI('/documents/statistics'); // Use public endpoint
+      // 1. Fetch document statistics
+      const documentsResponse = await fetchAPI('/documents/statistics');
       let documentCount = 0;
       if (documentsResponse?.data?.total_documents) {
         documentCount = documentsResponse.data.total_documents;
@@ -286,18 +296,18 @@ const getStatusText = (status: Status) => {
       }
       updateElementText('total-documents', documentCount);
       
-      // 3. Fetch applications statistics
-      const applicationsResponse = await fetchAPI('/applications/statistics'); // Use public endpoint
-      let totalApplicants = 0;
-      let acceptedApplicants = 0;
+      // 2. Fetch applications statistics
+      const applicationsResponse = await fetchAPI('/applications/statistics');
+      let totalBeswan = 0;
+      let acceptedBeswan = 0;
       
       // Try different response formats
       if (applicationsResponse?.data?.overview) {
-        totalApplicants = applicationsResponse.data.overview.total || 0;
-        acceptedApplicants = applicationsResponse.data.overview.diterima || 0;
+        totalBeswan = applicationsResponse.data.overview.total || 0;
+        acceptedBeswan = applicationsResponse.data.overview.diterima || 0;
       } else if (applicationsResponse?.total) {
-        totalApplicants = applicationsResponse.total;
-        acceptedApplicants = applicationsResponse.diterima || applicationsResponse.approved || 0;
+        totalBeswan = applicationsResponse.total;
+        acceptedBeswan = applicationsResponse.diterima || applicationsResponse.approved || 0;
       } else {
         // Try to find fields directly in the response
         const possibleTotalFields = ['total', 'total_applications'];
@@ -305,29 +315,37 @@ const getStatusText = (status: Status) => {
         
         for (const field of possibleTotalFields) {
           if (applicationsResponse && applicationsResponse[field] !== undefined) {
-            totalApplicants = applicationsResponse[field];
+            totalBeswan = applicationsResponse[field];
             break;
           }
         }
         
         for (const field of possibleAcceptedFields) {
           if (applicationsResponse && applicationsResponse[field] !== undefined) {
-            acceptedApplicants = applicationsResponse[field];
+            acceptedBeswan = applicationsResponse[field];
             break;
           }
         }
       }
       
-      updateElementText('total-applicants', totalApplicants);
-      updateElementText('total-accepted', acceptedApplicants);
-      
+      updateElementText('total-beswan', totalBeswan);
+      updateElementText('total-diterima', acceptedBeswan);
     } catch (error) {
       console.error('Error fetching dashboard stats:', error);
       // Set default values if API calls fail
-      updateElementText('total-mentors', 0);
+      updateElementText('total-beswan', 0);
       updateElementText('total-documents', 0);
-      updateElementText('total-applicants', 0);
-      updateElementText('total-accepted', 0);
+      updateElementText('total-diterima', 0);
+      
+      // Show error message in console for debugging
+      console.group('API Error Details for /beswan/count');
+      if (error instanceof Error) {
+        console.error('Message:', error.message);
+        console.error('Stack:', error.stack);
+      } else {
+        console.error('Unknown error:', error);
+      }
+      console.groupEnd();
     }
   };  // Function to fetch and display applicants
   const fetchApplicants = async () => {
@@ -457,11 +475,10 @@ const getStatusText = (status: Status) => {
       return false;
     }
     return true;
-  };
-    // Function to display loading errors
+  };  // Function to display loading errors
   const showLoadingError = (message: string) => {
     console.error(message);
-    const elements = ['total-mentors', 'total-documents', 'total-applicants', 'total-accepted'];
+    const elements = ['total-beswan', 'total-documents', 'total-diterima'];
     elements.forEach(id => {
       const element = document.getElementById(id);
       if (element) {
@@ -485,9 +502,8 @@ const getStatusText = (status: Status) => {
   document.addEventListener('DOMContentLoaded', () => {
     if (checkAuth()) {
       console.log('Initializing dashboard page...');
-      
-      // Add loading indicators to stats
-      const statElements = ['total-mentors', 'total-documents', 'total-applicants', 'total-accepted'];
+        // Add loading indicators to stats
+      const statElements = ['total-beswan', 'total-documents', 'total-diterima'];
       statElements.forEach(id => {
         const element = document.getElementById(id);
         if (element) {
