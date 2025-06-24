@@ -137,25 +137,41 @@ export default function MentorPage() {
   };
   
   // Handle form switch changes  // handleSwitchChange removed as is_active is no longer used
-  
-  // Handle photo file upload
+    // Handle photo file upload
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setPhotoFile(e.target.files[0]);
+      const file = e.target.files[0];
+      setPhotoFile(file);
+        // Buat preview URL untuk foto yang baru dipilih
+      const reader = new FileReader();
+      reader.onload = (event: ProgressEvent<FileReader>) => {
+        const result = event.target?.result;
+        if (result && typeof result === 'string') {
+          setFormData(prev => ({
+            ...prev,
+            photo: result
+          }));
+        }
+      };
+      reader.readAsDataURL(file);
     }
   };
-  
-  // Open create dialog
-  const handleOpenCreateDialog = () => {
+    // Reset form data and state
+  const resetForm = () => {
     setFormData({
       name: "",
       email: "",
       photo: ""
     });
     setPhotoFile(null);
-    setCreateDialog(true);
+    setIsSubmitting(false);
   };
   
+  // Open create dialog
+  const handleOpenCreateDialog = () => {
+    resetForm();
+    setCreateDialog(true);
+  };
   // Open edit dialog
   const handleEditClick = (mentor: Mentor) => {
     setSelectedMentor(mentor);
@@ -164,6 +180,7 @@ export default function MentorPage() {
       email: mentor.email,
       photo: mentor.photo || ""
     });
+    setPhotoFile(null); // Reset photo file saat edit
     setEditDialog(true);
   };
   
@@ -172,16 +189,58 @@ export default function MentorPage() {
     setSelectedMentor(mentor);
     setDeleteDialog(true);
   };
-  
-  // Handle create mentor
+    // Handle create mentor
   const handleCreateMentor = async () => {
+    // Validasi form
+    if (!formData.name.trim()) {
+      showToast("Nama mentor tidak boleh kosong", "error");
+      return;
+    }
+    
+    if (!formData.email.trim()) {
+      showToast("Email mentor tidak boleh kosong", "error");
+      return;
+    }
+    
+    // Validasi format email sederhana
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      showToast("Format email tidak valid", "error");
+      return;
+    }
+    
+    // Validasi file foto jika ada
+    if (photoFile) {
+      // Validasi ukuran file (max 2MB)
+      const maxSize = 2 * 1024 * 1024; // 2MB
+      if (photoFile.size > maxSize) {
+        showToast("Ukuran foto maksimal 2MB", "error");
+        return;
+      }
+      
+      // Validasi tipe file
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+      if (!allowedTypes.includes(photoFile.type)) {
+        showToast("Format foto harus JPG atau PNG", "error");
+        return;
+      }
+    }
+    
     try {
       setIsSubmitting(true);
       
-      const result = await MentorService.createMentor(formData, photoFile);
+      // Siapkan data yang akan dikirim ke API
+      const mentorData = {
+        name: formData.name.trim(),
+        email: formData.email.trim(),
+        upload_to: 'ImageTemp' // Menentukan direktori tujuan upload
+      };
+      
+      const result = await MentorService.createMentor(mentorData, photoFile);
       
       showToast("Mentor berhasil ditambahkan", "success");
       setCreateDialog(false);
+      resetForm();
       await fetchMentors();
     } catch (err) {
       console.error("Error creating mentor:", err);
@@ -190,18 +249,61 @@ export default function MentorPage() {
       setIsSubmitting(false);
     }
   };
-  
-  // Handle update mentor
+    // Handle update mentor
   const handleUpdateMentor = async () => {
     if (!selectedMentor) return;
+    
+    // Validasi form
+    if (!formData.name.trim()) {
+      showToast("Nama mentor tidak boleh kosong", "error");
+      return;
+    }
+    
+    if (!formData.email.trim()) {
+      showToast("Email mentor tidak boleh kosong", "error");
+      return;
+    }
+    
+    // Validasi format email sederhana
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      showToast("Format email tidak valid", "error");
+      return;
+    }
+    
+    // Validasi file foto jika ada
+    if (photoFile) {
+      // Validasi ukuran file (max 2MB)
+      const maxSize = 2 * 1024 * 1024; // 2MB
+      if (photoFile.size > maxSize) {
+        showToast("Ukuran foto maksimal 2MB", "error");
+        return;
+      }
+      
+      // Validasi tipe file
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+      if (!allowedTypes.includes(photoFile.type)) {
+        showToast("Format foto harus JPG atau PNG", "error");
+        return;
+      }
+    }
     
     try {
       setIsSubmitting(true);
       
-      await MentorService.updateMentor(selectedMentor.id, formData, photoFile);
+      // Siapkan data yang akan dikirim ke API
+      const mentorData = {
+        name: formData.name.trim(),
+        email: formData.email.trim(),
+        upload_to: 'ImageTemp', // Menentukan direktori tujuan upload
+        photo: !photoFile ? formData.photo : undefined // Jika tidak ada file baru, tetap gunakan yang lama
+      };
+      
+      await MentorService.updateMentor(selectedMentor.id, mentorData, photoFile);
       
       showToast("Mentor berhasil diperbarui", "success");
       setEditDialog(false);
+      resetForm();
       await fetchMentors();
     } catch (err) {
       console.error("Error updating mentor:", err);
@@ -306,9 +408,9 @@ export default function MentorPage() {
           </div>
           
           {/* Stats summary */}
-          <div className="grid gap-4 mb-6 md:grid-cols-3">
-            <Card>
-              <CardContent className="p-4">
+          <div className="grid gap-4 mb-6 md:grid-cols-2">
+            <Card className="w-full">
+              <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-muted-foreground">Total Mentor</p>
@@ -318,8 +420,9 @@ export default function MentorPage() {
                 </div>
               </CardContent>
             </Card>
-            <Card>
-              <CardContent className="p-4">
+
+            <Card className="w-full">
+              <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-muted-foreground">Aktif</p>
@@ -329,18 +432,10 @@ export default function MentorPage() {
                 </div>
               </CardContent>
             </Card>
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Non-aktif</p>
-                    <p className="text-2xl font-bold">0</p>
-                  </div>
-                  <XCircle className="w-8 h-8 text-red-500" />
-                </div>
-              </CardContent>
-            </Card>
+
+            
           </div>
+
           
           {/* Mentors table */}          <Table>
             <TableHeader>
@@ -359,16 +454,14 @@ export default function MentorPage() {
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredMentors.map((mentor) => (                  <TableRow key={mentor.id}>
-                    <TableCell>
-                      <div className="relative w-10 h-10 overflow-hidden rounded-full">
+                filteredMentors.map((mentor) => (                  <TableRow key={mentor.id}>                    <TableCell>                      <div className="relative w-10 h-10 overflow-hidden rounded-full">
                         <img 
-                          src={mentor.photo ? `/${mentor.photo}` : '/ImageTemp/default-avatar.png'} 
+                          src={mentor.photo ? `/ImageTemp/${mentor.photo}` : ''} 
                           alt={mentor.name}
                           className="object-cover w-full h-full"
                           onError={(e) => {
                             const target = e.target as HTMLImageElement;
-                            target.src = '/ImageTemp/default-avatar.png';
+                            target.src = '';
                           }}
                         />
                       </div>
@@ -404,7 +497,14 @@ export default function MentorPage() {
       </Card>
 
       {/* Create Dialog */}
-      <Dialog open={createDialog} onOpenChange={setCreateDialog}>
+      <Dialog 
+        open={createDialog} 
+        onOpenChange={(open) => {
+          if (!open) {
+            resetForm(); // Reset form ketika dialog ditutup
+          }
+          setCreateDialog(open);
+        }}>
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
             <DialogTitle>Tambah Mentor Baru</DialogTitle>
@@ -436,18 +536,41 @@ export default function MentorPage() {
                   required
                 />
               </div>
-            </div>
-            <div className="space-y-2">
+            </div>            <div className="space-y-2">
               <Label htmlFor="photo">Foto</Label>
-              <Input
-                id="photo"
-                type="file"
-                onChange={handlePhotoChange}
-                accept="image/*"
-              />
-              <p className="text-sm text-muted-foreground">
-                Format: JPG, PNG. Maks 2MB.
-              </p>
+              <div className="flex items-start gap-4">
+                <div className="flex-1">
+                  <Input
+                    id="photo"
+                    type="file"
+                    onChange={handlePhotoChange}
+                    accept="image/jpeg,image/png,image/jpg"
+                  />
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Format: JPG, PNG. Maks 2MB.
+                  </p>
+                </div>
+                {formData.photo && photoFile && (
+                  <div className="relative w-20 h-20 overflow-hidden rounded-md border">
+                    <img 
+                      src={formData.photo} 
+                      alt="Preview foto mentor" 
+                      className="object-cover w-full h-full" 
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFormData(prev => ({ ...prev, photo: "" }));
+                        setPhotoFile(null);
+                      }}
+                      className="absolute top-0 right-0 bg-red-500 text-white rounded-bl p-1"
+                      aria-label="Hapus foto"
+                    >
+                      <XCircle className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
           <DialogFooter>
@@ -469,7 +592,14 @@ export default function MentorPage() {
       </Dialog>
 
       {/* Edit Dialog */}
-      <Dialog open={editDialog} onOpenChange={setEditDialog}>
+      <Dialog 
+        open={editDialog} 
+        onOpenChange={(open) => {
+          if (!open) {
+            resetForm(); // Reset form ketika dialog ditutup
+          }
+          setEditDialog(open);
+        }}>
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
             <DialogTitle>Edit Mentor</DialogTitle>
@@ -510,15 +640,13 @@ export default function MentorPage() {
               />
               {formData.photo && (
                 <div className="mt-2">
-                  <p className="mb-1 text-sm font-medium">Foto saat ini:</p>
-                  <div className="relative w-20 h-20 overflow-hidden rounded-md">
-                    <img
-                      src={`/${formData.photo}`}
+                  <p className="mb-1 text-sm font-medium">Foto saat ini:</p>                  <div className="relative w-20 h-20 overflow-hidden rounded-md">                    <img
+                      src={photoFile ? formData.photo : `/ImageTemp/${formData.photo}`}
                       alt="Foto mentor"
                       className="object-cover w-full h-full"
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
-                        target.src = '/ImageTemp/default-avatar.png';
+                        target.src = '';
                       }}
                     />
                   </div>
@@ -555,14 +683,13 @@ export default function MentorPage() {
           </DialogHeader>
           <div className="py-4">
             {selectedMentor && (
-              <div className="flex items-center gap-4 p-4 border rounded-md bg-muted/50">
-                <div className="relative w-16 h-16 overflow-hidden rounded-full">
-                  <img                    src={selectedMentor.photo ? `/${selectedMentor.photo}` : '/ImageTemp/default-avatar.png'}
+              <div className="flex items-center gap-4 p-4 border rounded-md bg-muted/50">                <div className="relative w-16 h-16 overflow-hidden rounded-full">                  <img
+                    src={selectedMentor.photo ? `/ImageTemp/${selectedMentor.photo}` : ''}
                     alt={selectedMentor.name}
                     className="object-cover w-full h-full"
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
-                      target.src = '/ImageTemp/default-avatar.png';
+                      target.src = '';
                     }}
                   />
                 </div>

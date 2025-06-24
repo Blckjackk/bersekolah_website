@@ -329,22 +329,28 @@ export default function ManageAdminPage() {
       setIsSubmitting(false);
     }
   };
-  
+    // State untuk dialog konfirmasi hapus
+  const [deleteDialog, setDeleteDialog] = useState(false);
+  const [adminToDelete, setAdminToDelete] = useState<Admin | null>(null);
+
+  // Buka dialog konfirmasi hapus
+  const openDeleteDialog = (admin: Admin) => {
+    setAdminToDelete(admin);
+    setDeleteDialog(true);
+  };
+
   // Handle delete admin
-  const handleDelete = async (admin: Admin) => {
-    if (!window.confirm(`Apakah Anda yakin ingin menghapus admin ${admin.name}?`)) {
-      return;
-    }
+  const handleDelete = async () => {
+    if (!adminToDelete) return;
     
     try {
       const token = localStorage.getItem('bersekolah_auth_token');
       if (!token) {
         throw new Error("Token tidak ditemukan");
       }
-      
-      // Cek terlebih dahulu apakah endpoint tersedia dengan OPTIONS request
+        // Cek terlebih dahulu apakah endpoint tersedia dengan OPTIONS request
       try {
-        const checkResponse = await fetch(`${baseURL}/users/${admin.id}`, {
+        const checkResponse = await fetch(`${baseURL}/users/${adminToDelete.id}`, {
           method: 'OPTIONS',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -373,8 +379,7 @@ export default function ManageAdminPage() {
         `);
         return;
       }
-      
-      const response = await fetch(`${baseURL}/users/${admin.id}`, {
+        const response = await fetch(`${baseURL}/users/${adminToDelete.id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -387,10 +392,11 @@ export default function ManageAdminPage() {
       }
       
       await fetchAdmins(); // Refresh data
+      setDeleteDialog(false); // Tutup dialog konfirmasi
       
       toast({
         title: "Admin berhasil dihapus",
-        description: `${admin.name} telah dihapus dari sistem`,
+        description: `${adminToDelete.name} telah dihapus dari sistem`,
       });
     } catch (error) {
       console.error("Error deleting admin:", error);
@@ -563,7 +569,6 @@ export default function ManageAdminPage() {
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="admin">Admin</SelectItem>
-                            <SelectItem value="superadmin">Super Admin</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -619,15 +624,15 @@ export default function ManageAdminPage() {
         <Card>
         <CardContent className="p-0">
           {isLoading ? (
-            <div className="flex flex-col items-center justify-center p-8 gap-4">
+            <div className="flex flex-col items-center justify-center gap-4 p-8">
               <div className="w-16 h-16 border-4 rounded-full border-primary/20 border-t-primary animate-spin"></div>
               <p className="text-muted-foreground">Memuat data admin...</p>
             </div>
           ) : !isSuperAdmin ? (
-            <div className="flex flex-col items-center justify-center p-8 gap-2 text-center">
+            <div className="flex flex-col items-center justify-center gap-2 p-8 text-center">
               <Shield className="w-16 h-16 text-muted-foreground" />
               <h3 className="text-lg font-medium">Akses Terbatas</h3>
-              <p className="text-muted-foreground max-w-md">
+              <p className="max-w-md text-muted-foreground">
                 Hanya Super Admin yang dapat mengakses halaman Manajemen Admin. Anda akan dialihkan ke Dashboard.
               </p>
             </div>
@@ -670,12 +675,11 @@ export default function ManageAdminPage() {
                         >
                           <Pencil className="w-4 h-4" />
                           <span className="sr-only">Edit</span>
-                        </Button>
-                        <Button 
+                        </Button>                        <Button 
                           variant="ghost" 
                           size="icon" 
                           className="text-red-500 hover:text-red-600" 
-                          onClick={() => handleDelete(admin)}
+                          onClick={() => openDeleteDialog(admin)}
                           disabled={admin.role === 'superadmin' && admin.id !== 1} // Prevent deleting other superadmins
                         >
                           <Trash2 className="w-4 h-4" />
@@ -686,7 +690,7 @@ export default function ManageAdminPage() {
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8">
+                    <TableCell colSpan={7} className="py-8 text-center">
                       {searchQuery 
                         ? "Tidak ada admin yang sesuai dengan pencarian Anda" 
                         : "Tidak ada admin yang terdaftar. Klik tombol 'Tambah Admin' untuk menambahkan admin baru."}
@@ -700,9 +704,49 @@ export default function ManageAdminPage() {
         <CardFooter className="flex justify-between border-t">
           <div className="text-sm text-muted-foreground">
             Total {filteredAdmins.length} admin {searchQuery && `(filter: "${searchQuery}")`}
-          </div>
-        </CardFooter>
+          </div>        </CardFooter>
       </Card>
+
+      {/* Dialog konfirmasi hapus admin */}
+      <Dialog open={deleteDialog} onOpenChange={setDeleteDialog}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Konfirmasi Hapus Admin</DialogTitle>
+            <DialogDescription>
+              Apakah Anda yakin ingin menghapus admin ini? Tindakan ini tidak dapat dibatalkan.
+            </DialogDescription>
+          </DialogHeader>
+          
+          {adminToDelete && (
+            <div className="p-4 my-4 border rounded-md bg-muted/50">
+              <div className="flex items-center gap-4">
+                <div className="p-2 rounded-full bg-destructive/10">
+                  <Shield className="w-8 h-8 text-destructive" />
+                </div>
+                <div>
+                  <h4 className="font-medium">{adminToDelete.name}</h4>
+                  <p className="text-sm text-muted-foreground">{adminToDelete.email}</p>
+                  <div className="flex items-center mt-1">
+                    <Shield className={`w-3 h-3 mr-1 ${adminToDelete.role === 'superadmin' ? 'text-red-500' : 'text-blue-500'}`} />
+                    <span className="text-xs text-muted-foreground">
+                      {adminToDelete.role === 'admin' ? 'Admin' : 'Super Admin'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteDialog(false)}>
+              Batal
+            </Button>
+            <Button variant="destructive" onClick={handleDelete}>
+              Hapus Admin
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

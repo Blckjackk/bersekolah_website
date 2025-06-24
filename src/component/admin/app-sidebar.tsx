@@ -1,8 +1,10 @@
 "use client"
 
 import * as React from "react"
+
 import {
   Users,
+  Database,
   GraduationCap,
   FileText,
   Heart,
@@ -98,12 +100,13 @@ const data = {
           icon: BookOpen,
         },
         {
-          title: "Kelola Halaman",
-          url: "/dashboard/kelola-halaman",
+          title: "Kelola Artikel",
+          url: "/dashboard/kelola-artikel",
           icon: FileText,
-        },        {
+        },        
+        {
           title: "Pengumuman",
-          url: "/dashboard/pengumuman-react",
+          url: "/dashboard/pengumuman",
           icon: Bell,
         },
         {
@@ -174,15 +177,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   icon: Shield,
                 },
                 {
-                  title: "Logs Sistem",
-                  url: "/dashboard/system-logs",
-                  icon: FileText,
+                  title: "Export Data",
+                  url: "/dashboard/expost-data",
+                  icon: Database,
                 },
-                {
-                  title: "Konfigurasi API",
-                  url: "/dashboard/api-config",
-                  icon: Settings,
-                }
+               
               ]
             }
           ]);

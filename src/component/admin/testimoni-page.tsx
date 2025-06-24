@@ -445,12 +445,12 @@ export default function TestimoniPage() {
                   <TableRow key={item.id}>
                     <TableCell>                      <div className="relative w-10 h-10 overflow-hidden rounded-full">
                         <img 
-                          src={item.foto_testimoni ? `${import.meta.env.PUBLIC_API_BASE_URL}/storage/${item.foto_testimoni}` : '/ImageTemp/default-avatar.png'} 
+                          src={item.foto_testimoni ? `${import.meta.env.PUBLIC_API_BASE_URL}/storage/${item.foto_testimoni}` : ''} 
                           alt={item.nama}
                           className="object-cover w-full h-full"
                           onError={(e) => {
                             const target = e.target as HTMLImageElement;
-                            target.src = '/ImageTemp/default-avatar.png';
+                            target.src = '';
                           }}
                         />
                       </div>
@@ -665,7 +665,7 @@ export default function TestimoniPage() {
                       className="object-cover w-full h-full"
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
-                        target.src = '/ImageTemp/default-avatar.png';
+                        target.src = '';
                       }}
                     />
                   </div>
@@ -713,12 +713,12 @@ export default function TestimoniPage() {
               <div className="flex items-center gap-4 p-4 border rounded-md bg-muted/50">
                 <div className="relative w-16 h-16 overflow-hidden rounded-full">
                   <img
-                    src={selectedTestimoni.foto_testimoni ? `${import.meta.env.PUBLIC_API_BASE_URL}/storage/${selectedTestimoni.foto_testimoni}` : '/ImageTemp/default-avatar.png'}
+                    src={selectedTestimoni.foto_testimoni ? `${import.meta.env.PUBLIC_API_BASE_URL}/storage/${selectedTestimoni.foto_testimoni}` : ''}
                     alt={selectedTestimoni.nama}
                     className="object-cover w-full h-full"
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
-                      target.src = '/ImageTemp/default-avatar.png';
+                      target.src = '';
                     }}
                   />
                 </div>

@@ -9,7 +9,12 @@ import {
   Eye, 
   Upload, 
   FileCheck2,
-  Archive 
+  Archive,
+  Bold,
+  Italic,
+  Heading2,
+  List,
+  Link
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -349,9 +354,9 @@ export default function PengumumanPage() {
       {/* Main content */}
       <Card>
         <CardHeader className="pb-2">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
             <CardTitle>Daftar Pengumuman</CardTitle>
-            <div className="flex flex-col sm:flex-row gap-2">
+            <div className="flex flex-col gap-2 sm:flex-row">
               {/* Search input */}
               <div className="relative">
                 <Input
@@ -371,7 +376,7 @@ export default function PengumumanPage() {
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500"
+                  className="absolute text-gray-500 transform -translate-y-1/2 left-2 top-1/2"
                 >
                   <circle cx="11" cy="11" r="8"></circle>
                   <path d="m21 21-4.3-4.3"></path>
@@ -428,16 +433,16 @@ export default function PengumumanPage() {
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center py-10">
+                  <TableCell colSpan={5} className="py-10 text-center">
                     <div className="flex flex-col items-center justify-center">
-                      <RefreshCw size={24} className="animate-spin mb-2" />
+                      <RefreshCw size={24} className="mb-2 animate-spin" />
                       <p>Loading...</p>
                     </div>
                   </TableCell>
                 </TableRow>
               ) : error ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center py-10 text-red-600">
+                  <TableCell colSpan={5} className="py-10 text-center text-red-600">
                     <div className="flex flex-col items-center justify-center">
                       <p className="mb-2">{error}</p>
                       <Button variant="outline" onClick={() => fetchAnnouncements(true)}>
@@ -448,7 +453,7 @@ export default function PengumumanPage() {
                 </TableRow>
               ) : filteredAnnouncements.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center py-10 text-gray-500">
+                  <TableCell colSpan={5} className="py-10 text-center text-gray-500">
                     Tidak ada pengumuman ditemukan
                   </TableCell>
                 </TableRow>
@@ -458,13 +463,15 @@ export default function PengumumanPage() {
                     <TableCell className="font-medium">{announcement.title}</TableCell>
                     <TableCell>
                       {announcement.tag && (
-                        <Badge className={getTagBadgeClass(announcement.tag)}>
+                        <Badge className={`capitalize ${getTagBadgeClass(announcement.tag)}`}>
                           {announcement.tag}
                         </Badge>
                       )}
+                      
+
                     </TableCell>
                     <TableCell>
-                      <Badge className={getStatusBadgeClass(announcement.status)}>
+                      <Badge className={`capitalize ${getStatusBadgeClass(announcement.status)}`}>
                         {announcement.status}
                       </Badge>
                     </TableCell>
@@ -489,36 +496,7 @@ export default function PengumumanPage() {
                         >
                           <FileEdit size={16} className="text-amber-600" />
                         </Button>
-                        
-                        {announcement.status !== "published" ? (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleUpdateStatus(announcement, "published")}
-                            title="Publikasikan"
-                          >
-                            <Upload size={16} className="text-green-600" />
-                          </Button>
-                        ) : (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleUpdateStatus(announcement, "draft")}
-                            title="Jadikan draft"
-                          >
-                            <FileCheck2 size={16} className="text-gray-600" />
-                          </Button>
-                        )}
-                        
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleUpdateStatus(announcement, "archived")}
-                          title="Arsipkan"
-                        >
-                          <Archive size={16} className="text-purple-600" />
-                        </Button>
-                        
+                                              
                         <Button
                           variant="ghost"
                           size="icon"
@@ -578,34 +556,223 @@ export default function PengumumanPage() {
                   </SelectContent>
                 </Select>
               </div>
-              
-              <div className="grid gap-2">
-                <Label htmlFor="content">Konten</Label>
-                <Textarea
-                  id="content"
-                  name="content"
-                  rows={6}
-                  value={formData.content}
-                  onChange={handleInputChange}
-                  required
-                />
+                <div className="grid gap-2">
+                <Label htmlFor="content">Konten</Label>                <div className="border rounded-md shadow-sm">
+                  {/* Toolbar WYSIWYG sederhana */}
+                  <div className="flex items-center gap-1 p-2 border-b bg-slate-50">
+                    {/* Format Bold */}
+                    <Button 
+                      type="button"
+                      variant="ghost" 
+                      size="sm"
+                      className="w-8 h-8 p-1"
+                      onClick={() => {
+                        const textarea = document.getElementById("content") as HTMLTextAreaElement;
+                        if (textarea) {
+                          const start = textarea.selectionStart;
+                          const end = textarea.selectionEnd;
+                          const selectedText = formData.content.substring(start, end);
+                          const newText = 
+                            formData.content.substring(0, start) + 
+                            `<strong>${selectedText}</strong>` + 
+                            formData.content.substring(end);
+                          
+                          setFormData({...formData, content: newText});
+                          
+                          // Setelah disisipkan, fokus kembali ke textarea
+                          setTimeout(() => {
+                            textarea.focus();
+                            textarea.setSelectionRange(
+                              start + 8, // <strong>
+                              start + 8 + selectedText.length
+                            );
+                          }, 0);
+                        }
+                      }}
+                      title="Bold"
+                    >
+                      <Bold className="w-4 h-4" />
+                    </Button>
+                    
+                    {/* Format Italic */}
+                    <Button 
+                      type="button"
+                      variant="ghost" 
+                      size="sm"
+                      className="w-8 h-8 p-1"
+                      onClick={() => {
+                        const textarea = document.getElementById("content") as HTMLTextAreaElement;
+                        if (textarea) {
+                          const start = textarea.selectionStart;
+                          const end = textarea.selectionEnd;
+                          const selectedText = formData.content.substring(start, end);
+                          const newText = 
+                            formData.content.substring(0, start) + 
+                            `<em>${selectedText}</em>` + 
+                            formData.content.substring(end);
+                          
+                          setFormData({...formData, content: newText});
+                          
+                          // Setelah disisipkan, fokus kembali ke textarea
+                          setTimeout(() => {
+                            textarea.focus();
+                            textarea.setSelectionRange(
+                              start + 4, // <em>
+                              start + 4 + selectedText.length
+                            );
+                          }, 0);
+                        }
+                      }}
+                      title="Italic"
+                    >
+                      <Italic className="w-4 h-4" />
+                    </Button>
+                    
+                    {/* Format Heading */}
+                    <Button 
+                      type="button"
+                      variant="ghost" 
+                      size="sm"
+                      className="w-8 h-8 p-1"
+                      onClick={() => {
+                        const textarea = document.getElementById("content") as HTMLTextAreaElement;
+                        if (textarea) {
+                          const start = textarea.selectionStart;
+                          const end = textarea.selectionEnd;
+                          const selectedText = formData.content.substring(start, end);
+                          const newText = 
+                            formData.content.substring(0, start) + 
+                            `<h3>${selectedText}</h3>` + 
+                            formData.content.substring(end);
+                          
+                          setFormData({...formData, content: newText});
+                          
+                          // Setelah disisipkan, fokus kembali ke textarea
+                          setTimeout(() => {
+                            textarea.focus();
+                            textarea.setSelectionRange(
+                              start + 4, // <h3>
+                              start + 4 + selectedText.length
+                            );
+                          }, 0);
+                        }
+                      }}
+                      title="Heading"
+                    >
+                      <Heading2 className="w-4 h-4" />
+                    </Button>
+                    
+                    {/* Format List */}
+                    <Button 
+                      type="button"
+                      variant="ghost" 
+                      size="sm"
+                      className="w-8 h-8 p-1"
+                      onClick={() => {
+                        const textarea = document.getElementById("content") as HTMLTextAreaElement;
+                        if (textarea) {
+                          const start = textarea.selectionStart;
+                          const end = textarea.selectionEnd;
+                          const selectedText = formData.content.substring(start, end);
+                          
+                          // Split by new line and create list items
+                          const lines = selectedText.split('\n').filter(line => line.trim() !== '');
+                          const listItems = lines.map(line => `<li>${line}</li>`).join('');
+                          
+                          const newText = 
+                            formData.content.substring(0, start) + 
+                            `<ul>${listItems}</ul>` + 
+                            formData.content.substring(end);
+                          
+                          setFormData({...formData, content: newText});
+                          
+                          // Setelah disisipkan, fokus kembali ke textarea
+                          setTimeout(() => textarea.focus(), 0);
+                        }
+                      }}
+                      title="Bullet List"
+                    >
+                      <List className="w-4 h-4" />
+                    </Button>
+                    
+                    {/* Format Link */}
+                    <Button 
+                      type="button"
+                      variant="ghost" 
+                      size="sm"
+                      className="w-8 h-8 p-1"
+                      onClick={() => {
+                        const textarea = document.getElementById("content") as HTMLTextAreaElement;
+                        if (textarea) {
+                          const start = textarea.selectionStart;
+                          const end = textarea.selectionEnd;
+                          const selectedText = formData.content.substring(start, end);
+                          const url = prompt("Masukkan URL:", "https://");
+                          if (url) {
+                            const newText = 
+                              formData.content.substring(0, start) + 
+                              `<a href="${url}" target="_blank">${selectedText || url}</a>` + 
+                              formData.content.substring(end);
+                            
+                            setFormData({...formData, content: newText});
+                            
+                            // Setelah disisipkan, fokus kembali ke textarea
+                            setTimeout(() => textarea.focus(), 0);
+                          }
+                        }
+                      }}
+                      title="Insert Link"
+                    >
+                      <Link className="w-4 h-4" />
+                    </Button>
+                  </div>
+                    {/* Editor area */}
+                  <Textarea
+                    id="content"
+                    name="content"
+                    rows={8}
+                    value={formData.content}
+                    onChange={handleInputChange}
+                    required
+                    placeholder="Tulis konten pengumuman di sini... (Anda dapat menggunakan tombol formatting di atas)"
+                    className="font-mono text-sm border-0 focus-visible:ring-0"
+                  />
+                  
+                  {/* Preview area */}
+                  <div className="p-4 border-t bg-slate-50">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Badge variant="outline" className="text-xs font-normal bg-white">
+                        Preview
+                      </Badge>
+                      <span className="text-xs text-slate-500">Tampilan konten setelah disimpan</span>
+                    </div>
+                    <div 
+                      className="p-4 bg-white border rounded-md prose prose-sm max-w-none min-h-[100px]" 
+                      dangerouslySetInnerHTML={{ __html: formData.content || '<em class="text-slate-400">Belum ada konten...</em>' }}
+                    ></div>
+                  </div>
+                </div>
               </div>
               
               <div className="grid gap-2">
-                <Label htmlFor="status">Status</Label>                <Select
+                <Label htmlFor="status">Status</Label>
+                <Select
                   value={formData.status}
-                  onValueChange={(value: 'draft' | 'published' | 'archived') => setFormData({...formData, status: value})}
+                  onValueChange={(value: 'draft' | 'published' | 'archived') =>
+                    setFormData({ ...formData, status: value })
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Pilih status" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="draft">Draft</SelectItem>
+                    {!editDialog && <SelectItem value="draft">Draft</SelectItem>}
                     <SelectItem value="published">Published</SelectItem>
                     <SelectItem value="archived">Archived</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
+
             </div>
             <DialogFooter>
               <Button
@@ -649,7 +816,7 @@ export default function PengumumanPage() {
                 </Badge>
               </div>
             </DialogTitle>
-            <p className="text-sm text-gray-500 mt-1">
+            <p className="mt-1 text-sm text-gray-500">
               {selectedAnnouncement?.published_at 
                 ? `Dipublikasikan pada ${formatDate(selectedAnnouncement.published_at)}` 
                 : 'Belum dipublikasikan'}
@@ -680,7 +847,7 @@ export default function PengumumanPage() {
           </DialogHeader>
           <div className="py-4">
             <p>Apakah Anda yakin ingin menghapus pengumuman "{selectedAnnouncement?.title}"?</p>
-            <p className="text-sm text-gray-500 mt-2">Tindakan ini tidak dapat dibatalkan.</p>
+            <p className="mt-2 text-sm text-gray-500">Tindakan ini tidak dapat dibatalkan.</p>
           </div>
           <DialogFooter>
             <Button

@@ -100,10 +100,14 @@ export const MentorService = {
       }
       
       const formData = new FormData();
-      
-      // Add mentor data to form
+        // Add mentor data to form
       formData.append('name', mentorData.name);
       formData.append('email', mentorData.email);
+      
+      // Specify upload directory
+      if (mentorData.upload_to) {
+        formData.append('upload_to', mentorData.upload_to);
+      }
       
       // Add photo if provided
       if (photoFile) {
@@ -140,11 +144,20 @@ export const MentorService = {
       }
       
       const formData = new FormData();
-      
-      // Add mentor data to form
+        // Add mentor data to form
       formData.append('name', mentorData.name);
       formData.append('email', mentorData.email);
       formData.append('_method', 'PUT'); // Laravel form method spoofing
+      
+      // Specify upload directory
+      if (mentorData.upload_to) {
+        formData.append('upload_to', mentorData.upload_to);
+      }
+      
+      // Include existing photo path if not uploading new one
+      if (mentorData.photo && !photoFile) {
+        formData.append('existing_photo', mentorData.photo);
+      }
       
       // Add photo if provided
       if (photoFile) {

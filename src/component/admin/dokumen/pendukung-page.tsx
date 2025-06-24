@@ -568,13 +568,7 @@ export default function AdminDokumenPendukungPage() {
                 <SelectContent>
                   <SelectItem value="all">Semua Jenis</SelectItem>
                   <SelectItem value="achievement_certificate">Sertifikat Prestasi</SelectItem>
-                  <SelectItem value="recommendation_letter">Surat Rekomendasi</SelectItem>
                   <SelectItem value="essay_motivation">Essay Motivasi</SelectItem>
-                  <SelectItem value="cv_resume">CV/Resume</SelectItem>
-                  <SelectItem value="portfolio">Portfolio</SelectItem>
-                  <SelectItem value="transcript">Transkrip Nilai</SelectItem>
-                  <SelectItem value="competition_certificate">Sertifikat Lomba</SelectItem>
-                  <SelectItem value="other_document">Dokumen Lainnya</SelectItem>
                 </SelectContent>
               </Select>
             </div>

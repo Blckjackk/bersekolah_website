@@ -465,23 +465,36 @@ export default function PeriodeBeasiswaPage() {
               <Calendar className="w-8 h-8 text-blue-500" />
             </div>
           </CardContent>
-        </Card>
-          <Card className={hasActivePeriod() ? "border-green-500" : ""}>
+        </Card>        <Card className={hasActivePeriod() ? "border-green-500" : ""}>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Periode Aktif</p>
-                <p className="text-2xl font-bold text-green-600">
-                  {periods.filter(p => p.status === 'active').length}
-                </p>
-                {hasActivePeriod() && (
-                  <Badge variant="outline" className="mt-1 text-green-700 bg-green-100 border-green-200">
-                    <CheckCircle2 className="w-3 h-3 mr-1" />
-                    Aktif Saat Ini
-                  </Badge>
+                {hasActivePeriod() ? (
+                  <div>
+                    <p className="text-lg font-bold text-green-600">
+                      {periods.find(p => p.status === 'active')?.nama_periode}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      Tahun {periods.find(p => p.status === 'active')?.tahun}
+                    </p>
+                    <Badge variant="outline" className="mt-1 text-green-700 bg-green-100 border-green-200">
+                      <CheckCircle2 className="w-3 h-3 mr-1" />
+                      Sedang Berjalan
+                    </Badge>
+                  </div>
+                ) : (
+                  <div>
+                    <p className="text-lg font-medium text-gray-400">
+                      Tidak Ada
+                    </p>
+                    <p className="text-sm text-gray-400">
+                      Periode Aktif
+                    </p>
+                  </div>
                 )}
               </div>
-              <CheckCircle2 className={`w-8 h-8 ${hasActivePeriod() ? 'text-green-600' : 'text-green-500'}`} />
+              <CheckCircle2 className={`w-8 h-8 ${hasActivePeriod() ? 'text-green-600' : 'text-gray-400'}`} />
             </div>
           </CardContent>
         </Card>
@@ -635,13 +648,7 @@ export default function PeriodeBeasiswaPage() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => {
-                          // View detail
-                          console.log('View detail:', period)
-                        }}>
-                          <Eye className="w-4 h-4 mr-2" />
-                          Lihat Detail
-                        </DropdownMenuItem>
+                        
                         <DropdownMenuItem onClick={() => openEditDialog(period)}>
                           <Edit className="w-4 h-4 mr-2" />
                           Edit
@@ -863,7 +870,7 @@ export default function PeriodeBeasiswaPage() {
                 <Label htmlFor="edit_status">Status</Label>
                 <Select
                   value={formData.status}
-                  onValueChange={(value: 'draft' | 'active' | 'closed') => 
+                  onValueChange={(value: 'active' | 'closed') => 
                     setFormData(prev => ({ ...prev, status: value }))
                   }
                 >
@@ -871,7 +878,6 @@ export default function PeriodeBeasiswaPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="draft">Draft</SelectItem>
                     <SelectItem value="active">Aktif</SelectItem>
                     <SelectItem value="closed">Ditutup</SelectItem>
                   </SelectContent>
