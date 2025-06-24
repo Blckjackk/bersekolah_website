@@ -45,6 +45,55 @@ import { useToast } from "@/hooks/use-toast"
 // Helper function for delay
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
+// Check if file is a PDF based on file extension or type
+const isFilePDF = (fileName: string, fileType?: string): boolean => {
+  if (!fileName && !fileType) return false;
+  
+  // Check file type if available
+  if (fileType) {
+    if (fileType.toLowerCase() === 'pdf' || 
+        fileType.toLowerCase() === 'application/pdf' || 
+        fileType.toLowerCase().includes('pdf')) {
+      return true;
+    }
+  }
+  
+  // Check filename extension
+  if (fileName) {
+    if (fileName.toLowerCase().endsWith('.pdf')) {
+      return true;
+    }
+    
+    // Also check for "pdf" in the filename as a fallback
+    if (fileName.toLowerCase().includes('pdf')) {
+      return true;
+    }
+  }
+  
+  return false;
+}
+
+// Check if file is an image based on extension or type
+const isFileImage = (fileName: string, fileType?: string): boolean => {
+  if (!fileName && !fileType) return false;
+  
+  // Check file type if available
+  if (fileType) {
+    if (fileType.toLowerCase().includes('image/') || 
+        ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].some(ext => fileType.toLowerCase().includes(ext))) {
+      return true;
+    }
+  }
+  
+  // Check file extension
+  if (fileName) {
+    const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp'];
+    return imageExtensions.some(ext => fileName.toLowerCase().endsWith(ext));
+  }
+  
+  return false;
+}
+
 // Define interfaces for type safety
 interface DocumentType {
   id: number;
@@ -162,14 +211,57 @@ export default function DokumenPendukungPage() {
       if (!data.data) {
         throw new Error('Invalid response format: missing data property')
       }
+        // Process document types
+      const processedDocTypes = (data.data || [])
+        // Filter untuk hanya Essay dan Sertifikat Prestasi saja
+        .filter((docType: any) => 
+          docType.name === 'Essay' || 
+          docType.name === 'Sertifikat Prestasi' || 
+          docType.name === 'Essay Motivasi' ||
+          docType.name === 'Prestasi' ||
+          docType.code === 'essay' || 
+          docType.code === 'sertifikat_prestasi' || 
+          docType.code === 'essay_motivasi' ||
+          docType.code === 'prestasi'
+        )
+        .map((docType: any) => ({
+          ...docType,
+          allowed_formats: typeof docType.allowed_formats === 'string' 
+            ? JSON.parse(docType.allowed_formats) 
+            : docType.allowed_formats || []
+        }))
       
-      // Process document types
-      const processedDocTypes = (data.data || []).map((docType: any) => ({
-        ...docType,
-        allowed_formats: typeof docType.allowed_formats === 'string' 
-          ? JSON.parse(docType.allowed_formats) 
-          : docType.allowed_formats || []
-      }))
+      // Jika tidak ada jenis dokumen dari API, buat default
+      if (processedDocTypes.length === 0) {
+        console.log('No document types found, using default types')
+        processedDocTypes.push({
+          id: 101,
+          code: 'essay',
+          name: 'Essay Motivasi',
+          description: 'Essay yang menjelaskan motivasi, tujuan, dan harapan Anda',
+          category: 'pendukung',
+          is_required: false,
+          allowed_formats: ['pdf', 'doc', 'docx'],
+          max_file_size: 5 * 1024 * 1024, // 5MB
+          is_active: true,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        
+        processedDocTypes.push({
+          id: 102,
+          code: 'sertifikat_prestasi',
+          name: 'Sertifikat Prestasi',
+          description: 'Sertifikat kejuaraan, penghargaan, atau prestasi lainnya',
+          category: 'pendukung',
+          is_required: false,
+          allowed_formats: ['pdf', 'jpg', 'jpeg', 'png'],
+          max_file_size: 5 * 1024 * 1024, // 5MB
+          is_active: true,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+      }
       
       console.log('Processed document types:', processedDocTypes)
       setDocumentTypes(processedDocTypes)
@@ -445,30 +537,101 @@ export default function DokumenPendukungPage() {
 
   const handlePreview = (uploadedDoc: UploadedDocument) => {
     // Convert API file path to direct storage URL
-    const baseUrl = import.meta.env.PUBLIC_API_BASE_URL_NO_API
+    const baseUrl = import.meta.env.PUBLIC_API_BASE_URL_NO_API || 'http://localhost:8000';
     
-    let directFileUrl = uploadedDoc.file_path
+    let directFileUrl = uploadedDoc.file_path;
     
+    // Log untuk debug
+    console.log('=== PREVIEW DEBUG INFO ===');
+    console.log('Original file path:', uploadedDoc.file_path);
+    console.log('Document file type:', uploadedDoc.file_type);
+    console.log('Base URL:', baseUrl);
+    
+    // Jika file_path adalah URL lengkap, gunakan apa adanya
     if (directFileUrl.startsWith('http')) {
-      const url = new URL(directFileUrl)
-      if (url.host !== '127.0.0.1:8000') {
-        directFileUrl = directFileUrl.replace(url.origin, baseUrl)
+      // URL sudah lengkap, tapi mungkin salah port/host
+      try {
+        const url = new URL(directFileUrl);
+        console.log('Parsed URL host:', url.host);
+        
+        // Check if URL needs to be modified
+        if (url.host !== '127.0.0.1:8000' && !url.host.includes(baseUrl.replace('http://', '').replace('https://', ''))) {
+          directFileUrl = directFileUrl.replace(url.origin, baseUrl);
+          console.log('URL host replaced, new URL:', directFileUrl);
+        }
+      } catch (e) {
+        console.error('Error parsing URL:', e);
+        // Fallback - treat as relative path
+        if (directFileUrl.startsWith('/storage/')) {
+          directFileUrl = `${baseUrl}${directFileUrl}`;
+        } else if (directFileUrl.startsWith('storage/')) {
+          directFileUrl = `${baseUrl}/${directFileUrl}`;
+        } else {
+          directFileUrl = `${baseUrl}/storage/${directFileUrl}`;
+        }
+        console.log('Fallback path constructed:', directFileUrl);
       }
     } else {
+      // Jika relatif path, gabungkan dengan base URL
       if (directFileUrl.startsWith('/storage/')) {
-        directFileUrl = `${baseUrl}${directFileUrl}`
+        directFileUrl = `${baseUrl}${directFileUrl}`;
       } else if (directFileUrl.startsWith('storage/')) {
-        directFileUrl = `${baseUrl}/${directFileUrl}`
+        directFileUrl = `${baseUrl}/${directFileUrl}`;
+      } else if (directFileUrl.startsWith('/')) {
+        // Path starts with slash but not with /storage
+        directFileUrl = `${baseUrl}${directFileUrl}`;
       } else {
-        directFileUrl = `${baseUrl}/storage/${directFileUrl}`
+        // Path tanpa /storage prefix dan tanpa slash awal
+        directFileUrl = `${baseUrl}/storage/${directFileUrl}`;
       }
+      console.log('Relative path converted to:', directFileUrl);
     }
     
-    setPreviewDoc({
+    // Ensure URL is fully qualified and remove any double slashes (except after protocol)
+    directFileUrl = directFileUrl.replace(/([^:]\/)\/+/g, '$1');
+    
+    // Test URL with fetch
+    console.log('Testing URL accessibility with HEAD request...');
+    fetch(directFileUrl, { method: 'HEAD' })
+      .then(response => {
+        console.log('URL test response:', response.status, response.statusText);
+        if (!response.ok) {
+          console.warn('URL might not be accessible:', directFileUrl);
+        } else {
+          console.log('URL is accessible:', directFileUrl);
+        }
+      })
+      .catch(error => {
+        console.error('Error testing URL:', error);
+      });
+    
+    const docWithCorrectedPath = {
       ...uploadedDoc,
       file_path: directFileUrl
-    })
-    setPreviewDialog(true)
+    };
+    console.log('Final document for preview:', docWithCorrectedPath);
+    
+    // Add cache busting parameter
+    const cacheBustingUrl = `${directFileUrl}${directFileUrl.includes('?') ? '&' : '?'}cacheBuster=${Date.now()}`;
+    console.log('URL with cache buster:', cacheBustingUrl);
+    
+    // Update document with cache-busted URL
+    docWithCorrectedPath.file_path = cacheBustingUrl;
+    
+    setPreviewDoc(docWithCorrectedPath);
+    setPreviewDialog(true);
+    
+    // Auto-set fallback to visible after 3 seconds if it's a PDF
+    if (docWithCorrectedPath.file_name?.toLowerCase().endsWith('.pdf') || 
+        docWithCorrectedPath.file_type === 'pdf') {
+      setTimeout(() => {
+        const fallback = document.getElementById('pdf-fallback');
+        if (fallback) {
+          console.log('Setting PDF fallback visible as precaution');
+          fallback.style.display = 'flex';
+        }
+      }, 3000);
+    }
   }
 
   const getStatusBadge = useCallback((status: string) => {
@@ -755,9 +918,7 @@ export default function DokumenPendukungPage() {
               </Button>
             </DialogFooter>
           </DialogContent>
-        </Dialog>
-
-        {/* Dialog Preview Dokumen */}
+        </Dialog>        {/* Dialog Preview Dokumen */}
         <Dialog open={previewDialog} onOpenChange={setPreviewDialog}>
           <DialogContent className="max-w-6xl w-[95vw] h-[90vh] flex flex-col p-4 sm:p-6">
             <DialogHeader className="pb-4 shrink-0">
@@ -769,13 +930,138 @@ export default function DokumenPendukungPage() {
               </DialogDescription>
             </DialogHeader>
             
-            <div className="relative flex-1 min-h-0">
+            {/* Preview Container */}
+            <div className="flex-1 min-h-0 overflow-hidden border rounded-lg bg-gray-50">
               {previewDoc && (
-                <iframe
-                  src={previewDoc.file_path}
-                  className="absolute inset-0 w-full h-full"
-                  title={previewDoc.file_name}
-                />
+                <div className="relative w-full h-full">
+                  {/* Determinar se é um PDF ou imagem com base no nome do arquivo ou tipo */}
+                  {(previewDoc.file_name?.toLowerCase().endsWith('.pdf') || previewDoc.file_type === 'pdf') ? (
+                    <div className="relative w-full h-full">
+                      <iframe
+                        src={previewDoc.file_path}
+                        className="w-full h-full border-0 rounded-lg"
+                        title={`Preview ${previewDoc.file_name}`}
+                        onLoad={() => console.log('PDF iframe loaded successfully')}
+                      />
+                      <div 
+                        id="pdf-fallback" 
+                        className="absolute inset-0 flex-col items-center justify-center p-8 text-center bg-gray-50 hidden"
+                      >
+                        <svg className="w-16 h-16 text-gray-400 mb-4 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        <h3 className="text-lg font-medium text-gray-900 mb-2">Preview PDF tidak dapat ditampilkan</h3>
+                        <p className="text-gray-500 mb-4">File PDF tidak dapat ditampilkan dalam preview. Silakan unduh untuk melihat isi dokumen.</p>
+                        <a 
+                          href={previewDoc.file_path} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                        >
+                          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                          </svg>
+                          Unduh PDF
+                        </a>
+                      </div>
+                    </div>
+                  ) : ['jpg', 'jpeg', 'png', 'gif'].some(ext => previewDoc.file_name?.toLowerCase().endsWith(`.${ext}`)) || 
+                    previewDoc.file_type?.includes('image') ? (
+                    <div className="w-full h-full overflow-auto bg-white">
+                      <div className="flex items-center justify-center min-h-full p-4">
+                        <img 
+                          src={previewDoc.file_path} 
+                          alt="Document Preview" 
+                          className="object-contain max-w-none max-h-none cursor-zoom-in"
+                          style={{
+                            maxWidth: '100%',
+                            maxHeight: '100%',
+                            minWidth: 'auto',
+                            minHeight: 'auto'
+                          }}
+                          onLoad={() => console.log('Image loaded successfully')}
+                          onError={(e) => {
+                            console.error('Image loading error:', e)
+                            console.error('Failed URL:', previewDoc.file_path)
+                            
+                            // Show error message
+                            const target = e.target as HTMLImageElement
+                            target.style.display = 'none'
+                            
+                            // Create error message with download link
+                            const errorDiv = document.createElement('div')
+                            errorDiv.className = 'flex flex-col items-center justify-center h-full text-gray-500'
+                            errorDiv.innerHTML = `
+                              <svg class="w-12 h-12 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.232 15.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                              </svg>
+                              <p class="text-sm mb-4">Gagal memuat gambar</p>
+                              <a 
+                                href="${previewDoc.file_path}" 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                              >
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                                Unduh Gambar
+                              </a>
+                            `
+                            target.parentElement?.appendChild(errorDiv)
+
+                            // Try with cache-busting query param if not already tried
+                            if (!target.src.includes('?nocache=')) {
+                              console.log('Retrying image load with cache-busting...')
+                              const cacheBuster = new Date().getTime()
+                              const newSrc = `${previewDoc.file_path}?nocache=${cacheBuster}`
+                              // Create a new image to try loading with cache busting
+                              const newImg = document.createElement('img')
+                              newImg.src = newSrc
+                              newImg.style.display = 'none' // Hidden initially
+                              newImg.onload = function() {
+                                console.log('Image loaded with cache busting')
+                                // If successful, replace the error div
+                                if (errorDiv.parentElement) {
+                                  errorDiv.remove()
+                                  target.style.display = 'block'
+                                  target.src = newSrc
+                                }
+                              }
+                              // Add to DOM to initiate loading
+                              document.body.appendChild(newImg)
+                              setTimeout(() => newImg.remove(), 5000) // Cleanup
+                            }
+                          }}
+                          onClick={(e) => {
+                            // Zoom functionality - open in new tab for full size
+                            window.open(previewDoc.file_path, '_blank')
+                          }}
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    // For other file types
+                    <div className="flex flex-col items-center justify-center p-8 text-center min-h-full">
+                      <svg className="w-16 h-16 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                      </svg>
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">Preview tidak tersedia</h3>
+                      <p className="text-gray-500 mb-4">Format file ini tidak dapat ditampilkan dalam preview. Silakan unduh untuk melihat isi dokumen.</p>
+                      <a 
+                        href={previewDoc.file_path} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                      >
+                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        Unduh File
+                      </a>
+                    </div>
+                  )}
+                </div>
               )}
             </div>
             
@@ -790,6 +1076,7 @@ export default function DokumenPendukungPage() {
                 {previewDoc && (
                   <Button
                     variant="default"
+                    className="bg-blue-600 hover:bg-blue-700"
                     onClick={() => window.open(previewDoc.file_path, '_blank')}
                   >
                     <Download className="w-4 h-4 mr-2" />
