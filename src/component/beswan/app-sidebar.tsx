@@ -40,23 +40,28 @@ interface ApplicationStatus {
 
 // ✅ TAMBAHKAN: Function untuk fetch application status
 const fetchApplicationStatus = async (): Promise<ApplicationStatus | null> => {
-  try {
-    const token = localStorage.getItem('bersekolah_auth_token')
+  try {    const token = localStorage.getItem('bersekolah_auth_token')
     if (!token) return null
-
-    const baseURL = import.meta.env.PUBLIC_API_BASE_URL
+      const baseURL = import.meta.env.PUBLIC_API_BASE_URL
+    console.log('Fetching application status from:', `${baseURL}/application-status`)
     const response = await fetch(`${baseURL}/application-status`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
+        'Accept': 'application/json',      },
     })
-
+    
     if (response.ok) {
       const result = await response.json()
       return result.data
+    }
+    
+    console.error('Application status error:', response.status, response.statusText)
+    
+    // Check if it's a 404 error and log additional details
+    if (response.status === 404) {
+      console.warn('Application status endpoint not found. Please verify the correct endpoint path in the API.')
     }
   } catch (error) {
     console.log('Could not fetch application status:', error)
