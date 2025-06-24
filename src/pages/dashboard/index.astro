@@ -44,13 +44,129 @@ const formatDate = (dateString: string) => {
 };
 ---
 
-<DashboardAdmin>  <div class="w-full px-4 py-6 lg:px-8">
-    <h1 class="mb-6 text-2xl font-bold tracking-tight">Dashboard Admin</h1>
+<DashboardAdmin>  <!-- Inline script for immediate admin name update -->
+  <script is:inline>
+    // This script runs immediately in the browser when the HTML is parsed
+    // Attempt to update the admin name as early as possible
+    (function() {
+      // Function to find the admin name element using multiple strategies
+      function findAdminNameElement() {
+        // Strategy 1: Direct ID lookup
+        let el = document.getElementById('admin-name');
+        if (el) return el;
+        
+        // Strategy 2: Class lookup
+        el = document.querySelector('.admin-name-span');
+        if (el) return el;
+        
+        // Strategy 3: Attribute lookup
+        el = document.querySelector('[data-element-type="welcome-title"] span');
+        if (el) return el;
+        
+        // Strategy 4: Context-based lookup
+        const titles = document.querySelectorAll('.CardTitle, h1, h2, h3, h4');
+        for (const title of titles) {
+          if (title.textContent && title.textContent.includes('Selamat Datang')) {
+            const span = title.querySelector('span');
+            if (span) return span;
+            
+            // If no span but has "Admin" text, we can't update it without modifying innerHTML
+            // which we'll skip here for safety
+          }
+        }
+        
+        return null;
+      }
+      
+      // Function to update the admin name
+      function updateAdminName(userName) {
+        if (!userName) return false;
+        
+        // First attempt
+        const element = findAdminNameElement();
+        if (element) {
+          element.textContent = userName;
+          console.log("Immediately updated admin name to:", userName);
+          return true;
+        }
+        
+        console.log("Admin name element not found on first try, will attempt again after delay");
+        // Try again after a short delay (for hydration to complete)
+        setTimeout(() => {
+          const delayedElement = findAdminNameElement();
+          if (delayedElement) {
+            delayedElement.textContent = userName;
+            console.log("Updated admin name after delay to:", userName);
+          } else {
+            console.error("Failed to find admin name element even after delay");
+            
+            // Last resort: Use mutation observer to catch when the element appears
+            const observer = new MutationObserver((mutations, obs) => {
+              const foundElement = findAdminNameElement();
+              if (foundElement) {
+                foundElement.textContent = userName;
+                console.log("Updated admin name via mutation observer to:", userName);
+                obs.disconnect(); // Stop observing once we've updated
+              }
+            });
+            
+            observer.observe(document.body, { 
+              childList: true, 
+              subtree: true 
+            });
+            
+            // Stop observing after 5 seconds (safety timeout)
+            setTimeout(() => observer.disconnect(), 5000);
+          }
+        }, 200);
+      }
+      
+      try {
+        const token = localStorage.getItem('bersekolah_auth_token');
+        if (!token) return;
+        
+        // Create a promise to fetch user data
+        const baseURL = (window.import?.meta?.env?.PUBLIC_API_BASE_URL || 'http://localhost:8000/api');
+        console.log(`Inline script fetching from: ${baseURL}/user`);
+        
+        fetch(baseURL + '/user', {
+          headers: {
+            'Authorization': 'Bearer ' + token,
+            'Accept': 'application/json'
+          }
+        })
+        .then(response => {
+          if (response.ok) return response.json();
+          throw new Error('Failed to fetch user data, status: ' + response.status);
+        })
+        .then(user => {
+          if (user && user.name) {
+            console.log("Got user data:", user.name);
+            // Store name in global scope for emergency fallbacks
+            window.__adminUserName = user.name;
+            // Try to update right away
+            updateAdminName(user.name);
+          }
+        })
+        .catch(err => console.error('Early admin name update failed:', err));
+        
+        // Also hook into DOMContentLoaded as a backup
+        document.addEventListener('DOMContentLoaded', function() {
+          if (window.__adminUserName) {
+            updateAdminName(window.__adminUserName);
+          }
+        });
+      } catch (err) {
+        console.error('Inline admin name script error:', err);
+      }
+    })();
+  </script>
 
-    <!-- Welcome Card for Admin -->
+  <div class="w-full px-4 py-6 lg:px-8">
+    <h1 class="mb-6 text-2xl font-bold tracking-tight">Dashboard Admin</h1>    <!-- Welcome Card for Admin -->
     <Card className="mb-6">
       <CardHeader>
-        <CardTitle>Selamat Datang, <span id="admin-name">Admin</span>!</CardTitle>
+        <CardTitle data-element-type="welcome-title">Selamat Datang, <span id="admin-name" class="text-blue-600 admin-name-span">Admin</span>!</CardTitle>
       </CardHeader>
       <CardContent>
         <div class="p-4 border border-blue-100 rounded-lg bg-blue-50">
@@ -552,9 +668,8 @@ const formatDate = (dateString: string) => {
       updateElementText('total-dokumen', dashboardStats.total_dokumen);
       updateElementText('app-pending', appStats.pending);
       updateElementText('app-approved', appStats.approved);
-      updateElementText('app-rejected', appStats.rejected);
-    
-    } catch (error) {
+      updateElementText('app-rejected', appStats.rejected);      } catch (err) {
+      const error = err as Error;
       console.error('Error refreshing dashboard data:', error);
       
       // Show error in UI
@@ -571,17 +686,74 @@ const formatDate = (dateString: string) => {
         console.error('Message:', error.message);
         console.error('Stack:', error.stack);
       } else {
-        console.error('Unknown error:', error);
-      }
+        console.error('Unknown error:', error);      }
       console.groupEnd();
     }
-  };  // Function to get user profile data
+  };  
+  
+  // Function to get user profile data
   const fetchUserProfile = async () => {
     try {
+      console.log('Fetching user profile data...');
+      
+      // Helper function to find admin name element using multiple strategies
+      const findAdminNameElement = () => {
+        // Strategy 1: Direct ID lookup
+        let el = document.getElementById('admin-name');
+        if (el) {
+          console.log('Found admin-name element by ID');
+          return el;
+        }
+        
+        // Strategy 2: Class lookup
+        el = document.querySelector('.admin-name-span');
+        if (el) {
+          console.log('Found admin-name element by class');
+          return el;
+        }
+        
+        // Strategy 3: Attribute lookup
+        el = document.querySelector('[data-element-type="welcome-title"] span');
+        if (el) {
+          console.log('Found admin-name element by attribute');
+          return el;
+        }
+        
+        // Strategy 4: Context-based lookup
+        const titles = document.querySelectorAll('.CardTitle, h1, h2, h3, h4');
+        for (const title of titles) {
+          if (title.textContent && title.textContent.includes('Selamat Datang')) {
+            const span = title.querySelector('span');
+            if (span) {
+              console.log('Found admin-name element by context');
+              return span;
+            }
+          }
+        }
+        
+        console.warn('Admin name element not found with any strategy');
+        return null;
+      };
+      
+      // Find the admin name element
+      let adminNameElement = findAdminNameElement();
+      
+      // Show loading indicator if element found
+      if (adminNameElement) {
+        adminNameElement.innerHTML = 'Admin <span class="text-xs text-blue-500">(memuat...)</span>';
+      } else {
+        console.warn('Element not found on first attempt, will retry after short delay');
+        // Small delay to allow DOM to fully initialize
+        await new Promise(resolve => setTimeout(resolve, 300));
+        adminNameElement = findAdminNameElement();
+      }
+
       const token = localStorage.getItem('bersekolah_auth_token');
       if (!token) throw new Error('No authentication token');
 
       const baseURL = import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:8000/api';
+      console.log(`Fetching user data from ${baseURL}/user`);
+      
       const response = await fetch(`${baseURL}/user`, {
         method: 'GET',
         headers: {
@@ -591,19 +763,78 @@ const formatDate = (dateString: string) => {
         },
       });
 
+      console.log('User API response status:', response.status);
+      
       if (response.ok) {
         const user = await response.json();
-        
-        // Update admin name in welcome message
-        const adminNameElement = document.getElementById('admin-name');
-        if (adminNameElement && user.name) {
-          adminNameElement.textContent = user.name;
-          console.log('Updated admin name to:', user.name);
-        } else {
-          console.log('Could not update admin name:', adminNameElement ? 'No user name found' : 'Element not found');
+        console.log('User data retrieved:', user);
+          // Store name globally as a fallback
+        if (user && user.name) {
+          // Using a safer approach to store the name globally
+          document.body.setAttribute('data-user-name', user.name);
+          // @ts-ignore - Custom property for emergency fallbacks
+          window.__adminUserName = user.name;
         }
-      }
-    } catch (error) {
+          // Use a multi-strategy approach to update the name
+        const updateName = (userName: string): boolean => {
+          if (!userName) userName = 'Admin';
+          
+          // Try to find the element again
+          const element = findAdminNameElement();
+          
+          if (element) {
+            element.textContent = userName;
+            console.log('Updated admin name to:', userName);
+            return true;
+          }
+          
+          // Try a more aggressive approach if element still not found
+          const allSpans = document.querySelectorAll('span');
+          for (const span of allSpans) {
+            if (span.textContent && (
+                span.textContent.includes('Admin') || 
+                span.textContent.includes('memuat')
+              )) {
+              span.textContent = userName;
+              console.log('Updated admin name via span search');
+              return true;
+            }
+          }
+          
+          // Create a mutation observer as a last resort
+          const observer = new MutationObserver((mutations, obs) => {
+            const foundElement = findAdminNameElement();
+            if (foundElement) {
+              foundElement.textContent = userName;
+              console.log('Updated admin name via mutation observer');
+              obs.disconnect(); // Stop observing
+            }
+          });
+          
+          observer.observe(document.body, {
+            childList: true,
+            subtree: true,
+            characterData: true
+          });
+          
+          // Safety timeout
+          setTimeout(() => observer.disconnect(), 5000);
+          
+          return false;
+        };
+        
+        // Attempt to update the name
+        const userName = user && user.name && user.name.trim() ? user.name : 'Admin';
+        const updated = updateName(userName);
+        
+        if (!updated) {
+          console.warn('Initial update failed, will try again after delay');
+          setTimeout(() => updateName(userName), 500);
+        }
+      } else {
+        console.error('Failed to fetch user data, status:', response.status);
+      }    } catch (err) {
+      const error = err as Error;
       console.error('Error fetching user profile:', error);
     }
   };
@@ -633,16 +864,112 @@ const formatDate = (dateString: string) => {
       }
     });
     console.groupEnd();
-    
-    if (!allElementsFound) {
+      if (!allElementsFound) {
       console.error('Some required DOM elements are missing. Data display may be incomplete.');
     }
+    
+    // Function to directly set admin name with multiple DOM targeting strategies
+    const initAdminName = async () => {
+      console.log('Initializing admin name display...');
+      
+      try {
+        const token = localStorage.getItem('bersekolah_auth_token');
+        if (!token) return;
+        
+        const baseURL = import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:8000/api';
+        const response = await fetch(`${baseURL}/user`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json'
+          }
+        });
+        
+        if (response.ok) {
+          const userData = await response.json();
+          const userName = userData.name || 'Admin';
+          console.log('Got user name for immediate display:', userName);
+          
+          // Try multiple strategies to update the admin name
+          const strategies = [
+            // Strategy 1: Direct ID lookup
+            () => {
+              const el = document.getElementById('admin-name');
+              if (el) {
+                el.textContent = userName;
+                return true;
+              }
+              return false;
+            },
+            // Strategy 2: Class lookup
+            () => {
+              const el = document.querySelector('.admin-name-span');
+              if (el) {
+                el.textContent = userName;
+                return true;
+              }
+              return false;
+            },
+            // Strategy 3: Find by attribute and context
+            () => {
+              const title = document.querySelector('[data-element-type="welcome-title"]');
+              if (title) {
+                const span = title.querySelector('span');
+                if (span) {
+                  span.textContent = userName;
+                  return true;
+                }
+              }
+              return false;
+            },
+            // Strategy 4: Find any span containing "Admin" in titles
+            () => {
+              const titles = document.querySelectorAll('h1, h2, h3, h4, [class*="title"], [class*="Title"]');
+              for (const title of titles) {
+                if (title.textContent && title.textContent.includes('Selamat Datang')) {
+                  const spans = title.querySelectorAll('span');
+                  for (const span of spans) {
+                    if (span.textContent && (span.textContent.includes('Admin') || span.textContent.includes('memuat'))) {
+                      span.textContent = userName;
+                      return true;
+                    }
+                  }
+                  // If no span, just replace the Admin text
+                  if (title.textContent.includes('Admin')) {
+                    title.innerHTML = title.innerHTML.replace('Admin', userName);
+                    return true;
+                  }
+                }
+              }
+              return false;
+            }
+          ];
+          
+          // Try each strategy until one succeeds
+          let success = false;
+          for (let i = 0; i < strategies.length && !success; i++) {
+            success = strategies[i]();
+            if (success) {
+              console.log(`Admin name updated successfully using strategy ${i+1}`);
+            }
+          }
+          
+          if (!success) {
+            console.warn('All admin name update strategies failed');
+          }
+        }      } catch (err) {
+        const error = err as Error;
+        console.error('Error in initAdminName:', error);
+      }
+    };
 
     if (checkAuth()) {
-      console.log('Authentication successful, fetching dashboard data...');
-      // Fetch user profile to update admin name
-      fetchUserProfile();
-      // Refresh data when page loads to ensure latest stats
+      console.log('Authentication successful, fetching data...');
+      
+      // Immediately try to update admin name
+      initAdminName();
+      
+      // Skip directly to loading dashboard data since initAdminName already fetched the profile
+      console.log('Now loading dashboard statistics...');
       refreshDashboardData();
     } else {
       console.error('Authentication failed - not fetching data');
