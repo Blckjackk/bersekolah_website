@@ -174,16 +174,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   url: "/dashboard/manage-admin",
                   icon: Shield,
                 },
-                {
-                  title: "Logs Sistem",
-                  url: "/dashboard/system-logs",
-                  icon: FileText,
-                },
-                {
-                  title: "Konfigurasi API",
-                  url: "/dashboard/api-config",
-                  icon: Settings,
-                }
+               
               ]
             }
           ]);
