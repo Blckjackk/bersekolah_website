@@ -73,10 +73,9 @@ export default function LoginPage() {
         <div className="mt-6 text-sm text-center text-muted-foreground">
           <p>Dengan masuk, Anda menyetujui <a href="/terms" className="underline underline-offset-4 hover:text-foreground">Ketentuan Layanan</a> dan <a href="/privacy" className="underline underline-offset-4 hover:text-foreground">Kebijakan Privasi</a> kami.</p>
         </div>
-      </div>
-      <div className="relative hidden bg-muted lg:block">
+      </div>      <div className="relative hidden bg-muted lg:block">
         <img
-          src="assets/image/cute-asian-little-girl-playing-with-coins-money-child-hand-holding-money-kid-saving-money-into-piggy-bank-child-counting-his-saved-coins-children-learning-about-future-concept.jpg"
+          src="/ImageTemp/ProgramBeasiswa.jpg"
           alt="Image"
           className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
         />

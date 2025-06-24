@@ -4,12 +4,35 @@ import { Card, CardHeader, CardTitle, CardContent } from "../../components/ui/ca
 import { Button } from "../../components/ui/button";
 import { DashboardService } from '../../lib/dashboard-service';
 
-// Fetch data from the API
-const dashboardStats = await DashboardService.getQuickActionStats();
-const applicationStats = await DashboardService.getApplicationStats();
+// Initialize default values
+let dashboardStats = {
+  total_pendaftar: 0,
+  total_mentor: 0,
+  total_beswan: 0,
+  total_dokumen: 0,
+  dokumen_terverifikasi: 0,
+  konten_aktif: 0,
+  user_aktif: 0
+};
+
+interface PeriodStat {
+  period_name: string;
+  count: number;
+}
+
+let applicationStats = {
+  total: 0,
+  pending: 0,
+  approved: 0,
+  rejected: 0,
+  by_period: [] as PeriodStat[]
+};
+
+// In Astro SSR context, localStorage isn't available
+// We'll rely on client-side fetching via the script tag
 
 // Format dates for display
-const formatDate = (dateString) => {
+const formatDate = (dateString: string) => {
   const date = new Date(dateString);
   return date.toLocaleDateString('id-ID', { 
     day: 'numeric',
@@ -21,52 +44,120 @@ const formatDate = (dateString) => {
 };
 ---
 
-<DashboardAdmin>
-  <div class="container p-6 mx-auto">
-    <h1 class="mb-8 text-2xl font-bold tracking-tight">Dashboard Admin</h1>
+<DashboardAdmin>  <div class="w-full px-4 py-6 lg:px-8">
+    <h1 class="mb-6 text-2xl font-bold tracking-tight">Dashboard Admin</h1>
 
-    <!-- Stats Overview -->
-    <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+    <!-- Welcome Card for Admin -->
+    <Card className="mb-6">
+      <CardHeader>
+        <CardTitle>Selamat Datang, <span id="admin-name">Admin</span>!</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div class="p-4 border border-blue-100 rounded-lg bg-blue-50">
+          <h3 class="mb-2 text-lg font-medium text-blue-800">Sambutan untuk Admin Bersekolah</h3>
+          <p class="text-blue-700">
+            Selamat datang di Dashboard Admin Beasiswa Bersekolah! Dashboard ini menyediakan semua informasi dan alat yang diperlukan untuk mengelola program beasiswa dengan efektif.
+            Pantau status pendaftaran, verifikasi dokumen, manajemen jadwal wawancara, dan pengumuman keputusan beasiswa di satu tempat.
+          </p>
+          <p class="mt-2 text-blue-700">
+            Jika Anda membutuhkan bantuan lebih lanjut, silakan hubungi tim dukungan IT atau lihat video tutorial di bawah ini.
+          </p>
+        </div>
+      </CardContent>
+    </Card>
+    
+    <!-- Video Tutorial Section -->
+    <Card className="mb-6">
+      <CardHeader>
+        <CardTitle>Video Tutorial Admin</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div class="grid gap-4 md:grid-cols-2">
+          <!-- Video Tutorial 1 -->
+          <div class="overflow-hidden border rounded-lg shadow-sm">
+            <div class="bg-gray-100 aspect-video">
+              <iframe 
+                class="w-full h-full"
+                src="https://www.youtube.com/embed/qU1I3_olv38"
+                title="Tutorial Verifikasi Dokumen"
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen>
+              </iframe>
+            </div>
+            <div class="p-4">
+              <h4 class="mb-1 font-medium">Tutorial Verifikasi Dokumen</h4>
+              <p class="text-sm text-muted-foreground">Panduan lengkap untuk memverifikasi dokumen pendaftaran beasiswa.</p>
+              <button 
+                id="tutorial-1-button"
+                class="w-full px-3 py-1 mt-2 text-sm font-medium text-gray-700 transition-colors bg-white border rounded-md hover:bg-gray-100"
+                onclick="window.open('https://www.youtube.com/watch?v=qU1I3_olv38', '_blank')"
+              >
+                Buka di YouTube
+              </button>
+            </div>
+          </div>
+          
+          <!-- Video Tutorial 2 -->
+          <div class="overflow-hidden border rounded-lg shadow-sm">
+            <div class="bg-gray-100 aspect-video">
+              <iframe 
+                class="w-full h-full"
+                src="https://www.youtube.com/embed/LbmxCLpg3jU"
+                title="Manajemen Jadwal Wawancara"
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen>
+              </iframe>
+            </div>
+            <div class="p-4">
+              <h4 class="mb-1 font-medium">Manajemen Jadwal Wawancara</h4>
+              <p class="text-sm text-muted-foreground">Cara mengatur jadwal wawancara dan mengirim notifikasi kepada calon penerima beasiswa.</p>
+              <button 
+                id="tutorial-2-button"
+                class="w-full px-3 py-1 mt-2 text-sm font-medium text-gray-700 transition-colors bg-white border rounded-md hover:bg-gray-100"
+                onclick="window.open('https://www.youtube.com/watch?v=LbmxCLpg3jU', '_blank')"
+              >
+                Buka di YouTube
+              </button>
+            </div>          </div>
+        </div>
+      </CardContent>
+    </Card>
+    
+    <!-- Full-Width Stats Overview -->
+    <div class="grid w-full grid-cols-1 gap-6 mb-6 sm:grid-cols-2 lg:grid-cols-3">
+      <!-- Total Pendaftar -->
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium text-muted-foreground">Total Pendaftar</CardTitle>
         </CardHeader>
         <CardContent>
           <div class="flex items-center">
-            <div class="mr-4 rounded-full p-2 bg-blue-100">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5 text-blue-600"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+            <div class="p-2 mr-4 bg-blue-100 rounded-full">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" />
+              </svg>
             </div>
             <div>
               <div class="text-3xl font-bold" id="total-pendaftar">{dashboardStats.total_pendaftar || 0}</div>
-              <p class="text-xs text-muted-foreground" id="pendaftar-change">Data terkini</p>
+              <p class="text-xs text-muted-foreground">Data terkini</p>
             </div>
           </div>
         </CardContent>
       </Card>
 
+      <!-- Total Mentor -->
       <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium text-muted-foreground">Beswan Aktif</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div class="flex items-center">
-            <div class="mr-4 rounded-full p-2 bg-green-100">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5 text-green-600"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg>
-            </div>
-            <div>
-              <div class="text-3xl font-bold" id="total-beswan">{dashboardStats.total_beswan || 0}</div>
-              <p class="text-xs text-muted-foreground" id="beswan-info">Penerima beasiswa</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>      <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium text-muted-foreground">Total Mentor</CardTitle>
         </CardHeader>
         <CardContent>
           <div class="flex items-center">
-            <div class="mr-4 rounded-full p-2 bg-purple-100">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5 text-purple-600"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+            <div class="p-2 mr-4 bg-purple-100 rounded-full">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" />
+              </svg>
             </div>
             <div>
               <div class="text-3xl font-bold" id="total-mentor">{dashboardStats.total_mentor || 0}</div>
@@ -74,144 +165,487 @@ const formatDate = (dateString) => {
             </div>
           </div>
         </CardContent>
-      </Card>      <Card>
+      </Card>
+
+      <!-- Dokumen Terupload -->
+      <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium text-muted-foreground">Dokumen Terupload</CardTitle>
         </CardHeader>
         <CardContent>
           <div class="flex items-center">
-            <div class="mr-4 rounded-full p-2 bg-amber-100">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5 text-amber-600"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+            <div class="p-2 mr-4 rounded-full bg-amber-100">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" /><polyline points="14 2 14 8 20 8" />
+              </svg>
             </div>
             <div>
               <div class="text-3xl font-bold" id="total-dokumen">{dashboardStats.total_dokumen || 0}</div>
-              <p class="text-xs text-muted-foreground" id="dokumen-info">Dokumen terupload</p>
+              <p class="text-xs text-muted-foreground">Dokumen terupload</p>
             </div>
           </div>
         </CardContent>
       </Card>
     </div>
 
+    <!-- Application Status Grid -->
     <div class="grid gap-6 mt-6 md:grid-cols-7">
       <!-- Application Status Grid -->
-      <div class="md:col-span-4">
+      <div class="md:col-span-12">
         <Card>
           <CardHeader>
             <CardTitle>Status Pendaftaran Beasiswa</CardTitle>
           </CardHeader>
           <CardContent>            <div class="grid grid-cols-3 gap-4 mb-6">
-              <div class="p-4 text-center bg-yellow-50 rounded-lg">
+              <div class="p-4 text-center rounded-lg bg-yellow-50">
                 <p class="mb-1 text-sm text-yellow-600">Menunggu</p>
                 <p class="text-2xl font-bold text-yellow-600" id="app-pending">{applicationStats.pending || 0}</p>
               </div>
-              <div class="p-4 text-center bg-green-50 rounded-lg">
+              <div class="p-4 text-center rounded-lg bg-green-50">
                 <p class="mb-1 text-sm text-green-600">Diterima</p>
                 <p class="text-2xl font-bold text-green-600" id="app-approved">{applicationStats.approved || 0}</p>
               </div>
-              <div class="p-4 text-center bg-red-50 rounded-lg">
+              <div class="p-4 text-center rounded-lg bg-red-50">
                 <p class="mb-1 text-sm text-red-600">Ditolak</p>
                 <p class="text-2xl font-bold text-red-600" id="app-rejected">{applicationStats.rejected || 0}</p>
               </div>
             </div>
-
-            <!-- Periode Stats -->
-            <div>
-              <h3 class="text-sm font-medium mb-2">Pendaftar per Periode</h3>
-              <div id="periode-stats" class="space-y-3">
-                {applicationStats.by_period && applicationStats.by_period.length > 0 ? (
-                  applicationStats.by_period.map((period) => (
-                    <div class="flex items-center space-x-2">
-                      <div class="flex-1">
-                        <p class="text-xs font-medium mb-1">{period.period_name}</p>
-                        <div class="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
-                          <div class="h-full bg-blue-500" style={`width: ${Math.min(100, period.count/10*100)}%`}></div>
-                        </div>
-                      </div>
-                      <span class="text-xs text-gray-600 min-w-[80px] text-right">{period.count} pendaftar</span>
-                    </div>
-                  ))
-                ) : (
-                  <div class="flex items-center space-x-2">
-                    <div class="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
-                      <div class="h-full bg-gray-300" style="width: 0%"></div>
-                    </div>
-                    <span class="text-xs text-gray-600 min-w-[80px] text-right">Tidak ada data</span>
-                  </div>
-                )}
-              </div>
-              </div>
-            </div>
-
-            <div class="mt-4 text-right">
-              <a href="/dashboard/data-pendaftar">
-                <Button variant="outline" size="sm">Lihat Semua Pendaftar</Button>
-              </a>
-            </div>
+                      
           </CardContent>
         </Card>
       </div>      <!-- Quick Actions -->
-      <div class="md:col-span-3">
-        <Card>
-          <CardHeader>
-            <CardTitle>Panel Admin</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div class="mb-6 p-4 rounded-lg bg-blue-50">
-              <h3 class="text-md font-semibold text-blue-700 mb-2">Selamat Datang di Panel Admin</h3>
-              <p class="text-sm text-blue-600">Panel ini memberikan akses ke semua fungsionalitas manajemen konten dan beasiswa. Gunakan menu cepat di bawah untuk akses fungsi utama.</p>
-            </div>            <div class="mt-6">
-              <h4 class="text-sm font-medium mb-3">Statistik Lainnya</h4>
-              
-              <div class="grid grid-cols-2 gap-3 mb-4">
-                <div class="p-3 border rounded-lg bg-green-50 border-green-100">
-                  <div class="flex items-center mb-1">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1 text-green-600"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-                    <span class="text-sm font-medium text-green-700">Dokumen Terverifikasi</span>
-                  </div>
-                  <p class="text-xl font-bold text-green-700">{dashboardStats.dokumen_terverifikasi || 0}</p>
-                </div>
-                <div class="p-3 border rounded-lg bg-blue-50 border-blue-100">
-                  <div class="flex items-center mb-1">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1 text-blue-600"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                    <span class="text-sm font-medium text-blue-700">Konten Aktif</span>
-                  </div>
-                  <p class="text-xl font-bold text-blue-700">{dashboardStats.konten_aktif || 0}</p>
-                </div>
-              </div>
-
-              <h4 class="text-sm font-medium mb-2">Aksi Cepat</h4>
-              <div class="grid grid-cols-2 gap-2">
-                <a href="/dashboard/data-pendaftar">
-                  <Button variant="outline" className="w-full justify-start text-xs h-auto py-1.5" size="sm">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1 h-3 w-3"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                    Pendaftar
-                  </Button>
-                </a>
-                <a href="/dashboard/content">
-                  <Button variant="outline" className="w-full justify-start text-xs h-auto py-1.5" size="sm">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1 h-3 w-3"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                    Konten
-                  </Button>
-                </a>
-                <a href="/dashboard/data-mentor">
-                  <Button variant="outline" className="w-full justify-start text-xs h-auto py-1.5" size="sm">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1 h-3 w-3"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                    Mentor
-                  </Button>
-                </a>
-                <a href="/dashboard/periode-beasiswa">
-                  <Button variant="outline" className="w-full justify-start text-xs h-auto py-1.5" size="sm">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1 h-3 w-3"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"></rect><line x1="16" x2="16" y1="2" y2="6"></line><line x1="8" x2="8" y1="2" y2="6"></line><line x1="3" x2="21" y1="10" y2="10"></line><path d="M8 14h.01"></path><path d="M12 14h.01"></path><path d="M16 14h.01"></path><path d="M8 18h.01"></path><path d="M12 18h.01"></path><path d="M16 18h.01"></path></svg>
-                    Periode
-                  </Button>
-                </a>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      
     </div>
   </div>
 </DashboardAdmin>
 
 <!-- Legacy client-side script removed - data now fetched server-side -->
+
+<script>  // Function to make authenticated API requests with detailed logging
+  const fetchAPI = async (url: string) => {
+    console.log(`[API] Fetching from ${url}`);
+    
+    const token = localStorage.getItem('bersekolah_auth_token');
+    if (!token) {
+      console.error('[API] No authentication token found');
+      throw new Error('No authentication token');
+    }
+    
+    const baseURL = import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:8000/api';
+    const fullUrl = `${baseURL}${url}`;
+    
+    console.log(`[API] Full URL: ${fullUrl}`);
+    
+    try {
+      console.time(`[API] ${url}`);
+      const response = await fetch(fullUrl, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json'
+        }
+      });
+      console.timeEnd(`[API] ${url}`);
+      
+      console.log(`[API] Status: ${response.status} ${response.statusText}`);
+      
+      if (!response.ok) {
+        const errorText = await response.text().catch(() => 'Could not read error response');
+        console.error(`[API] Error response: ${errorText}`);
+        throw new Error(`API error: ${response.status} - ${errorText}`);
+      }
+      
+      const data = await response.json();
+      console.log(`[API] Success response from ${url}:`, data);
+      return data;
+    } catch (error) {
+      console.error(`[API] Error fetching ${url}:`, error);
+      throw error;
+    }
+  };  // Function to update element text safely
+  const updateElementText = (id: string, value: unknown) => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.textContent = typeof value === 'number' || typeof value === 'string' ? String(value) : 'N/A';
+    } else {
+      console.warn(`Element with id "${id}" not found`);
+    }
+  };
+  // Function to check authentication status
+  const checkAuth = () => {
+    const token = localStorage.getItem('bersekolah_auth_token');
+    if (!token) {
+      console.log('No authentication token found, redirecting to login page');
+      window.location.href = '/masuk?redirect=' + encodeURIComponent(window.location.pathname);
+      return false;
+    }
+    return true;
+  };  // Function to refresh dashboard data
+  const refreshDashboardData = async () => {
+    try {
+      console.log('Refreshing dashboard data...');      // We'll use the consolidated stats endpoint for efficiency
+      console.log('Fetching consolidated statistics');
+      
+      // Define the endpoints we need for complete dashboard
+      const endpoints = [
+        '/dashboard/consolidated-stats',        // Consolidated stats - includes all needed data
+        '/applications/statistics',             // Fallback: Application status statistics (public endpoint)
+        '/mentors/total',                       // Fallback: Total mentor count
+        '/documents/statistics'                 // Fallback: Document statistics (public endpoint)
+      ];
+        // Fetch all endpoints in parallel
+      const results = await Promise.allSettled(endpoints.map(endpoint => fetchAPI(endpoint)));
+      
+      console.log('All API requests completed:', results);
+      
+      // Extract results from the successful requests
+      const successfulResponses: Record<string, any> = {};
+      results.forEach((result, index) => {
+        if (result.status === 'fulfilled') {
+          const endpoint = endpoints[index];
+          successfulResponses[endpoint] = result.value;
+          console.log(`Success from ${endpoint}:`, result.value);
+        } else {
+          console.error(`Failed to fetch ${endpoints[index]}:`, result.reason);
+        }
+      });
+      
+      // Process and extract data from responses
+      
+      // 1. Process dashboard stats
+      let dashboardStats = {
+        total_pendaftar: 0,
+        total_mentor: 0,
+        total_dokumen: 0,
+        dokumen_terverifikasi: 0
+      };
+
+      // 2. Process application statistics
+      let appStats = {
+        total: 0,
+        pending: 0,
+        approved: 0,
+        rejected: 0
+      };      // Try to use consolidated stats endpoint first, but don't rely exclusively on it
+      let consolidatedSuccess = false;
+      
+      if (successfulResponses['/dashboard/consolidated-stats']) {
+        const consolidatedData = successfulResponses['/dashboard/consolidated-stats'];
+        console.log('Processing consolidated stats data:', consolidatedData);
+
+        try {
+          if (consolidatedData.success && consolidatedData.data) {
+            const data = consolidatedData.data;
+            
+            // Extract dashboard stats
+            if (data.dashboard) {
+              console.log('Processing consolidated dashboard stats:', data.dashboard);
+              dashboardStats.total_pendaftar = data.dashboard.total_pendaftar || 0;
+              dashboardStats.total_mentor = data.dashboard.total_mentor || 0;
+              dashboardStats.total_dokumen = data.dashboard.total_dokumen || 0;
+              dashboardStats.dokumen_terverifikasi = data.dashboard.dokumen_terverifikasi || 0;
+            }
+            
+            // Extract application stats
+            if (data.applications) {
+              console.log('Processing consolidated application stats:', data.applications);
+              appStats.total = data.applications.total || 0;
+              appStats.pending = data.applications.pending || 0;
+              appStats.approved = data.applications.diterima || 0;
+              appStats.rejected = data.applications.ditolak || 0;
+            }
+
+            consolidatedSuccess = true;
+            console.log('Successfully processed consolidated stats');
+          }
+        } catch (e) {
+          console.error('Error processing consolidated stats:', e);
+          // Will continue with individual endpoints
+        }
+      }
+      
+      // We'll continue to process the individual endpoints even if consolidated was successful,
+      // but will only use their values if we're missing something from consolidated stats
+      // This gives us the most robust solution
+      
+      // FALLBACK: Process individual endpoints if consolidated endpoint failed
+      console.warn('Consolidated stats endpoint failed or returned incomplete data. Using fallback endpoints...');
+      
+      // Extract quick actions data if available
+      if (successfulResponses['/dashboard/quick-actions']) {
+        const quickActions = successfulResponses['/dashboard/quick-actions'];
+        console.log('Processing quick-actions data:', quickActions);
+        
+        // Extract values from quick actions endpoint
+        dashboardStats.total_pendaftar = quickActions.total_pendaftar || 0;
+        dashboardStats.total_mentor = quickActions.total_mentor || 0;
+        dashboardStats.total_dokumen = quickActions.total_dokumen || 0;
+      }
+      
+      // Process mentor count
+      if (successfulResponses['/mentors/total']) {
+        const mentorsData = successfulResponses['/mentors/total'];
+        console.log('Processing mentors data:', mentorsData);
+        
+        // Check different response formats
+        if (mentorsData.data && typeof mentorsData.data.total === 'number') {
+          dashboardStats.total_mentor = mentorsData.data.total;
+        } else if (typeof mentorsData.total === 'number') {
+          dashboardStats.total_mentor = mentorsData.total;
+        } else if (typeof mentorsData === 'number') {
+          dashboardStats.total_mentor = mentorsData;
+        }
+        
+        console.log('Extracted mentor count:', dashboardStats.total_mentor);
+      }
+        // Process document statistics
+      if (successfulResponses['/documents/statistics']) {
+        const documentsData = successfulResponses['/documents/statistics'];
+        console.log('Processing document statistics:', documentsData);
+        
+        // Check different response formats
+        if (documentsData.data) {
+          // Controller returns { data: { total: X } } or { data: { total_documents: X } }
+          dashboardStats.total_dokumen = documentsData.data.total || documentsData.data.total_documents || dashboardStats.total_dokumen;
+          dashboardStats.dokumen_terverifikasi = documentsData.data.verified || 0;
+        } else if (documentsData.total_documents) {
+          // Direct response { total_documents: X }
+          dashboardStats.total_dokumen = documentsData.total_documents;
+        } else if (documentsData.total) {
+          // Direct response { total: X }
+          dashboardStats.total_dokumen = documentsData.total;
+        }
+        
+        console.log('Extracted document count:', dashboardStats.total_dokumen);
+      }
+        // Process application statistics
+      if (successfulResponses['/applications/statistics']) {
+        const applicationsData = successfulResponses['/applications/statistics'];
+        console.log('Processing applications statistics:', applicationsData);
+        
+        // Diagnostic: Log the raw response for easier debugging
+        console.group('DIAGNOSTIC - Raw Application Stats Response:');
+        console.log(JSON.stringify(applicationsData, null, 2));
+        console.groupEnd();
+        
+        // Detailed logging of response structure to help with debugging
+        console.group('Response Structure Analysis:');
+        if (applicationsData) {
+          console.log('Top level keys:', Object.keys(applicationsData));
+          
+          if (applicationsData.data) {
+            console.log('data object keys:', Object.keys(applicationsData.data));
+            
+            if (applicationsData.data.overview) {
+              console.log('overview object keys:', Object.keys(applicationsData.data.overview));
+              console.log('overview values:', applicationsData.data.overview);
+            }
+          }
+          
+          // Log all possible status fields at any level
+          const statusFields = ['diterima', 'ditolak', 'approved', 'rejected', 'pending', 'total'];
+          console.group('Searching for status fields in response:');
+          statusFields.forEach(field => {
+            if (applicationsData[field] !== undefined) {
+              console.log(`Found direct ${field}:`, applicationsData[field]);
+            }
+            if (applicationsData.data && applicationsData.data[field] !== undefined) {
+              console.log(`Found in data.${field}:`, applicationsData.data[field]);
+            }
+            if (applicationsData.data && applicationsData.data.overview && applicationsData.data.overview[field] !== undefined) {
+              console.log(`Found in data.overview.${field}:`, applicationsData.data.overview[field]);
+            }
+          });
+          console.groupEnd();
+        }
+        console.groupEnd();
+        
+        // Process application statistics based on different response formats
+        if (applicationsData && applicationsData.data && applicationsData.data.overview) {
+          // Format from AdminBeasiswaApplicationController
+          const overview = applicationsData.data.overview;
+          console.log('Application overview data:', overview);
+          
+          // Using AdminBeasiswaApplicationController field names
+          appStats = {
+            total: overview.total || 0,
+            pending: overview.pending || 0,
+            approved: overview.diterima || 0,
+            rejected: overview.ditolak || 0
+          };
+          
+          // Update total pendaftar from app stats if needed
+          if (!dashboardStats.total_pendaftar && appStats.total) {
+            dashboardStats.total_pendaftar = appStats.total;
+          }
+          
+          console.log('Extracted from AdminBeasiswaApplicationController format:', appStats);
+        } else if (applicationsData && applicationsData.total !== undefined) {
+          // Format from DashboardController
+          appStats = {
+            total: applicationsData.total || 0,
+            pending: applicationsData.pending || 0,
+            approved: applicationsData.approved || applicationsData.diterima || 0,
+            rejected: applicationsData.rejected || applicationsData.ditolak || 0
+          };
+          
+          // Update total pendaftar from app stats if needed
+          if (!dashboardStats.total_pendaftar && appStats.total) {
+            dashboardStats.total_pendaftar = appStats.total;
+          }
+          
+          console.log('Extracted from DashboardController format:', appStats);
+        } else {
+          console.warn('Could not extract application stats from response');
+          
+          // Try to find any fields that might contain status counts
+          if (applicationsData && typeof applicationsData === 'object') {
+            console.log('Attempting to find status fields in response:');
+            const possibleFields = [
+              'total', 'pending', 'approved', 'rejected', 
+              'diterima', 'ditolak', 'lolos_berkas', 'lolos_wawancara'
+            ];
+            
+            for (const field of possibleFields) {
+              if (applicationsData[field] !== undefined) {
+                console.log(`Found field "${field}":`, applicationsData[field]);
+                
+                // Map to our stats object
+                if (field === 'total') appStats.total = applicationsData[field];
+                if (field === 'pending') appStats.pending = applicationsData[field];
+                if (field === 'approved' || field === 'diterima') appStats.approved = applicationsData[field];
+                if (field === 'rejected' || field === 'ditolak') appStats.rejected = applicationsData[field];
+              }
+              
+              // Also check if nested in data property
+              if (applicationsData.data && applicationsData.data[field] !== undefined) {
+                console.log(`Found nested field "data.${field}":`, applicationsData.data[field]);
+                
+                // Map to our stats object
+                if (field === 'total') appStats.total = applicationsData.data[field];
+                if (field === 'pending') appStats.pending = applicationsData.data[field];
+                if (field === 'approved' || field === 'diterima') appStats.approved = applicationsData.data[field];
+                if (field === 'rejected' || field === 'ditolak') appStats.rejected = applicationsData.data[field];
+              }
+            }
+          }
+        }
+        
+        console.log('Final application stats to display:', appStats);
+      }
+        // Update the UI with best available statistics from all sources
+      console.log('Final dashboard stats to display:', dashboardStats);
+      console.log('Final application stats to display:', appStats);
+      
+      // If we still have empty values, try to infer them from other stats
+      if (dashboardStats.total_pendaftar === 0 && appStats.total > 0) {
+        dashboardStats.total_pendaftar = appStats.total;
+      }
+      
+      // If there's no total but we have individual status counts, calculate the total
+      if (appStats.total === 0 && (appStats.pending > 0 || appStats.approved > 0 || appStats.rejected > 0)) {
+        appStats.total = appStats.pending + appStats.approved + appStats.rejected;
+      }
+      
+      // Update the UI with our best available data
+      updateElementText('total-pendaftar', dashboardStats.total_pendaftar);
+      updateElementText('total-mentor', dashboardStats.total_mentor);
+      updateElementText('total-dokumen', dashboardStats.total_dokumen);
+      updateElementText('app-pending', appStats.pending);
+      updateElementText('app-approved', appStats.approved);
+      updateElementText('app-rejected', appStats.rejected);
+    
+    } catch (error) {
+      console.error('Error refreshing dashboard data:', error);
+      
+      // Show error in UI
+      const errorElements = ['total-pendaftar', 'total-mentor', 'total-dokumen', 'app-pending', 'app-approved', 'app-rejected'];
+      errorElements.forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+          element.innerHTML = '<span class="text-red-500">Error</span>';
+        }
+      });
+        // Show error in console with details
+      console.group('API Error Details');
+      if (error instanceof Error) {
+        console.error('Message:', error.message);
+        console.error('Stack:', error.stack);
+      } else {
+        console.error('Unknown error:', error);
+      }
+      console.groupEnd();
+    }
+  };  // Function to get user profile data
+  const fetchUserProfile = async () => {
+    try {
+      const token = localStorage.getItem('bersekolah_auth_token');
+      if (!token) throw new Error('No authentication token');
+
+      const baseURL = import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:8000/api';
+      const response = await fetch(`${baseURL}/user`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const user = await response.json();
+        
+        // Update admin name in welcome message
+        const adminNameElement = document.getElementById('admin-name');
+        if (adminNameElement && user.name) {
+          adminNameElement.textContent = user.name;
+          console.log('Updated admin name to:', user.name);
+        } else {
+          console.log('Could not update admin name:', adminNameElement ? 'No user name found' : 'Element not found');
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+    }
+  };
+
+  // Initialize when DOM is ready
+  document.addEventListener('DOMContentLoaded', () => {
+    // Debug: Verify all expected DOM elements exist
+    const requiredElements = [
+      'total-pendaftar', 
+      'total-mentor', 
+      'total-dokumen', 
+      'app-pending', 
+      'app-approved', 
+      'app-rejected',
+      'admin-name'
+    ];
+    
+    console.group('DOM Elements Check');
+    let allElementsFound = true;
+    requiredElements.forEach(id => {
+      const element = document.getElementById(id);
+      if (element) {
+        console.log(`✅ Found element with id "${id}"`, element);
+      } else {
+        console.error(`❌ Missing element with id "${id}"`);
+        allElementsFound = false;
+      }
+    });
+    console.groupEnd();
+    
+    if (!allElementsFound) {
+      console.error('Some required DOM elements are missing. Data display may be incomplete.');
+    }
+
+    if (checkAuth()) {
+      console.log('Authentication successful, fetching dashboard data...');
+      // Fetch user profile to update admin name
+      fetchUserProfile();
+      // Refresh data when page loads to ensure latest stats
+      refreshDashboardData();
+    } else {
+      console.error('Authentication failed - not fetching data');
+    }
+  });
+</script>

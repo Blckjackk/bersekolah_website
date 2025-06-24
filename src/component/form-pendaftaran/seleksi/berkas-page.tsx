@@ -275,17 +275,20 @@ export default function SeleksiBerkasPage() {
               }
               
               dataCount = documents.length
-              doc.count = dataCount
               
               verifiedCount = documents.filter((d: any) => d.status === 'verified').length
               pendingCount = documents.filter((d: any) => d.status === 'pending').length
               rejectedCount = documents.filter((d: any) => d.status === 'rejected').length
               
-              doc.verified_count = verifiedCount
-              doc.pending_count = pendingCount
-              doc.rejected_count = rejectedCount
-              
+              // ✅ FIXED: Batasi count berdasarkan expectedCount untuk dokumen wajib
               if (doc.expectedCount) {
+                // Untuk dokumen wajib, hanya tampilkan sesuai expectedCount
+                const maxCount = doc.expectedCount
+                doc.count = Math.min(dataCount, maxCount) // ✅ FIXED: Batasi doc.count juga
+                doc.verified_count = Math.min(verifiedCount, maxCount)
+                doc.pending_count = Math.min(pendingCount, maxCount)
+                doc.rejected_count = Math.min(rejectedCount, maxCount)
+                
                 hasData = dataCount >= doc.expectedCount && verifiedCount >= doc.expectedCount
                 
                 if (verifiedCount >= doc.expectedCount) {
@@ -298,6 +301,12 @@ export default function SeleksiBerkasPage() {
                   doc.verification_status = undefined
                 }
               } else {
+                // Untuk dokumen opsional, tampilkan semua
+                doc.count = dataCount
+                doc.verified_count = verifiedCount
+                doc.pending_count = pendingCount
+                doc.rejected_count = rejectedCount
+                
                 hasData = true
                 if (verifiedCount > 0) {
                   doc.verification_status = "verified"
@@ -558,7 +567,6 @@ export default function SeleksiBerkasPage() {
           <Badge variant="outline" className="text-green-700 border-green-200 bg-green-50">
             <CheckCircle2 className="w-3 h-3 mr-1" /> 
             Terverifikasi
-            {doc.verified_count !== undefined && doc.expectedCount && ` (${doc.verified_count}/${doc.expectedCount})`}
           </Badge>
         )
       } else if (doc.verification_status === 'pending') {
@@ -566,7 +574,6 @@ export default function SeleksiBerkasPage() {
           <Badge variant="outline" className="text-yellow-700 border-yellow-200 bg-yellow-50">
             <Clock className="w-3 h-3 mr-1" /> 
             Menunggu Verifikasi
-            {doc.pending_count !== undefined && ` (${doc.pending_count})`}
           </Badge>
         )
       } else if (doc.verification_status === 'rejected') {
@@ -597,7 +604,8 @@ export default function SeleksiBerkasPage() {
         <Badge variant="outline" className="text-gray-600 border-gray-200 bg-gray-50">
           <AlertCircle className="w-3 h-3 mr-1" /> 
           Belum Lengkap
-          {doc.count !== undefined && ` (${doc.count}/${doc.expectedCount || '?'})`}
+          {doc.count !== undefined && doc.expectedCount && ` (${doc.count}/${doc.expectedCount})`}
+          {doc.count !== undefined && !doc.expectedCount && ` (${doc.count})`}
         </Badge>
       )
     }
@@ -755,20 +763,12 @@ export default function SeleksiBerkasPage() {
                   <div className="flex items-center justify-between">
                     <span className="text-sm">Progres Pengisian</span>
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium">
-                        {selectionStatus.completed_documents}/{selectionStatus.total_documents}
-                      </span>
                       <Badge variant="outline" className="text-xs">
                         {selectionStatus.submission_progress}%
                       </Badge>
                     </div>
                   </div>
                   <Progress value={selectionStatus.submission_progress} className="h-3" />
-                  
-                  <div className="flex justify-between text-xs text-muted-foreground">
-                    <span>Dokumen Wajib: {selectionStatus.completed_required}/{selectionStatus.required_documents}</span>
-                    <span>Total: {selectionStatus.completed_documents}/{selectionStatus.total_documents}</span>
-                  </div>
                 </div>
               </div>
               
@@ -797,23 +797,23 @@ export default function SeleksiBerkasPage() {
                         </div>
                         
                         {doc.count !== undefined && doc.expectedCount && doc.name !== "Data Pribadi" && (
-                          <div className="mt-1 text-xs text-muted-foreground">
-                            {doc.verified_count !== undefined ? (
-                              <>
-                                Terverifikasi: {doc.verified_count}/{doc.expectedCount}
-                                {doc.pending_count && doc.pending_count > 0 && `, Pending: ${doc.pending_count}`}
-                                {doc.rejected_count && doc.rejected_count > 0 && `, Ditolak: ${doc.rejected_count}`}
-                              </>
-                            ) : (
-                              `${doc.count} dari ${doc.expectedCount} dokumen`
-                            )}
-                          </div>
+                          doc.verified_count !== undefined ? (
+                            doc.rejected_count && doc.rejected_count > 0 ? (
+                              <div className="mt-1 text-xs text-muted-foreground">
+                                Ditolak: {doc.rejected_count}
+                              </div>
+                            ) : null
+                          ) : (
+                            <div className="mt-1 text-xs text-muted-foreground">
+                              {Math.min(doc.count, doc.expectedCount)} dari {doc.expectedCount} dokumen
+                            </div>
+                          )
                         )}
                         
                         {!doc.required && doc.count !== undefined && (
                           <div className="mt-1 text-xs text-muted-foreground">
                             {doc.count === 0 ? "Tidak ada dokumen (opsional)" : 
-                             `${doc.verified_count || 0} terverifikasi dari ${doc.count} dokumen`}
+                             `${doc.count} dokumen tersedia`}
                           </div>
                         )}
                       </div>

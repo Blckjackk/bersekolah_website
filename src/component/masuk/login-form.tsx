@@ -110,10 +110,23 @@ export function LoginForm({
           localStorage.setItem('bersekolah_user', JSON.stringify(userDataWithRole));
           console.log("User data dengan role berhasil disimpan:", userDataWithRole);
         }
-        
-        // Simpan timestamp login dengan prefix bersekolah_
+          // Simpan timestamp login dengan prefix bersekolah_
         localStorage.setItem('bersekolah_login_time', Date.now().toString());
         console.log("Login timestamp berhasil disimpan");
+        
+        // Force a refresh of user data in NavUser component
+        // Create or update a custom event to refresh user data
+        try {
+          window.dispatchEvent(new CustomEvent('bersekolah:login-success', {
+            detail: {
+              user: userDataWithRole,
+              timestamp: Date.now()
+            }
+          }));
+          console.log("Custom event untuk refresh user data telah dipancarkan");
+        } catch (e) {
+          console.error("Error dispatching login event:", e);
+        }
         
         toast({
           title: "Login berhasil",

@@ -5,45 +5,32 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
-type Status = "Pending" | "Diterima" | "Ditolak";
+// These are just placeholder types and functions that will be replaced by client-side logic
+type Status = "pending" | "lolos_berkas" | "lolos_wawancara" | "diterima" | "ditolak";
 
-const applicants = [
-  {
-    id: "BSW101",
-    name: "Nadia Aulia",
-    program: "Beasiswa Penuh",
-    university: "Universitas Padjadjaran",
-    gpa: "3.90",
-    status: "Diterima",
-    applicationDate: "2025-05-20",
-  },
-  {
-    id: "BSW102",
-    name: "Rizky Pratama",
-    program: "Beasiswa Parsial",
-    university: "Universitas Brawijaya",
-    gpa: "3.75",
-    status: "Pending",
-    applicationDate: "2025-05-22",
-  },
-  {
-    id: "BSW103",
-    name: "Dewi Maharani",
-    program: "Beasiswa Penuh",
-    university: "Universitas Airlangga",
-    gpa: "3.88",
-    status: "Ditolak",
-    applicationDate: "2025-05-23",
-  },
-];
+// Initial empty array - will be populated by client-side script
+const applicants = [];
 
 const getStatusColor = (status: Status) => {
   const colors: Record<Status, string> = {
-    "Pending": "bg-yellow-100 text-yellow-800",
-    "Diterima": "bg-green-100 text-green-800",
-    "Ditolak": "bg-red-100 text-red-800",
+    "pending": "bg-yellow-100 text-yellow-800",
+    "lolos_berkas": "bg-blue-100 text-blue-800",
+    "lolos_wawancara": "bg-purple-100 text-purple-800",
+    "diterima": "bg-green-100 text-green-800",
+    "ditolak": "bg-red-100 text-red-800",
   };
-  return colors[status];
+  return colors[status] || "bg-gray-100 text-gray-800";
+};
+
+const getStatusText = (status: Status) => {
+  const labels: Record<Status, string> = {
+    "pending": "Menunggu",
+    "lolos_berkas": "Lolos Berkas",
+    "lolos_wawancara": "Lolos Wawancara",
+    "diterima": "Diterima",
+    "ditolak": "Ditolak",
+  };
+  return labels[status] || status;
 };
 ---
 
@@ -54,43 +41,96 @@ const getStatusColor = (status: Status) => {
       <p class="text-muted-foreground">
         Berikut daftar peserta yang mendaftar program beasiswa tahun ini.
       </p>
-    </div>
-
+    </div>    <Card className="mb-6">
+      <CardContent>
+        <div class="flex flex-wrap gap-4">
+            <Card className="w-full sm:w-[calc(33%-8px)] md:w-[calc(25%-12px)]">
+              <CardContent className="p-4">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <h3 class="text-sm font-medium text-muted-foreground">Total Pendaftar</h3>
+                    <p id="total-applicants" class="text-2xl font-bold">0</p>
+                  </div>
+                  <div class="p-2 bg-blue-100 rounded-full">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card className="w-full sm:w-[calc(33%-8px)] md:w-[calc(25%-12px)]">
+              <CardContent className="p-4">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <h3 class="text-sm font-medium text-muted-foreground">Total Dokumen</h3>
+                    <p id="total-documents" class="text-2xl font-bold">0</p>
+                  </div>
+                  <div class="p-2 bg-green-100 rounded-full">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card className="w-full sm:w-[calc(33%-8px)] md:w-[calc(25%-12px)]">
+              <CardContent className="p-4">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <h3 class="text-sm font-medium text-muted-foreground">Total Mentor</h3>
+                    <p id="total-mentors" class="text-2xl font-bold">0</p>
+                  </div>
+                  <div class="p-2 bg-purple-100 rounded-full">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card className="w-full sm:w-[calc(33%-8px)] md:w-[calc(25%-12px)]">
+              <CardContent className="p-4">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <h3 class="text-sm font-medium text-muted-foreground">Diterima</h3>
+                    <p id="total-accepted" class="text-2xl font-bold">0</p>
+                  </div>
+                  <div class="p-2 bg-green-100 rounded-full">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                </div>
+              </CardContent>            </Card>
+          </div>
+      </CardContent>
+    </Card>
+    
     <Card>
       <CardContent>
+        <h3 class="mb-4 text-lg font-semibold">Daftar Pendaftar</h3>
         <div class="relative overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead>ID</TableHead>
                 <TableHead>Nama</TableHead>
-                <TableHead>Program</TableHead>
                 <TableHead>Universitas</TableHead>
-                <TableHead>IPK</TableHead>
                 <TableHead>Tanggal Daftar</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Aksi</TableHead>
               </TableRow>
             </TableHeader>
-            <TableBody>
-              {applicants.map(applicant => (
-                <TableRow>
-                  <TableCell>{applicant.name}</TableCell>
-                  <TableCell>{applicant.program}</TableCell>
-                  <TableCell>{applicant.university}</TableCell>
-                  <TableCell>{applicant.gpa}</TableCell>
-                  <TableCell>{applicant.applicationDate}</TableCell>
-                  <TableCell>
-                    <Badge className={getStatusColor(applicant.status as Status)}>
-                      {applicant.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <a href={`/admin/pendaftar-beasiswa/${applicant.id}`}>
-                      <Button variant="outline" size="sm">Detail</Button>
-                    </a>
-                  </TableCell>
-                </TableRow>
-              ))}
+            <TableBody id="applicants-table">
+              <TableRow>
+                <TableCell colSpan={6} className="text-center py-10 text-muted-foreground">
+                  Memuat data pendaftar...
+                </TableCell>
+              </TableRow>
             </TableBody>
           </Table>
         </div>
@@ -98,3 +138,399 @@ const getStatusColor = (status: Status) => {
     </Card>
   </div>
 </DashboardAdmin>
+
+<script>
+  import { DashboardService } from '@/lib/dashboard-service';
+  // Function to format dates
+  const formatDate = (dateString: string | null | undefined): string => {
+    if (!dateString) return "-";
+    
+    try {
+      return new Date(dateString).toLocaleDateString('id-ID', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      });
+    } catch (error) {
+      console.error(`Error formatting date: ${dateString}`, error);
+      return "-";
+    }
+  };
+
+  // Function to get translated status
+  const getStatusText = (status: string): string => {
+    const labels: Record<string, string> = {
+      "pending": "Menunggu",
+      "lolos_berkas": "Lolos Berkas",
+      "lolos_wawancara": "Lolos Wawancara",
+      "diterima": "Diterima",
+      "ditolak": "Ditolak",
+    };
+    return labels[status] || status;
+  };
+
+  // Function to get status badge color
+  const getStatusColor = (status: string): string => {
+    const colors: Record<string, string> = {
+      "pending": "bg-yellow-100 text-yellow-800",
+      "lolos_berkas": "bg-blue-100 text-blue-800",
+      "lolos_wawancara": "bg-purple-100 text-purple-800",
+      "diterima": "bg-green-100 text-green-800",
+      "ditolak": "bg-red-100 text-red-800",
+    };
+    return colors[status] || "bg-gray-100 text-gray-800";
+  };
+  
+  // Function to update element text safely
+  const updateElementText = (id: string, value: unknown): void => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.textContent = typeof value === 'number' || typeof value === 'string' 
+        ? String(value) 
+        : '0';
+    } else {
+      console.warn(`Element with id "${id}" not found`);
+    }
+  };
+  
+  // Function to get auth token
+  const getAuthToken = () => {
+    return localStorage.getItem('bersekolah_auth_token');
+  };
+    // Function to make API request with auth and detailed logging
+  const fetchAPI = async (url: string) => {
+    console.log(`[API] Fetching from ${url}`);
+    
+    const token = getAuthToken();
+    if (!token) {
+      console.error('[API] No authentication token found');
+      throw new Error('No authentication token');
+    }
+    
+    const baseURL = import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:8000/api';
+    const fullUrl = `${baseURL}${url}`;
+    
+    console.log(`[API] Full URL: ${fullUrl}`);
+    
+    try {
+      console.time(`[API] ${url}`);
+      const response = await fetch(fullUrl, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json'
+        }
+      });
+      console.timeEnd(`[API] ${url}`);
+      
+      console.log(`[API] Status: ${response.status} ${response.statusText}`);
+      
+      if (!response.ok) {
+        const errorText = await response.text().catch(() => 'Could not read error response');
+        console.error(`[API] Error response: ${errorText}`);
+        throw new Error(`API error: ${response.status} - ${errorText}`);
+      }
+      
+      const data = await response.json();
+      console.log(`[API] Success response from ${url}:`, data);
+      return data;
+    } catch (error) {
+      console.error(`[API] Error fetching ${url}:`, error);
+      throw error;
+    }
+  };
+    // Function to fetch dashboard stats directly from API endpoints
+  const fetchDashboardStats = async () => {
+    try {
+      console.log('Fetching dashboard stats...');
+      
+      // Try consolidated endpoint first (most efficient)
+      try {
+        console.log('Fetching consolidated stats...');
+        const consolidatedResponse = await fetchAPI('/dashboard/consolidated-stats');
+        
+        if (consolidatedResponse && consolidatedResponse.data) {
+          console.log('Successfully fetched consolidated stats:', consolidatedResponse);
+          const data = consolidatedResponse.data;
+          
+          // Extract dashboard stats
+          if (data.dashboard) {
+            updateElementText('total-applicants', data.dashboard.total_pendaftar || 0);
+            updateElementText('total-mentors', data.dashboard.total_mentor || 0);
+            updateElementText('total-documents', data.dashboard.total_dokumen || 0);
+          }
+          
+          // Extract application stats
+          if (data.applications) {
+            updateElementText('total-accepted', data.applications.diterima || 0);
+          }
+          
+          // No need for fallback if consolidated endpoint succeeds
+          return;
+        }
+      } catch (consolidatedError) {
+        console.warn('Consolidated stats failed, using fallback endpoints:', consolidatedError);
+      }
+      
+      // FALLBACK: Individual endpoints if consolidated fails
+      console.log('Using fallback endpoints...');
+      
+      // 1. Fetch total mentors
+      const mentorsResponse = await fetchAPI('/mentors/total');
+      let mentorCount = 0;
+      if (mentorsResponse?.data?.total) {
+        mentorCount = mentorsResponse.data.total;
+      } else if (mentorsResponse?.total) {
+        mentorCount = mentorsResponse.total;
+      } else if (typeof mentorsResponse === 'number') {
+        mentorCount = mentorsResponse;
+      }
+      updateElementText('total-mentors', mentorCount);
+      
+      // 2. Fetch document statistics
+      const documentsResponse = await fetchAPI('/documents/statistics'); // Use public endpoint
+      let documentCount = 0;
+      if (documentsResponse?.data?.total_documents) {
+        documentCount = documentsResponse.data.total_documents;
+      } else if (documentsResponse?.data?.total) {
+        documentCount = documentsResponse.data.total;
+      } else if (documentsResponse?.total_documents) {
+        documentCount = documentsResponse.total_documents;
+      } else if (documentsResponse?.total) {
+        documentCount = documentsResponse.total;
+      }
+      updateElementText('total-documents', documentCount);
+      
+      // 3. Fetch applications statistics
+      const applicationsResponse = await fetchAPI('/applications/statistics'); // Use public endpoint
+      let totalApplicants = 0;
+      let acceptedApplicants = 0;
+      
+      // Try different response formats
+      if (applicationsResponse?.data?.overview) {
+        totalApplicants = applicationsResponse.data.overview.total || 0;
+        acceptedApplicants = applicationsResponse.data.overview.diterima || 0;
+      } else if (applicationsResponse?.total) {
+        totalApplicants = applicationsResponse.total;
+        acceptedApplicants = applicationsResponse.diterima || applicationsResponse.approved || 0;
+      } else {
+        // Try to find fields directly in the response
+        const possibleTotalFields = ['total', 'total_applications'];
+        const possibleAcceptedFields = ['diterima', 'approved', 'total_accepted'];
+        
+        for (const field of possibleTotalFields) {
+          if (applicationsResponse && applicationsResponse[field] !== undefined) {
+            totalApplicants = applicationsResponse[field];
+            break;
+          }
+        }
+        
+        for (const field of possibleAcceptedFields) {
+          if (applicationsResponse && applicationsResponse[field] !== undefined) {
+            acceptedApplicants = applicationsResponse[field];
+            break;
+          }
+        }
+      }
+      
+      updateElementText('total-applicants', totalApplicants);
+      updateElementText('total-accepted', acceptedApplicants);
+      
+    } catch (error) {
+      console.error('Error fetching dashboard stats:', error);
+      // Set default values if API calls fail
+      updateElementText('total-mentors', 0);
+      updateElementText('total-documents', 0);
+      updateElementText('total-applicants', 0);
+      updateElementText('total-accepted', 0);
+    }
+  };  // Function to fetch and display applicants
+  const fetchApplicants = async () => {
+    const tableBody = document.getElementById('applicants-table');
+    if (!tableBody) {
+      console.error('Table body element not found');
+      return;
+    }
+    
+    tableBody.innerHTML = `
+      <tr>
+        <td colspan="6" class="py-10 text-center">
+          <div class="flex items-center justify-center">
+            <svg class="w-6 h-6 mr-3 text-blue-500 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span>Memuat data pendaftar...</span>
+          </div>
+        </td>
+      </tr>
+    `;
+    
+    try {
+      console.log('Fetching applicants data...');
+      
+      // Fetch applicants directly from API
+      const response = await fetchAPI('/admin/applications');
+      console.log('Applications response:', response);
+      
+      // Handle different response structures
+      let applicants = [];
+      if (Array.isArray(response)) {
+        applicants = response;
+      } else if (response.data && Array.isArray(response.data)) {
+        applicants = response.data;
+      } else if (response.applications && Array.isArray(response.applications)) {
+        applicants = response.applications;
+      } else {
+        console.warn('Unexpected response format:', response);
+        applicants = [];
+      }
+      
+      // Clear loading row
+      tableBody.innerHTML = '';
+      
+      if (applicants.length === 0) {
+        tableBody.innerHTML = `
+          <tr>
+            <td colspan="6" class="py-10 text-center text-muted-foreground">
+              Tidak ada data pendaftar
+            </td>
+          </tr>
+        `;
+        return;
+      }
+      
+      // Add applicants to table
+      applicants.forEach((applicant: any) => {
+        const row = document.createElement('tr');
+        
+        // Extract user and school data with proper fallbacks
+        let userName = '-';
+        let schoolName = '-';
+        
+        // Handle different response formats for user data
+        if (applicant.user && applicant.user.name) {
+          userName = applicant.user.name;
+        } else if (applicant.user_data && applicant.user_data.name) {
+          userName = applicant.user_data.name;
+        } else if (applicant.beswan && applicant.beswan.user && applicant.beswan.user.name) {
+          userName = applicant.beswan.user.name;
+        }
+        
+        // Handle different response formats for school data
+        if (applicant.beswan && applicant.beswan.sekolah && applicant.beswan.sekolah.nama_sekolah) {
+          schoolName = applicant.beswan.sekolah.nama_sekolah;
+        } else if (applicant.user_data && applicant.user_data.calon_beswan && 
+                  applicant.user_data.calon_beswan.sekolah_beswan && 
+                  applicant.user_data.calon_beswan.sekolah_beswan.nama_sekolah) {
+          schoolName = applicant.user_data.calon_beswan.sekolah_beswan.nama_sekolah;
+        } else if (applicant.sekolah && applicant.sekolah.nama_sekolah) {
+          schoolName = applicant.sekolah.nama_sekolah;
+        }
+        
+        // Ensure status is not undefined
+        const status = applicant.status || 'pending';
+        
+        row.innerHTML = `
+          <td>${applicant.id || '-'}</td>
+          <td>${userName}</td>
+          <td>${schoolName}</td>
+          <td>${formatDate(applicant.created_at || applicant.submitted_at)}</td>
+          <td>
+            <span class="px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(status)}">
+              ${getStatusText(status)}
+            </span>
+          </td>
+          <td>
+            <a href="/dashboard/pendaftar-beasiswa/${applicant.id}">
+              <button class="px-2 py-1 text-xs border rounded-md hover:bg-muted">Detail</button>
+            </a>
+          </td>
+        `;
+        
+        tableBody.appendChild(row);
+      });
+      
+    } catch (error: any) {
+      console.error('Error fetching applicants:', error);
+      
+      tableBody.innerHTML = `
+        <tr>
+          <td colspan="6" class="py-10 text-center text-red-500">
+            Gagal memuat data pendaftar: ${error?.message || 'Unknown error'}
+          </td>
+        </tr>
+      `;
+    }
+  };
+  // Check authentication status before initializing
+  const checkAuth = () => {
+    const token = localStorage.getItem('bersekolah_auth_token');
+    if (!token) {
+      console.log('No authentication token found, redirecting to login page');
+      window.location.href = '/masuk?redirect=' + encodeURIComponent(window.location.pathname);
+      return false;
+    }
+    return true;
+  };
+    // Function to display loading errors
+  const showLoadingError = (message: string) => {
+    console.error(message);
+    const elements = ['total-mentors', 'total-documents', 'total-applicants', 'total-accepted'];
+    elements.forEach(id => {
+      const element = document.getElementById(id);
+      if (element) {
+        element.textContent = 'Error';
+        element.className = 'text-2xl font-bold text-red-500';
+      }
+    });
+    
+    const tableBody = document.getElementById('applicants-table');
+    if (tableBody) {
+      tableBody.innerHTML = `
+        <tr>
+          <td colspan="6" class="py-10 text-center text-red-500">
+            ${message}
+          </td>
+        </tr>
+      `;
+    }
+  };
+  // Initialize
+  document.addEventListener('DOMContentLoaded', () => {
+    if (checkAuth()) {
+      console.log('Initializing dashboard page...');
+      
+      // Add loading indicators to stats
+      const statElements = ['total-mentors', 'total-documents', 'total-applicants', 'total-accepted'];
+      statElements.forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+          element.innerHTML = '<span class="animate-pulse">...</span>';
+        }
+      });
+      
+      // Use Promise.allSettled to handle failures more gracefully
+      Promise.allSettled([
+        fetchDashboardStats(),
+        fetchApplicants()
+      ]).then(results => {
+        // Check for any failures
+        const failures = results.filter(result => result.status === 'rejected');
+        if (failures.length > 0) {
+          console.warn('Some dashboard components failed to load:', failures);
+          failures.forEach((failure: any) => {
+            console.error('Failure reason:', failure.reason);
+          });
+        }
+        
+        if (failures.length === results.length) {
+          // All requests failed
+          showLoadingError(`Terjadi kesalahan saat memuat data: Semua permintaan gagal`);
+        }
+      }).catch(error => {
+        showLoadingError(`Terjadi kesalahan yang tidak terduga: ${error?.message || 'Unknown error'}`);
+        console.error('Unexpected error during dashboard initialization:', error);
+      });
+    }
+  });
+</script>

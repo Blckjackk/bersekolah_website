@@ -46,35 +46,89 @@ interface User {
   nama_lengkap?: string;
 }
 
-// Data default user jika localStorage kosong
+// Tidak menggunakan data default user lagi
 const defaultUser: User = {
-  name: "Guest User",
-  email: "guest@example.com",
-  role: "guest",
-  avatar: "/assets/image/users/default-avatar.jpg",
+  name: "",
+  email: "",
+  role: "",
+  avatar: "/ImageTemp/Beswan.png", // Menggunakan gambar yang sudah ada
 };
 
 export function NavUser() {
   const { isMobile } = useSidebar()
   const [user, setUser] = useState<User>(defaultUser);
   const [isLoading, setIsLoading] = useState(true);
+  const [lastCheckTime, setLastCheckTime] = useState<number>(0);
   const { toast } = useToast();
+    // Add listener for login success event
+  useEffect(() => {
+    // Handler for custom login event
+    const handleLoginSuccess = (event: CustomEvent) => {
+      console.log("Login success event captured in NavUser!", event.detail);
+      if (event.detail?.user) {
+        setUser(event.detail.user);
+        setIsLoading(false);
+        
+        // Update last check time
+        setLastCheckTime(event.detail.timestamp || Date.now());
+      } else {
+        // Fallback to fetching user data
+        fetchUserData();
+      }
+    };
+    
+    // Add event listener with type assertion
+    window.addEventListener(
+      'bersekolah:login-success', 
+      handleLoginSuccess as EventListener
+    );
+    
+    // Also keep the interval check as a backup
+    const intervalId = setInterval(() => {
+      const loginTime = localStorage.getItem('bersekolah_login_time');
+      
+      // If login time exists and is newer than our last check, refresh user data
+      if (loginTime) {
+        const loginTimeNum = parseInt(loginTime);
+        if (loginTimeNum > lastCheckTime) {
+          console.log("Detected new login! Refreshing user data...");
+          setLastCheckTime(loginTimeNum);
+          fetchUserData();
+        }
+      }
+    }, 5000); // Check every 5 seconds
+    
+    // Clean up
+    return () => {
+      window.removeEventListener(
+        'bersekolah:login-success', 
+        handleLoginSuccess as EventListener
+      );
+      clearInterval(intervalId);
+    };
+  }, [lastCheckTime]);
   
   // Fetch data user dari API
   const fetchUserData = async () => {
     try {
       const token = localStorage.getItem('bersekolah_auth_token');
       
+      console.log('Token found:', token ? 'Yes' : 'No');
+      
       if (!token) {
-        console.log("Tidak ada token, menggunakan data default");
+        console.log("Tidak ada token, coba gunakan cached data");
+        tryGetCachedUser();
         setIsLoading(false);
         return;
       }
 
       const baseURL = import.meta.env.PUBLIC_API_BASE_URL;
-      console.log('Fetching user data from:', `${baseURL}/me`);
+      const apiUrl = `${baseURL}/me`;
       
-      const response = await fetch(`${baseURL}/me`, {
+      console.log('Fetching user data from:', apiUrl);
+      console.log('Using token:', token.substring(0, 20) + '...');
+      
+      const response = await fetch(apiUrl, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -84,29 +138,47 @@ export function NavUser() {
       });
 
       console.log('User API response status:', response.status);
+      console.log('User API response headers:', Object.fromEntries(response.headers.entries()));
 
       if (response.ok) {
         const result = await response.json();
-        console.log('User API response:', result);
+        console.log('User API response:', result);          // Handle different response structures
+        const userData = result.user || result.data || result;
         
-        if (result.user) {
-          const userData = {
-            id: result.user.id,
-            name: result.user.nama_lengkap || result.user.name || result.user.email,
-            email: result.user.email,
-            phone: result.user.phone,
-            role: result.user.role || 'Siswa',
-            avatar: result.user.avatar || '/assets/image/users/default-avatar.jpg',
-            status: result.user.status,
-            created_at: result.user.created_at,
-            updated_at: result.user.updated_at,
+        if (userData) {
+          // Pastikan nama tidak kosong - gunakan fallback yang tepat
+          const userName = userData.nama_lengkap || userData.name || userData.nama || '';
+          const userEmail = userData.email || '';
+            // Validasi data user yang didapat
+          if (!userName || !userEmail) {
+            console.warn('User data incomplete:', { name: userName, email: userEmail });            toast({
+              title: "Data Pengguna Tidak Lengkap",
+              description: "Beberapa informasi pengguna tidak tersedia",
+              variant: "destructive",
+            });
+          }
+          
+          const processedUserData = {
+            id: userData.id,
+            name: userName || 'Pengguna', // Fallback jika semua field nama kosong
+            email: userEmail || 'Email tidak tersedia',
+            phone: userData.phone,
+            role: userData.role || 'user',
+            avatar: userData.avatar || '/ImageTemp/Beswan.png',
+            status: userData.status,
+            created_at: userData.created_at,
+            updated_at: userData.updated_at,
+            nama_lengkap: userData.nama_lengkap,
           };
           
-          console.log('Processed user data:', userData);
-          setUser(userData);
+          console.log('Processed user data:', processedUserData);
+          setUser(processedUserData);
           
           // Simpan ke localStorage untuk cache
-          localStorage.setItem('bersekolah_user', JSON.stringify(userData));
+          localStorage.setItem('bersekolah_user', JSON.stringify(processedUserData));
+        } else {
+          console.log('No user data in response:', result);
+          tryGetCachedUser();
         }
       } else {
         console.error('Error response:', response.status);
@@ -141,7 +213,6 @@ export function NavUser() {
       setIsLoading(false);
     }
   };
-
   // Fallback ke data cache jika API gagal
   const tryGetCachedUser = () => {
     try {
@@ -149,7 +220,27 @@ export function NavUser() {
       if (cachedUser) {
         const parsedUser = JSON.parse(cachedUser);
         console.log("Menggunakan cached user data:", parsedUser);
-        setUser(parsedUser);
+        
+        // Pastikan data user valid sebelum menggunakannya
+        if (parsedUser && parsedUser.name && parsedUser.email) {
+          setUser(parsedUser);
+        } else {
+          console.log("Cached user data tidak lengkap");
+          
+          // Jika login tapi data tidak lengkap, arahkan ke login
+          const token = localStorage.getItem('bersekolah_auth_token');
+          if (token) {
+            toast({
+              title: "Sesi Tidak Valid",
+              description: "Silakan login kembali untuk melanjutkan",
+              variant: "destructive",
+            });
+            
+            // Clear invalid data
+            localStorage.removeItem('bersekolah_auth_token');
+            localStorage.removeItem('bersekolah_user');
+          }
+        }
       } else {
         console.log("Tidak ada cached user data");
       }
@@ -157,28 +248,67 @@ export function NavUser() {
       console.error("Error parsing cached user data:", error);
     }
   };
+    // Function to check if we have fresh login data
+  const checkForFreshLoginData = () => {
+    try {
+      const cachedUser = localStorage.getItem('bersekolah_user');
+      const loginTime = localStorage.getItem('bersekolah_login_time');
+      
+      if (cachedUser && loginTime) {
+        const parsedUser = JSON.parse(cachedUser);
+        const timeElapsed = Date.now() - parseInt(loginTime);
+        
+        // If login data is fresh (less than 1 minute old), use it immediately
+        if (timeElapsed < 60000 && parsedUser && parsedUser.name && parsedUser.email) {
+          console.log("Fresh login data detected! Using it:", parsedUser.name);
+          setUser(parsedUser);
+          // Still fetch from API but don't wait for it to show UI
+          fetchUserData();
+          return true;
+        }
+      }
+      return false;
+    } catch (error) {
+      console.error("Error checking fresh login data:", error);
+      return false;
+    }
+  };
   
   // Mengambil data user saat komponen dimuat
   useEffect(() => {
-    fetchUserData();
+    // First check if we have fresh login data
+    const hasFreshData = checkForFreshLoginData();
+    
+    // If no fresh data, fetch from API as usual
+    if (!hasFreshData) {
+      fetchUserData();
+    }
   }, []);
-  
-  // Fungsi untuk mendapatkan inisial dari nama user
+    // Fungsi untuk mendapatkan inisial dari nama user
   const getInitials = () => {
-    if (!user?.name) return 'UN';
+    if (!user?.name || user.name.trim() === '') {
+      // Jika nama kosong, coba gunakan email
+      if (user?.email && user.email.includes('@')) {
+        // Gunakan karakter pertama dari email
+        return user.email[0].toUpperCase();
+      }
+      return '...'; // Placeholder saat loading
+    }
+    
     const nameParts = user.name.split(' ');
     if (nameParts.length >= 2) {
       return (nameParts[0][0] + nameParts[1][0]).toUpperCase();
     }
     return user.name.substring(0, 2).toUpperCase();
   };
-
   // Fungsi untuk mendapatkan role yang user-friendly
   const getUserRole = () => {
-    if (!user?.role) return 'Pengguna';
+    if (isLoading) return 'Memuat...';
+    if (!user?.role || user.role.trim() === '') return 'Pengguna';
     
     const roleMap: { [key: string]: string } = {
       'admin': 'Administrator',
+      'superadmin': 'Super Admin',
       'user': 'Siswa',
       'siswa': 'Siswa',
       'mahasiswa': 'Mahasiswa',
@@ -240,9 +370,11 @@ export function NavUser() {
       window.location.href = '/masuk';
     }
   };
-
-  // Loading state
-  if (isLoading) {
+  // Check if we have actual user data
+  const hasUserData = user.name && user.email;
+  
+  // Loading state - only show loading if we don't have any user data yet
+  if (isLoading && !hasUserData) {
     return (
       <SidebarMenu>
         <SidebarMenuItem>
@@ -265,16 +397,26 @@ export function NavUser() {
             <SidebarMenuButton
               size="lg"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-            >
-              <Avatar className="w-8 h-8 rounded-lg">
-                <AvatarImage src={user.avatar} alt={user.name} />
+            >              <Avatar className="w-8 h-8 rounded-lg">
+                <AvatarImage src={user.avatar} alt={user.name || "User"} />
                 <AvatarFallback className="text-blue-800 bg-blue-100 rounded-lg">
                   {getInitials()}
                 </AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-sm leading-tight text-left">
-                <span className="font-semibold truncate">{user.name}</span>
-                <span className="text-xs truncate text-muted-foreground">{user.email}</span>
+                <span className="font-semibold truncate">
+                  {isLoading ? (
+                    <div className="flex items-center gap-2">
+                      <Loader2 className="w-3 h-3 animate-spin" />
+                      <span>Memuat data...</span>
+                    </div>
+                  ) : (
+                    user.name || "Memuat..."
+                  )}
+                </span>
+                <span className="text-xs truncate text-muted-foreground">
+                  {user.email || (isLoading ? "Mengambil email..." : "Login untuk melihat")}
+                </span>
               </div>
               <ChevronsUpDown className="ml-auto size-4" />
             </SidebarMenuButton>
@@ -292,10 +434,18 @@ export function NavUser() {
                   <AvatarFallback className="text-blue-800 bg-blue-100 rounded-lg">
                     {getInitials()}
                   </AvatarFallback>
-                </Avatar>
-                <div className="grid flex-1 text-sm leading-tight text-left">
-                  <span className="font-semibold truncate">{user.name}</span>
-                  <span className="text-xs truncate">{user.email}</span>
+                </Avatar>                <div className="grid flex-1 text-sm leading-tight text-left">
+                  <span className="font-semibold truncate">
+                    {isLoading ? (
+                      <div className="flex items-center gap-2">
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                        <span>Memuat data...</span>
+                      </div>
+                    ) : (
+                      user.name || "Memuat..."
+                    )}
+                  </span>
+                  <span className="text-xs truncate">{user.email || "Mengambil email..."}</span>
                   <span className="text-xs capitalize truncate text-muted-foreground">
                     {getUserRole()}
                   </span>

@@ -215,7 +215,7 @@ export default function BerandaPage() {
         )
         const verifiedWajib = wajibDocs.filter((d: any) => d.status === 'verified')
         
-        const transformedData = {
+        const transformedData: DocumentsStatus = {
           documents_status: documents.map((d: any) => ({
             name: d.document_type?.name || d.document_type_name || 'Unknown',
             required: ['student_proof', 'identity_proof', 'photo'].includes(d.document_type?.code || d.document_type_code),
@@ -223,7 +223,7 @@ export default function BerandaPage() {
           })),
           overall_progress: documents.length > 0 ? Math.round((verifiedWajib.length / Math.max(wajibDocs.length, 1)) * 100) : 0,
           can_finalize: wajibDocs.length >= 3 && verifiedWajib.length >= 3,
-          finalized_at: null // Will be set from application status
+          finalized_at: applicationStatus?.finalized_at || undefined
         }
         
         setDocumentsStatus(transformedData)
@@ -393,45 +393,83 @@ export default function BerandaPage() {
         <CardHeader>
           <CardTitle>Selamat Datang, {userData.name}</CardTitle>
           <CardDescription>Portal Pendaftaran Beasiswa Yayasan Bersekolah</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <p className="text-sm font-medium">Progres Pendaftaran</p>
-                <p className="text-sm font-medium">{userData.pendaftaranProgress}%</p>
-              </div>
-              <Progress value={userData.pendaftaranProgress} className="h-2" />
+        </CardHeader>        <CardContent>
+          <div className="space-y-6">
+            {/* Sambutan untuk calon beswan */}
+            <div className="p-4 border border-blue-100 rounded-lg bg-blue-50">
+              <h3 className="mb-2 text-lg font-medium text-blue-800">Sambutan untuk Calon Beswan</h3>
+              <p className="text-blue-700">
+                Selamat datang di Portal Pendaftaran Beasiswa Yayasan Bersekolah! Kami sangat mengapresiasi tekad dan semangat Anda untuk mengikuti program beasiswa ini. 
+                Kami percaya bahwa pendidikan adalah kunci menuju masa depan yang lebih baik, dan kami berkomitmen untuk mendukung Anda dalam meraih impian.
+              </p>
+              <p className="mt-2 text-blue-700">
+                Mari lengkapi dokumen-dokumen yang diperlukan dan ikuti proses seleksi dengan baik. Jika Anda memiliki pertanyaan, jangan ragu untuk menghubungi tim dukungan kami. Semoga sukses!
+              </p>
             </div>
             
-            <div className="grid grid-cols-1 gap-4 mt-4 md:grid-cols-3">
-              <div className="flex items-center gap-2">
-                <FileText className="w-4 h-4 text-muted-foreground" />
-                <span className="text-sm">Status Berkas:</span>
-                <Badge variant={getBadgeVariant(userData.statusBerkas, 'berkas')}>
-                  {userData.statusBerkas}
-                </Badge>
+            {/* Video Tutorial Cards */}
+            <div>
+              <h3 className="mb-3 text-lg font-medium">Video Tutorial</h3>
+              <div className="grid gap-4 md:grid-cols-2">                {/* Card Video Tutorial 1 */}
+                <div className="overflow-hidden border rounded-lg shadow-sm">
+                  <div className="bg-gray-100 aspect-video">
+                    {/* YouTube Embedded Video */}
+                    <iframe 
+                      className="w-full h-full"
+                      src="https://www.youtube.com/embed/qU1I3_olv38"
+                      title="Cara Pendaftaran Beasiswa"
+                      frameBorder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen>
+                    </iframe>
+                  </div>
+                  <div className="p-4">
+                    <h4 className="mb-1 font-medium">Cara Pendaftaran Beasiswa</h4>
+                    <p className="text-sm text-muted-foreground">Panduan lengkap untuk mengisi formulir pendaftaran dan mengunggah dokumen wajib.</p>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="w-full mt-2" 
+                      onClick={() => window.open('https://www.youtube.com/watch?v=qU1I3_olv38&t=306s', '_blank')}
+                    >
+                      Buka di YouTube
+                    </Button>
+                  </div>
+                </div>
+                  {/* Card Video Tutorial 2 */}
+                <div className="overflow-hidden border rounded-lg shadow-sm">
+                  <div className="bg-gray-100 aspect-video">
+                    {/* YouTube Embedded Video */}
+                    <iframe 
+                      className="w-full h-full"
+                      src="https://www.youtube.com/embed/LbmxCLpg3jU"
+                      title="Profil Beasiswa Bersekolah"
+                      frameBorder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen>
+                    </iframe>
+                  </div>
+                  <div className="p-4">
+                    <h4 className="mb-1 font-medium">Profil Beasiswa Bersekolah</h4>
+                    <p className="text-sm text-muted-foreground">Mengenal lebih jauh beasiswa Bersekolah</p>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="w-full mt-2"
+                      onClick={() => window.open('https://www.youtube.com/watch?v=LbmxCLpg3jU&t=309s', '_blank')}
+                    >
+                      Buka di YouTube
+                    </Button>
+                  </div>
+                </div>
               </div>
-              
-              <div className="flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-muted-foreground" />
-                <span className="text-sm">Status Wawancara:</span>
-                <Badge variant={getBadgeVariant(userData.statusWawancara, 'wawancara')}>
-                  {userData.statusWawancara}
-                </Badge>
-              </div>
-              
-              <div className="flex items-center gap-2">
-                <CheckCircle className="w-4 h-4 text-muted-foreground" />
-                <span className="text-sm">Status Kelulusan:</span>
-                <Badge variant={getBadgeVariant(userData.statusKelulusan, 'kelulusan')}>
-                  {userData.statusKelulusan}
-                </Badge>
-              </div>
-            </div>
+            </div>          
+            
           </div>
         </CardContent>
       </Card>
+
+      
       
       {/* ✅ Dynamic Alert berdasarkan status */}
       {!applicationStatus?.finalized_at && (
@@ -453,8 +491,7 @@ export default function BerandaPage() {
           </AlertDescription>
         </Alert>
       )}
-      
-      {/* ✅ Dynamic Timeline dari Beasiswa Periods */}
+        {/* ✅ Dynamic Timeline dari Beasiswa Periods */}
       {timeline.length > 0 && (
         <Card>
           <CardHeader>

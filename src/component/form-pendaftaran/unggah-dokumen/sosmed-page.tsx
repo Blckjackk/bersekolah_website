@@ -176,8 +176,7 @@ export default function DokumenSosmedPage() {
       setFetchingSocialLinks(false)
     }
   }
-  
-  // Fetch uploaded documents untuk kategori sosial_media SAJA
+    // Fetch uploaded documents untuk kategori sosial_media SAJA
   const fetchDocuments = async () => {
     try {
       const token = localStorage.getItem('bersekolah_auth_token')
@@ -263,11 +262,8 @@ export default function DokumenSosmedPage() {
         // Update documents state
         setUploadedDocs(processedDocs)
         
-        // Add a brief delay to ensure state is fully updated before forcing re-render
-        await new Promise(resolve => setTimeout(resolve, 50))
-        
-        // Force re-render with updated counter
-        setForceUpdateCounter(prevCounter => prevCounter + 1)
+        // REMOVED: No more delay or forceUpdateCounter increment here
+        // This was causing the infinite loop!
       } else {
         console.log('[SosmedPage] No data found in API response or data is not an array')
         setUploadedDocs([])
@@ -303,7 +299,6 @@ export default function DokumenSosmedPage() {
       setSelectedFile(file)
     }
   }
-
   const handleUpload = async () => {
     if (!selectedFile || !activeDocument) return
 
@@ -345,10 +340,11 @@ export default function DokumenSosmedPage() {
         description: `${activeDocument.name} berhasil diunggah`,
       })
 
-      // Refresh data dengan force update
+      // Refresh data dengan force update - only calling fetchDocuments once
       await fetchDocuments()
       
-      // Force UI update
+      // Force UI update ONCE after upload completes
+      // This is intentional and needed to trigger a refresh with the new document
       setForceUpdateCounter(prev => prev + 1)
       
       // Close dialog
@@ -479,7 +475,6 @@ export default function DokumenSosmedPage() {
     const i = Math.floor(Math.log(bytes) / Math.log(k))
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
   }
-
   // Load data on component mount
   useEffect(() => {
     const loadAllData = async () => {
@@ -495,11 +490,12 @@ export default function DokumenSosmedPage() {
       }
     }
     
+    // Only run on initial mount and when explicitly triggered by forceUpdateCounter
     loadAllData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [forceUpdateCounter])
-  
+    // Set page title once on mount
   useEffect(() => {
-    // Set page title
     document.title = "Unggah Dokumen Sosial Media | Bersekolah"
   }, [])
 
