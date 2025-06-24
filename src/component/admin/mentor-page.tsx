@@ -172,14 +172,13 @@ export default function MentorPage() {
     resetForm();
     setCreateDialog(true);
   };
-    // Open edit dialog
+  // Open edit dialog
   const handleEditClick = (mentor: Mentor) => {
     setSelectedMentor(mentor);
     setFormData({
       name: mentor.name,
       email: mentor.email,
-      // Pastikan path foto tidak mengandung "/" di awal jika ada
-      photo: mentor.photo ? (mentor.photo.startsWith('/') ? mentor.photo.substring(1) : mentor.photo) : ""
+      photo: mentor.photo || ""
     });
     setPhotoFile(null); // Reset photo file saat edit
     setEditDialog(true);
@@ -190,16 +189,58 @@ export default function MentorPage() {
     setSelectedMentor(mentor);
     setDeleteDialog(true);
   };
-  
-  // Handle create mentor
+    // Handle create mentor
   const handleCreateMentor = async () => {
+    // Validasi form
+    if (!formData.name.trim()) {
+      showToast("Nama mentor tidak boleh kosong", "error");
+      return;
+    }
+    
+    if (!formData.email.trim()) {
+      showToast("Email mentor tidak boleh kosong", "error");
+      return;
+    }
+    
+    // Validasi format email sederhana
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      showToast("Format email tidak valid", "error");
+      return;
+    }
+    
+    // Validasi file foto jika ada
+    if (photoFile) {
+      // Validasi ukuran file (max 2MB)
+      const maxSize = 2 * 1024 * 1024; // 2MB
+      if (photoFile.size > maxSize) {
+        showToast("Ukuran foto maksimal 2MB", "error");
+        return;
+      }
+      
+      // Validasi tipe file
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+      if (!allowedTypes.includes(photoFile.type)) {
+        showToast("Format foto harus JPG atau PNG", "error");
+        return;
+      }
+    }
+    
     try {
       setIsSubmitting(true);
       
-      const result = await MentorService.createMentor(formData, photoFile);
+      // Siapkan data yang akan dikirim ke API
+      const mentorData = {
+        name: formData.name.trim(),
+        email: formData.email.trim(),
+        upload_to: 'ImageTemp' // Menentukan direktori tujuan upload
+      };
+      
+      const result = await MentorService.createMentor(mentorData, photoFile);
       
       showToast("Mentor berhasil ditambahkan", "success");
       setCreateDialog(false);
+      resetForm();
       await fetchMentors();
     } catch (err) {
       console.error("Error creating mentor:", err);
@@ -208,18 +249,61 @@ export default function MentorPage() {
       setIsSubmitting(false);
     }
   };
-  
-  // Handle update mentor
+    // Handle update mentor
   const handleUpdateMentor = async () => {
     if (!selectedMentor) return;
+    
+    // Validasi form
+    if (!formData.name.trim()) {
+      showToast("Nama mentor tidak boleh kosong", "error");
+      return;
+    }
+    
+    if (!formData.email.trim()) {
+      showToast("Email mentor tidak boleh kosong", "error");
+      return;
+    }
+    
+    // Validasi format email sederhana
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      showToast("Format email tidak valid", "error");
+      return;
+    }
+    
+    // Validasi file foto jika ada
+    if (photoFile) {
+      // Validasi ukuran file (max 2MB)
+      const maxSize = 2 * 1024 * 1024; // 2MB
+      if (photoFile.size > maxSize) {
+        showToast("Ukuran foto maksimal 2MB", "error");
+        return;
+      }
+      
+      // Validasi tipe file
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+      if (!allowedTypes.includes(photoFile.type)) {
+        showToast("Format foto harus JPG atau PNG", "error");
+        return;
+      }
+    }
     
     try {
       setIsSubmitting(true);
       
-      await MentorService.updateMentor(selectedMentor.id, formData, photoFile);
+      // Siapkan data yang akan dikirim ke API
+      const mentorData = {
+        name: formData.name.trim(),
+        email: formData.email.trim(),
+        upload_to: 'ImageTemp', // Menentukan direktori tujuan upload
+        photo: !photoFile ? formData.photo : undefined // Jika tidak ada file baru, tetap gunakan yang lama
+      };
+      
+      await MentorService.updateMentor(selectedMentor.id, mentorData, photoFile);
       
       showToast("Mentor berhasil diperbarui", "success");
       setEditDialog(false);
+      resetForm();
       await fetchMentors();
     } catch (err) {
       console.error("Error updating mentor:", err);
@@ -452,18 +536,41 @@ export default function MentorPage() {
                   required
                 />
               </div>
-            </div>
-            <div className="space-y-2">
+            </div>            <div className="space-y-2">
               <Label htmlFor="photo">Foto</Label>
-              <Input
-                id="photo"
-                type="file"
-                onChange={handlePhotoChange}
-                accept="image/*"
-              />
-              <p className="text-sm text-muted-foreground">
-                Format: JPG, PNG. Maks 2MB.
-              </p>
+              <div className="flex items-start gap-4">
+                <div className="flex-1">
+                  <Input
+                    id="photo"
+                    type="file"
+                    onChange={handlePhotoChange}
+                    accept="image/jpeg,image/png,image/jpg"
+                  />
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Format: JPG, PNG. Maks 2MB.
+                  </p>
+                </div>
+                {formData.photo && photoFile && (
+                  <div className="relative w-20 h-20 overflow-hidden rounded-md border">
+                    <img 
+                      src={formData.photo} 
+                      alt="Preview foto mentor" 
+                      className="object-cover w-full h-full" 
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFormData(prev => ({ ...prev, photo: "" }));
+                        setPhotoFile(null);
+                      }}
+                      className="absolute top-0 right-0 bg-red-500 text-white rounded-bl p-1"
+                      aria-label="Hapus foto"
+                    >
+                      <XCircle className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
           <DialogFooter>
@@ -533,9 +640,8 @@ export default function MentorPage() {
               />
               {formData.photo && (
                 <div className="mt-2">
-                  <p className="mb-1 text-sm font-medium">Foto saat ini:</p>
-                  <div className="relative w-20 h-20 overflow-hidden rounded-md">                    <img
-                      src={formData.photo}
+                  <p className="mb-1 text-sm font-medium">Foto saat ini:</p>                  <div className="relative w-20 h-20 overflow-hidden rounded-md">                    <img
+                      src={photoFile ? formData.photo : `/ImageTemp/${formData.photo}`}
                       alt="Foto mentor"
                       className="object-cover w-full h-full"
                       onError={(e) => {

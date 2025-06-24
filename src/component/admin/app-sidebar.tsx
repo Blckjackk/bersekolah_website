@@ -1,8 +1,10 @@
 "use client"
 
 import * as React from "react"
+
 import {
   Users,
+  Database,
   GraduationCap,
   FileText,
   Heart,
@@ -173,6 +175,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   title: "Manajemen Admin",
                   url: "/dashboard/manage-admin",
                   icon: Shield,
+                },
+                {
+                  title: "Export Data",
+                  url: "/dashboard/expost-data",
+                  icon: Database,
                 },
                
               ]
