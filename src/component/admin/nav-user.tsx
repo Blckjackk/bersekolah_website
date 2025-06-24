@@ -65,16 +65,22 @@ export function NavUser() {
     try {
       const token = localStorage.getItem('bersekolah_auth_token');
       
+      console.log('Token found:', token ? 'Yes' : 'No');
+      
       if (!token) {
-        console.log("Tidak ada token, menggunakan data default");
+        console.log("Tidak ada token, coba gunakan cached data");
+        tryGetCachedUser();
         setIsLoading(false);
         return;
       }
 
       const baseURL = import.meta.env.PUBLIC_API_BASE_URL;
-      console.log('Fetching user data from:', `${baseURL}/me`);
+      const apiUrl = `${baseURL}/me`;
       
-      const response = await fetch(`${baseURL}/me`, {
+      console.log('Fetching user data from:', apiUrl);
+      console.log('Using token:', token.substring(0, 20) + '...');
+      
+      const response = await fetch(apiUrl, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -84,29 +90,37 @@ export function NavUser() {
       });
 
       console.log('User API response status:', response.status);
+      console.log('User API response headers:', Object.fromEntries(response.headers.entries()));
 
       if (response.ok) {
         const result = await response.json();
         console.log('User API response:', result);
         
-        if (result.user) {
-          const userData = {
-            id: result.user.id,
-            name: result.user.nama_lengkap || result.user.name || result.user.email,
-            email: result.user.email,
-            phone: result.user.phone,
-            role: result.user.role || 'Siswa',
-            avatar: result.user.avatar || '/assets/image/users/default-avatar.jpg',
-            status: result.user.status,
-            created_at: result.user.created_at,
-            updated_at: result.user.updated_at,
+        // Handle different response structures
+        const userData = result.user || result.data || result;
+        
+        if (userData) {
+          const processedUserData = {
+            id: userData.id,
+            name: userData.nama_lengkap || userData.name || userData.email,
+            email: userData.email,
+            phone: userData.phone,
+            role: userData.role || 'admin',
+            avatar: userData.avatar || '/assets/image/users/default-avatar.jpg',
+            status: userData.status,
+            created_at: userData.created_at,
+            updated_at: userData.updated_at,
+            nama_lengkap: userData.nama_lengkap,
           };
           
-          console.log('Processed user data:', userData);
-          setUser(userData);
+          console.log('Processed user data:', processedUserData);
+          setUser(processedUserData);
           
           // Simpan ke localStorage untuk cache
-          localStorage.setItem('bersekolah_user', JSON.stringify(userData));
+          localStorage.setItem('bersekolah_user', JSON.stringify(processedUserData));
+        } else {
+          console.log('No user data in response:', result);
+          tryGetCachedUser();
         }
       } else {
         console.error('Error response:', response.status);
