@@ -462,40 +462,61 @@ export default function DokumenWajibPage() {
     setSelectedFile(null)
     setUploadDialog(true)
   }
-
   const handlePreview = (uploadedDoc: UploadedDocument) => {
     // Convert API file path to direct storage URL
-    const baseUrl = import.meta.env.PUBLIC_API_BASE_URL_NO_API // http://127.0.0.1:8000
+    const baseUrl = import.meta.env.PUBLIC_API_BASE_URL_NO_API || 'http://localhost:8000';
     
-    let directFileUrl = uploadedDoc.file_path
+    let directFileUrl = uploadedDoc.file_path;
+    
+    // Log untuk debug
+    console.log('Original file path:', uploadedDoc.file_path);
+    console.log('Base URL:', baseUrl);
     
     // Jika file_path adalah URL lengkap, gunakan apa adanya
     if (directFileUrl.startsWith('http')) {
       // URL sudah lengkap, tapi mungkin salah port/host
-      // Replace host jika perlu
-      const url = new URL(directFileUrl)
-      if (url.host !== '127.0.0.1:8000') {
-        directFileUrl = directFileUrl.replace(url.origin, baseUrl)
+      try {
+        const url = new URL(directFileUrl);
+        console.log('Parsed URL host:', url.host);
+        
+        // Check if URL needs to be modified
+        if (url.host !== '127.0.0.1:8000' && !url.host.includes(baseUrl.replace('http://', '').replace('https://', ''))) {
+          directFileUrl = directFileUrl.replace(url.origin, baseUrl);
+          console.log('URL host replaced, new URL:', directFileUrl);
+        }
+      } catch (e) {
+        console.error('Error parsing URL:', e);
+        // Fallback - treat as relative path
+        if (directFileUrl.startsWith('/storage/')) {
+          directFileUrl = `${baseUrl}${directFileUrl}`;
+        } else if (directFileUrl.startsWith('storage/')) {
+          directFileUrl = `${baseUrl}/${directFileUrl}`;
+        } else {
+          directFileUrl = `${baseUrl}/storage/${directFileUrl}`;
+        }
       }
     } else {
       // Jika relatif path, gabungkan dengan base URL
       if (directFileUrl.startsWith('/storage/')) {
-        directFileUrl = `${baseUrl}${directFileUrl}`
+        directFileUrl = `${baseUrl}${directFileUrl}`;
       } else if (directFileUrl.startsWith('storage/')) {
-        directFileUrl = `${baseUrl}/${directFileUrl}`
+        directFileUrl = `${baseUrl}/${directFileUrl}`;
       } else {
         // Path tanpa /storage prefix
-        directFileUrl = `${baseUrl}/storage/${directFileUrl}`
+        directFileUrl = `${baseUrl}/storage/${directFileUrl}`;
       }
+      console.log('Relative path converted to:', directFileUrl);
     }
     
     const docWithCorrectedPath = {
       ...uploadedDoc,
       file_path: directFileUrl
-    }
+    };
     
-    setPreviewDoc(docWithCorrectedPath)
-    setPreviewDialog(true)
+    console.log('Final document for preview:', docWithCorrectedPath);
+    
+    setPreviewDoc(docWithCorrectedPath);
+    setPreviewDialog(true);
   }
   
   const getStatusBadge = (status: string) => {
@@ -525,6 +546,12 @@ export default function DokumenWajibPage() {
           </Badge>
         )
     }
+  }
+
+  // Check if file is a PDF based on file extension or type
+  const isFilePDF = (fileName: string): boolean => {
+    if (!fileName) return false;
+    return fileName.toLowerCase().endsWith('.pdf');
   }
 
   // Format file size
@@ -886,41 +913,73 @@ export default function DokumenWajibPage() {
             </Button>
           </DialogFooter>
         </DialogContent>
-      </Dialog>
-
-      {/* Dialog Preview */}
+      </Dialog>      {/* Dialog Preview */}
       <Dialog open={previewDialog} onOpenChange={setPreviewDialog}>
-        <DialogContent className="max-w-4xl">
+        <DialogContent className="max-w-6xl w-[95vw] h-[90vh] flex flex-col">
           <DialogHeader>
             <DialogTitle>Preview Dokumen</DialogTitle>
             {previewDoc && (
               <DialogDescription>
-                <div className="flex items-center gap-2">
-                  <span>{previewDoc.file_name}</span>
-                  {getStatusBadge(previewDoc.status)}
+                <div className="flex flex-col gap-2 text-sm">
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold">Nama file:</span>
+                    <span>{previewDoc.file_name}</span>
+                    {getStatusBadge(previewDoc.status)}
+                  </div>
+                  {previewDoc.keterangan && (
+                    <div className="flex items-start gap-2 mt-2 p-3 bg-gray-50 rounded-md border">
+                      <Info className="w-4 h-4 text-blue-500 mt-0.5" />
+                      <div>
+                        <span className="font-semibold block">Keterangan:</span>
+                        <span className="text-gray-700">{previewDoc.keterangan}</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </DialogDescription>
             )}
           </DialogHeader>
           
-          <div className="max-h-[70vh] overflow-auto">
+          <div className="flex-1 min-h-0 overflow-hidden border rounded-lg">
             {previewDoc && (
-              <img 
-                src={previewDoc.file_path} 
-                alt="Document Preview" 
-                className="w-full h-auto rounded-lg"
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement
-                  target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5HYWdhbCBtZW11YXQgZ2FtYmFyPC90ZXh0Pjwvc3ZnPg=='
-                }}
-              />
+              isFilePDF(previewDoc.file_name) ? (
+                <iframe 
+                  src={previewDoc.file_path} 
+                  className="w-full h-full" 
+                  title="Document Preview"
+                  sandbox="allow-scripts allow-same-origin allow-forms"
+                />
+              ) : (
+                <div className="flex items-center justify-center w-full h-full bg-gray-50">
+                  <img 
+                    src={previewDoc.file_path} 
+                    alt="Document Preview" 
+                    className="object-contain max-w-full max-h-full"
+                    onError={(e) => {
+                      console.error('Image failed to load:', previewDoc.file_path);
+                      const target = e.target as HTMLImageElement;
+                      target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5HYWdhbCBtZW11YXQgZ2FtYmFyPC90ZXh0Pjwvc3ZnPg==';
+                      target.classList.add('w-24', 'h-24');
+                    }}
+                  />
+                </div>
+              )
             )}
           </div>
           
-          <DialogFooter>
+          <DialogFooter className="gap-2 sm:gap-0">
             <Button variant="outline" onClick={() => setPreviewDialog(false)}>
               Tutup
             </Button>
+            {previewDoc && (
+              <Button 
+                onClick={() => window.open(previewDoc.file_path, '_blank')}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                <FileUp className="w-4 h-4 mr-1" />
+                Buka di Tab Baru
+              </Button>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -94,15 +94,15 @@ const getNavData = (currentPath: string, applicationStatus: ApplicationStatus | 
         icon: Home,
         isActive: dashboardActive,
         items: [
-          {
-            title: "Beranda",
+          {            title: "Beranda",
             url: "/form-pendaftaran",
             disabled: false,
+            isActive: currentPath === '/form-pendaftaran'
           },
-          {
-            title: "Pengumuman",
+          {            title: "Pengumuman",
             url: "/form-pendaftaran/pengumuman", 
             disabled: false,
+            isActive: currentPath === '/form-pendaftaran/pengumuman'
           },
         ],
       },
@@ -111,20 +111,20 @@ const getNavData = (currentPath: string, applicationStatus: ApplicationStatus | 
         icon: ClipboardList,
         isActive: currentPath.includes('/form-pendaftaran/pendaftaran/'),
         items: [
-          {
-            title: "Data Pribadi",
+          {            title: "Data Pribadi",
             url: "/form-pendaftaran/pendaftaran/data-pribadi",
             disabled: false,
+            isActive: currentPath === '/form-pendaftaran/pendaftaran/data-pribadi'
           },
-          {
-            title: "Data Keluarga",
+          {            title: "Data Keluarga",
             url: "/form-pendaftaran/pendaftaran/data-keluarga",
             disabled: false,
+            isActive: currentPath === '/form-pendaftaran/pendaftaran/data-keluarga'
           },
-          {
-            title: "Alamat & Kontak",
+          {            title: "Alamat & Kontak",
             url: "/form-pendaftaran/pendaftaran/alamat",
             disabled: false,
+            isActive: currentPath === '/form-pendaftaran/pendaftaran/alamat'
           },
         ],
       },
@@ -133,20 +133,20 @@ const getNavData = (currentPath: string, applicationStatus: ApplicationStatus | 
         icon: Upload,
         isActive: currentPath.includes('/form-pendaftaran/dokumen/'),
         items: [
-          {
-            title: "Dokumen Wajib",
+          {            title: "Dokumen Wajib",
             url: "/form-pendaftaran/dokumen/wajib",
             disabled: false,
+            isActive: currentPath === '/form-pendaftaran/dokumen/wajib'
           },
-          {
-            title: "Bukti Sosial Media",
+          {            title: "Bukti Sosial Media",
             url: "/form-pendaftaran/dokumen/sosmed",
             disabled: false,
+            isActive: currentPath === '/form-pendaftaran/dokumen/sosmed'
           },
-          {
-            title: "Dokumen Pendukung",
+          {            title: "Dokumen Pendukung",
             url: "/form-pendaftaran/dokumen/pendukung",
             disabled: false,
+            isActive: currentPath === '/form-pendaftaran/dokumen/pendukung'
           },
         ],
       },
@@ -155,10 +155,10 @@ const getNavData = (currentPath: string, applicationStatus: ApplicationStatus | 
         icon: Clock,
         isActive: currentPath.includes('/form-pendaftaran/seleksi/'),
         items: [
-          {
-            title: "Seleksi Berkas",
+          {            title: "Seleksi Berkas",
             url: "/form-pendaftaran/seleksi/berkas",
             disabled: false,
+            isActive: currentPath === '/form-pendaftaran/seleksi/berkas',
             // ✅ TAMBAHKAN: Indikator finalisasi
             badge: canFinalize && !isFinalized ? {
               icon: AlertCircle,
@@ -166,20 +166,20 @@ const getNavData = (currentPath: string, applicationStatus: ApplicationStatus | 
               tooltip: "Siap untuk finalisasi"
             } : undefined
           },
-          {
-            title: "Jadwal Wawancara",
+          {            title: "Jadwal Wawancara",
             url: "/form-pendaftaran/seleksi/jadwal-wawancara",
             disabled: !canAccessInterview || applicationStatus?.status === 'ditolak', // ✅ UPDATED: Lock jika ditolak
+            isActive: currentPath === '/form-pendaftaran/seleksi/jadwal-wawancara',
             badge: !canAccessInterview || applicationStatus?.status === 'ditolak' ? {
               icon: Lock,
               color: "text-gray-400",
               tooltip: applicationStatus?.status === 'ditolak' ? "Tidak lolos seleksi berkas" : "Menunggu lolos seleksi berkas"
             } : undefined
           },
-          {
-            title: "Hasil Seleksi", // ✅ UPDATED: Rename dari "Hasil Wawancara"
+          {            title: "Hasil Seleksi", // ✅ UPDATED: Rename dari "Hasil Wawancara"
             url: "/form-pendaftaran/seleksi/hasil-wawancara",
             disabled: !canAccessResult,
+            isActive: currentPath === '/form-pendaftaran/seleksi/hasil-wawancara',
             badge: !canAccessResult ? {
               icon: Lock,
               color: "text-gray-400",
@@ -193,15 +193,15 @@ const getNavData = (currentPath: string, applicationStatus: ApplicationStatus | 
         icon: CheckCircle,
         isActive: currentPath.includes('/form-pendaftaran/status/'),
         items: [
-          {
-            title: "Progres Pendaftaran",
+          {            title: "Progres Pendaftaran",
             url: "/form-pendaftaran/status/progres",
             disabled: false,
+            isActive: currentPath === '/form-pendaftaran/status/progres'
           },
-          {
-            title: "Status Kelulusan",
+          {            title: "Status Kelulusan",
             url: "/form-pendaftaran/status/kelulusan",
             disabled: false,
+            isActive: currentPath === '/form-pendaftaran/status/kelulusan'
           },
         ],
       },
