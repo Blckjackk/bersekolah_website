@@ -261,7 +261,7 @@ export default function ManageAdminPage() {
             'Accept': 'application/json'
           }
         });
-        
+
         // Jika endpoints tidak tersedia (404), tampilkan pesan error untuk developer
         if (checkResponse.status === 404) {
           throw new Error("Endpoint pengelolaan user tidak tersedia di API");
