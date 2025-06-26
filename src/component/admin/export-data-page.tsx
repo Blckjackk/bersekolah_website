@@ -121,37 +121,48 @@ export default function ExportDataPage() {
       
       if (!token) {
         throw new Error("Anda harus login untuk mengekspor data");
-      }
-
-      // Persiapkan data untuk ekspor
-      const requestData = {
-        tables: selectedTables,
+      }      // Persiapkan data untuk ekspor sebagai query params untuk GET request
+      const tablesParam = selectedTables.join(',');
+      const queryParams = new URLSearchParams({
+        tables: tablesParam, 
         format: exportFormat,
         dateRange: exportDateRange
-      };      // Jalankan request ke API
-      const response = await fetch(`${baseURL}/export-data`, {
-        method: 'POST',
+      });
+      
+      // Jalankan request ke API
+      const response = await fetch(`${baseURL}/export?${queryParams.toString()}`, {
+        method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
           'Accept': 'application/json'
-        },
-        body: JSON.stringify(requestData)
-      });
-
-      // Verifikasi respon
+        }
+      });      // Verifikasi respon
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Gagal mengunduh data");
-      }
-
-      // Ambil file dari respon
-      const blob = await response.blob();
-      
-      // Buat nama file
+        // Try to parse error message from response
+        let errorMessage = "Gagal mengunduh data";
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorMessage;
+        } catch (e) {
+          // If response is not JSON, use status text
+          errorMessage = `Error ${response.status}: ${response.statusText}`;
+        }
+        throw new Error(errorMessage);
+      }      // Buat nama file
       const selectedFormat = exportFormats.find(format => format.id === exportFormat);
       const fileExtension = selectedFormat?.extension || '.xlsx';
       const fileName = `bersekolah_export_${new Date().toISOString().slice(0, 10)}${fileExtension}`;
+      
+      // Handle different response types
+      let blob;
+      if (exportFormat === 'json' && response.headers.get('Content-Type')?.includes('application/json')) {
+        // For JSON format, we get JSON response
+        const jsonData = await response.json();
+        blob = new Blob([JSON.stringify(jsonData, null, 2)], { type: 'application/json' });
+      } else {
+        // For Excel and CSV, we get binary response
+        blob = await response.blob();
+      }
 
       // Download file
       const url = window.URL.createObjectURL(blob);
@@ -178,29 +189,115 @@ export default function ExportDataPage() {
         description: error instanceof Error ? error.message : "Terjadi kesalahan saat mengekspor data",
         variant: "destructive"
       });
-      
-      // Mode pengembangan - langsung berikan file contoh
-      if (import.meta.env.DEV) {        const dummyData = {
+        // Mode pengembangan - langsung berikan file contoh
+      if (import.meta.env.DEV) {
+        console.log("DEV mode: Creating fallback export file");
+        
+        const dummyData = {
           meta: {
             exported_at: new Date().toISOString(),
-            tables: selectedTables,
-            format: exportFormat
+            exported_by: "Dev User",
+            tables_count: selectedTables.length,
+            tables: selectedTables
           },
           data: selectedTables.reduce<Record<string, any[]>>((acc, tableId) => {
-            acc[tableId] = [
-              { id: 1, name: "Sample Data 1", created_at: new Date().toISOString() },
-              { id: 2, name: "Sample Data 2", created_at: new Date().toISOString() }
-            ];
+            // Generate more realistic dummy data based on table type
+            switch(tableId) {
+              case 'users':
+                acc[tableId] = [
+                  { id: 1, name: "Admin User", email: "admin@bersekolah.com", role: "admin", created_at: new Date().toISOString() },
+                  { id: 2, name: "Super Admin", email: "superadmin@bersekolah.com", role: "superadmin", created_at: new Date().toISOString() },
+                  { id: 3, name: "Regular User", email: "user@example.com", role: "user", created_at: new Date().toISOString() }
+                ];
+                break;
+              case 'beswans':
+                acc[tableId] = [
+                  { id: 1, name: "Beswan 1", nim: "12345", university: "Universitas Indonesia", created_at: new Date().toISOString() },
+                  { id: 2, name: "Beswan 2", nim: "23456", university: "ITB", created_at: new Date().toISOString() }
+                ];
+                break;
+              case 'calon_beswans':
+                acc[tableId] = [
+                  { id: 1, name: "Calon 1", email: "calon1@example.com", status: "pending", created_at: new Date().toISOString() },
+                  { id: 2, name: "Calon 2", email: "calon2@example.com", status: "approved", created_at: new Date().toISOString() }
+                ];
+                break;
+              default:
+                acc[tableId] = [
+                  { id: 1, name: `${tableId} Data 1`, created_at: new Date().toISOString() },
+                  { id: 2, name: `${tableId} Data 2`, created_at: new Date().toISOString() }
+                ];
+            }
             return acc;
           }, {} as Record<string, any[]>)
-        };
-
-        // Buat file JSON contoh
-        const blob = new Blob([JSON.stringify(dummyData, null, 2)], { type: 'application/json' });
+        };        // Create appropriate file based on requested format
+        let blob;
+        let mimeType;
+        
+        switch (exportFormat) {
+          case 'csv':
+            // For CSV, generate simple CSV content
+            const headers = Object.keys(dummyData.data[selectedTables[0]][0]);
+            const csvRows = [];
+            
+            // Add table name
+            for (const table of selectedTables) {
+              csvRows.push(`TABLE: ${table.toUpperCase()}`);
+              csvRows.push(headers.join(','));
+              
+              // Add data rows
+              dummyData.data[table].forEach(row => {
+                csvRows.push(headers.map(header => {
+                  const val = row[header];
+                  // Quote strings with commas, wrap in quotes
+                  return typeof val === 'string' && val.includes(',') ? `"${val}"` : val;
+                }).join(','));
+              });
+              
+              csvRows.push(''); // Add empty row between tables
+            }
+            
+            blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
+            mimeType = 'text/csv';
+            break;
+            
+          case 'excel':
+            // In development mode, we'll just use CSV with Excel extension
+            // since we can't generate real Excel files on the client
+            const excelHeaders = Object.keys(dummyData.data[selectedTables[0]][0]);
+            const excelRows = [];
+            
+            for (const table of selectedTables) {
+              excelRows.push(`TABLE: ${table.toUpperCase()}`);
+              excelRows.push(excelHeaders.join(','));
+              
+              // Add data rows
+              dummyData.data[table].forEach(row => {
+                excelRows.push(excelHeaders.map(header => {
+                  const val = row[header];
+                  return typeof val === 'string' && val.includes(',') ? `"${val}"` : val;
+                }).join(','));
+              });
+              
+              excelRows.push(''); // Add empty row between tables
+            }
+            
+            blob = new Blob([excelRows.join('\n')], { type: 'application/vnd.ms-excel' });
+            mimeType = 'application/vnd.ms-excel';
+            break;
+            
+          case 'json':
+          default:
+            blob = new Blob([JSON.stringify(dummyData, null, 2)], { type: 'application/json' });
+            mimeType = 'application/json';
+        }
+        
+        // Download the generated file
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `bersekolah_export_sample_${new Date().toISOString().slice(0, 10)}.json`;
+        const devSelectedFormat = exportFormats.find(format => format.id === exportFormat);
+        a.download = `bersekolah_export_${exportFormat}_${new Date().toISOString().slice(0, 10)}${devSelectedFormat?.extension || '.json'}`;
         a.click();
         URL.revokeObjectURL(url);
 
@@ -252,7 +349,7 @@ export default function ExportDataPage() {
               
               <div className="grid gap-4 md:grid-cols-2">
                 {exportableTables.map((table) => (
-                  <div key={table.id} className="flex items-start space-x-3 p-3 border rounded-md">
+                  <div key={table.id} className="flex items-start p-3 space-x-3 border rounded-md">
                     <Checkbox 
                       id={`table-${table.id}`} 
                       checked={selectedTables.includes(table.id)}
@@ -354,7 +451,7 @@ export default function ExportDataPage() {
 
             <div className="space-y-2">
               <h3 className="font-medium">Langkah-langkah</h3>
-              <ol className="list-decimal list-inside text-sm text-muted-foreground space-y-1">
+              <ol className="space-y-1 text-sm list-decimal list-inside text-muted-foreground">
                 <li>Pilih tabel yang ingin Anda ekspor datanya</li>
                 <li>Pilih format file ekspor (Excel, CSV, atau JSON)</li>
                 <li>Tentukan rentang waktu data (opsional)</li>
