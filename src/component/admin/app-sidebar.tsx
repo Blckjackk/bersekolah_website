@@ -175,10 +175,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   title: "Manajemen Admin",
                   url: "/dashboard/manage-admin",
                   icon: Shield,
-                },
-                {
+                },                {
                   title: "Export Data",
-                  url: "/dashboard/expost-data",
+                  url: "/dashboard/export-data",
                   icon: Database,
                 },
                
