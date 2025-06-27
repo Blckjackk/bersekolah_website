@@ -178,7 +178,7 @@ export default function MentorPage() {
     setFormData({
       name: mentor.name,
       email: mentor.email,
-      photo: mentor.photo || ""
+      photo: mentor.photo_url || mentor.photo || "default.jpg"
     });
     setPhotoFile(null); // Reset photo file saat edit
     setEditDialog(true);
@@ -233,7 +233,7 @@ export default function MentorPage() {
       const mentorData = {
         name: formData.name.trim(),
         email: formData.email.trim(),
-        upload_to: 'ImageTemp' // Menentukan direktori tujuan upload
+        upload_to: 'assets/image/mentor' // Update ke direktori yang benar
       };
       
       const result = await MentorService.createMentor(mentorData, photoFile);
@@ -295,7 +295,7 @@ export default function MentorPage() {
       const mentorData = {
         name: formData.name.trim(),
         email: formData.email.trim(),
-        upload_to: 'ImageTemp', // Menentukan direktori tujuan upload
+        upload_to: 'assets/image/mentor', // Update ke direktori yang benar
         photo: !photoFile ? formData.photo : undefined // Jika tidak ada file baru, tetap gunakan yang lama
       };
       
@@ -436,8 +436,8 @@ export default function MentorPage() {
             
           </div>
 
-          
-          {/* Mentors table */}          <Table>
+          {/* Mentors table */}
+          <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Foto</TableHead>
@@ -454,14 +454,20 @@ export default function MentorPage() {
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredMentors.map((mentor) => (                  <TableRow key={mentor.id}>                    <TableCell>                      <div className="relative w-10 h-10 overflow-hidden rounded-full">
+                filteredMentors.map((mentor) => (
+                  <TableRow key={mentor.id}>
+                    <TableCell>
+                      <div className="relative w-10 h-10 overflow-hidden rounded-full">
                         <img 
-                          src={mentor.photo ? `/ImageTemp/${mentor.photo}` : ''} 
+                          src={MentorService.getImageUrl(mentor.photo_url || mentor.photo)} 
                           alt={mentor.name}
                           className="object-cover w-full h-full"
                           onError={(e) => {
                             const target = e.target as HTMLImageElement;
-                            target.src = '';
+                            // If it's not already the default image, set it to default
+                            if (!target.src.includes('default.jpg')) {
+                              target.src = MentorService.getImageUrl('default.jpg');
+                            }
                           }}
                         />
                       </div>
@@ -640,13 +646,18 @@ export default function MentorPage() {
               />
               {formData.photo && (
                 <div className="mt-2">
-                  <p className="mb-1 text-sm font-medium">Foto saat ini:</p>                  <div className="relative w-20 h-20 overflow-hidden rounded-md">                    <img
-                      src={photoFile ? formData.photo : `/ImageTemp/${formData.photo}`}
+                  <p className="mb-1 text-sm font-medium">Foto saat ini:</p>
+                  <div className="relative w-20 h-20 overflow-hidden rounded-md">
+                    <img
+                      src={photoFile ? formData.photo : MentorService.getImageUrl(formData.photo)}
                       alt="Foto mentor"
                       className="object-cover w-full h-full"
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
-                        target.src = '';
+                        // If it's not already the default image, set it to default
+                        if (!target.src.includes('default.jpg')) {
+                          target.src = MentorService.getImageUrl('default.jpg');
+                        }
                       }}
                     />
                   </div>
@@ -683,17 +694,23 @@ export default function MentorPage() {
           </DialogHeader>
           <div className="py-4">
             {selectedMentor && (
-              <div className="flex items-center gap-4 p-4 border rounded-md bg-muted/50">                <div className="relative w-16 h-16 overflow-hidden rounded-full">                  <img
-                    src={selectedMentor.photo ? `/ImageTemp/${selectedMentor.photo}` : ''}
+              <div className="flex items-center gap-4 p-4 border rounded-md bg-muted/50">
+                <div className="relative w-16 h-16 overflow-hidden rounded-full">
+                  <img
+                    src={MentorService.getImageUrl(selectedMentor.photo_url || selectedMentor.photo)}
                     alt={selectedMentor.name}
                     className="object-cover w-full h-full"
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
-                      target.src = '';
+                      // If it's not already the default image, set it to default
+                      if (!target.src.includes('default.jpg')) {
+                        target.src = MentorService.getImageUrl('default.jpg');
+                      }
                     }}
                   />
                 </div>
-                <div>                  <h4 className="font-medium">{selectedMentor.name}</h4>
+                <div>
+                  <h4 className="font-medium">{selectedMentor.name}</h4>
                   <p className="text-sm text-muted-foreground">{selectedMentor.email}</p>
                 </div>
               </div>

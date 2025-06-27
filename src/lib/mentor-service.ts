@@ -5,11 +5,43 @@ export interface Mentor {
   name: string;
   email: string;
   photo?: string;
+  photo_url?: string; // Add this for processed URL
   created_at?: string;
   updated_at?: string;
 }
 
 export const MentorService = {
+  // Helper function to get correct image URL
+  getImageUrl: (imagePath?: string): string => {
+    // If no image path provided, return default
+    if (!imagePath || imagePath === 'null' || imagePath === '') {
+      return '/assets/image/mentor/default.jpg';
+    }
+    
+    // If it's already 'default.jpg', return the correct path
+    if (imagePath === 'default.jpg') {
+      return '/assets/image/mentor/default.jpg';
+    }
+    
+    // If the path already starts with /assets, return as is (for local files)
+    if (imagePath.startsWith('/assets')) {
+      return imagePath;
+    }
+    
+    // If the path already includes the domain, return as is
+    if (imagePath.startsWith('http')) {
+      return imagePath;
+    }
+    
+    // Extract filename from any path structure (remove mentor/ prefix if exists)
+    let filename = imagePath.replace('mentor/', '');
+    if (filename.includes('/')) {
+      filename = filename.split('/').pop() || 'default.jpg';
+    }
+    
+    // Return local path for frontend assets
+    return `/assets/image/mentor/${filename}`;
+  },
   getAllMentors: async (): Promise<Mentor[]> => {
     try {
       const token = localStorage.getItem('bersekolah_auth_token');
