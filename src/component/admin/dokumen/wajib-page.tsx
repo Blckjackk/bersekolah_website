@@ -221,81 +221,34 @@ export default function AdminDokumenWajibPage() {
     }
   }
   const handlePreview = (doc: Document) => {
-    const baseUrl = import.meta.env.PUBLIC_API_BASE_URL_NO_API || 'http://localhost:8000'
+    const baseUrl = import.meta.env.PUBLIC_API_BASE_URL_NO_API || 'http://localhost:8000';
     
-    let directFileUrl = doc.file_path
-    
-    // Log untuk debug
-    console.log('=== ADMIN WAJIB PREVIEW DEBUG INFO ===')
-    console.log('Original file path:', doc.file_path)
-    console.log('Base URL:', baseUrl)
+    let directFileUrl = doc.file_path;
     
     if (directFileUrl.startsWith('http')) {
-      // URL sudah lengkap, tapi mungkin salah port/host
-      try {
-        const url = new URL(directFileUrl)
-        console.log('Parsed URL host:', url.host)
-        
-        // Check if URL needs to be modified
-        if (url.host !== '127.0.0.1:8000' && !url.host.includes(baseUrl.replace('http://', '').replace('https://', ''))) {
-          directFileUrl = directFileUrl.replace(url.origin, baseUrl)
-          console.log('URL host replaced, new URL:', directFileUrl)
-        }
-      } catch (e) {
-        console.error('Error parsing URL:', e)
-        // Fallback - treat as relative path
-        if (directFileUrl.startsWith('/storage/')) {
-          directFileUrl = `${baseUrl}${directFileUrl}`
-        } else if (directFileUrl.startsWith('storage/')) {
-          directFileUrl = `${baseUrl}/${directFileUrl}`
-        } else {
-          directFileUrl = `${baseUrl}/storage/${directFileUrl}`
-        }
-        console.log('Fallback path constructed:', directFileUrl)
+      // URL sudah lengkap, tapi perlu validasi domain
+      const url = new URL(directFileUrl);
+      if (url.host !== '127.0.0.1:8000' && !url.host.includes(baseUrl.replace('http://', '').replace('https://', ''))) {
+        directFileUrl = directFileUrl.replace(url.origin, baseUrl);
       }
     } else {
-      // Jika relatif path, gabungkan dengan base URL
+      // Jalur relatif, perlu ditambahkan baseUrl
       if (directFileUrl.startsWith('/storage/')) {
-        directFileUrl = `${baseUrl}${directFileUrl}`
+        directFileUrl = `${baseUrl}${directFileUrl}`;
       } else if (directFileUrl.startsWith('storage/')) {
-        directFileUrl = `${baseUrl}/${directFileUrl}`
-      } else if (directFileUrl.startsWith('/')) {
-        // Path starts with slash but not with /storage
-        directFileUrl = `${baseUrl}${directFileUrl}`
+        directFileUrl = `${baseUrl}/${directFileUrl}`;
       } else {
-        // Path tanpa /storage prefix dan tanpa slash awal
-        directFileUrl = `${baseUrl}/storage/${directFileUrl}`
+        directFileUrl = `${baseUrl}/storage/${directFileUrl}`;
       }
-      console.log('Relative path converted to:', directFileUrl)
     }
     
-    // Ensure URL is fully qualified and remove any double slashes (except after protocol)
-    directFileUrl = directFileUrl.replace(/([^:]\/)\/+/g, '$1')
-    
-    // Test URL with fetch
-    console.log('Testing URL accessibility with HEAD request...')
-    fetch(directFileUrl, { method: 'HEAD' })
-      .then(response => {
-        console.log('URL test response:', response.status, response.statusText)
-        if (!response.ok) {
-          console.warn('URL might not be accessible:', directFileUrl)
-        } else {
-          console.log('URL is accessible:', directFileUrl)
-        }
-      })
-      .catch(error => {
-        console.error('Error testing URL:', error)
-      })
-    
-    // Add cache busting parameter
-    const cacheBustingUrl = `${directFileUrl}${directFileUrl.includes('?') ? '&' : '?'}cacheBuster=${Date.now()}`
-    console.log('URL with cache buster:', cacheBustingUrl)
+    console.log('Preview URL:', directFileUrl);
     
     setSelectedDoc({
       ...doc,
-      file_path: cacheBustingUrl
-    })
-    setPreviewDialog(true)
+      file_path: directFileUrl
+    });
+    setPreviewDialog(true);
   }
 
   const handleVerify = (doc: Document, status: 'verified' | 'rejected') => {
@@ -682,12 +635,6 @@ export default function AdminDokumenWajibPage() {
                   className="w-full h-full" 
                   title="Document Preview"
                   sandbox="allow-scripts allow-same-origin allow-forms"
-                  onLoad={() => {
-                    console.log('PDF loaded successfully for admin wajib preview')
-                  }}
-                  onError={() => {
-                    console.error('Failed to load PDF in admin wajib preview:', selectedDoc.file_path)
-                  }}
                 />
               ) : (
                 <div className="flex items-center justify-center w-full h-full bg-gray-50">
@@ -695,46 +642,10 @@ export default function AdminDokumenWajibPage() {
                     src={selectedDoc.file_path} 
                     alt="Document Preview" 
                     className="object-contain max-w-full max-h-full"
-                    onLoad={() => {
-                      console.log('Image loaded successfully for admin wajib preview')
-                    }}
                     onError={(e) => {
-                      console.error('Failed to load image in admin wajib preview:', selectedDoc.file_path)
-                      const target = e.target as HTMLImageElement
-                      
-                      // Try with cache-busting query param if not already tried
-                      if (!target.src.includes('?cacheBuster=')) {
-                        console.log('Retrying image load with fresh cache-busting...')
-                        const cacheBuster = new Date().getTime()
-                        target.src = `${selectedDoc.file_path.split('?')[0]}?cacheBuster=${cacheBuster}`
-                        return
-                      }
-                      
-                      // If still fails, show error message
-                      target.style.display = 'none'
-                      
-                      // Create error message with download link
-                      const errorDiv = document.createElement('div')
-                      errorDiv.className = 'flex flex-col items-center justify-center h-full text-gray-500 p-8 text-center'
-                      errorDiv.innerHTML = `
-                        <svg class="w-16 h-16 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.232 15.5c-.77.833.192 2.5 1.732 2.5z"></path>
-                        </svg>
-                        <h3 class="text-lg font-medium text-gray-900 mb-2">Gagal memuat dokumen</h3>
-                        <p class="text-sm mb-4">Dokumen tidak dapat ditampilkan dalam preview. Silakan unduh untuk melihat file.</p>
-                        <a 
-                          href="${selectedDoc.file_path.split('?')[0]}" 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                        >
-                          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                          </svg>
-                          Unduh Dokumen
-                        </a>
-                      `
-                      target.parentElement?.appendChild(errorDiv)
+                      console.error('Image failed to load:', selectedDoc.file_path);
+                      e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNMTIgMjJDNi40NzcgMjIgMiAxNy41MjMgMiAxMkMyIDYuNDc3IDYuNDc3IDIgMTIgMkMxNy41MjMgMiAyMiA2LjQ3NyAyMiAxMkMyMiAxNy41MjMgMTcuNTIzIDIyIDEyIDIyWk0xMiAyMEMxNi40MTggMjAgMjAgMTYuNDE4IDIwIDEyQzIwIDcuNTgyIDE2LjQxOCA0IDEyIDRDNy41ODIgNCA0IDcuNTgyIDQgMTJDNCAxNi40MTggNy41ODIgMjAgMTIgMjBaTTExIDd2MkgxM1Y3SDExWk0xMSAxN0gxM1YxMUgxMVYxN1oiIGZpbGw9IiNmZjAwMDAiLz48L3N2Zz4=';
+                      e.currentTarget.classList.add('w-24', 'h-24');
                     }}
                   />
                 </div>

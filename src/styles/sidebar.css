@@ -97,3 +97,50 @@
 .sidebar-closed .sidebar-toggle {
   right: -12px;
 }
+
+/* Ensure submenu items are visible and clickable in collapsed state */
+.sidebar-closed .sidebar-collapsed-submenu {
+  position: absolute;
+  left: 100%;
+  top: 0;
+  min-width: 180px;
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  z-index: 50;
+  display: none;
+}
+
+.sidebar-closed .group\/collapsible:hover .sidebar-collapsed-submenu {
+  display: block;
+}
+
+/* Make sure all buttons are clickable */
+.sidebar-closed button,
+.sidebar-closed a {
+  pointer-events: auto !important;
+}
+
+/* Collapse button */
+.sidebar-toggle {
+  position: absolute;
+  bottom: 20px;
+  right: -12px;
+  width: 24px;
+  height: 24px;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 41;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  border: none;
+}
+
+.sidebar-closed .sidebar-toggle {
+  right: -12px;
+}
