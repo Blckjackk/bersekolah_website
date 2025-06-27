@@ -31,12 +31,42 @@ export interface UpdateArtikelRequest {
   gambar?: File;
 }
 
-export class ArtikelService {
-  private static readonly baseUrl = '/api/admin-konten';
+export const ArtikelService = {
+  // Helper function to get correct image URL
+  getImageUrl: (imagePath?: string): string => {
+    // If no image path provided, return default
+    if (!imagePath || imagePath === 'null' || imagePath === '') {
+      return '/assets/image/artikel/default.jpg';
+    }
+    
+    // If it's already 'default.jpg', return the correct path
+    if (imagePath === 'default.jpg') {
+      return '/assets/image/artikel/default.jpg';
+    }
+    
+    // If the path already starts with /assets, return as is
+    if (imagePath.startsWith('/assets')) {
+      return imagePath;
+    }
+    
+    // If the path already includes the domain, return as is
+    if (imagePath.startsWith('http')) {
+      return imagePath;
+    }
+    
+    // Extract filename
+    let filename = imagePath;
+    if (filename.includes('/')) {
+      filename = filename.split('/').pop() || 'default.jpg';
+    }
+    
+    // Return local path for frontend assets
+    return `/assets/image/artikel/${filename}`;
+  },
 
-  static async getAllArtikels(): Promise<Artikel[]> {
+  getAllArtikels: async (): Promise<Artikel[]> => {
     try {
-      const response = await fetch(`${API_URL}/admin-konten`, {
+      const response = await fetch(`${API_URL}/artikels`, {
         headers: {
           'Accept': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('bersekolah_auth_token')}`
@@ -53,11 +83,11 @@ export class ArtikelService {
       console.error('Error fetching articles:', error);
       throw error;
     }
-  }
+  },
 
-  static async getArtikelById(id: number): Promise<Artikel> {
+  getArtikelById: async (id: number): Promise<Artikel> => {
     try {
-      const response = await fetch(`${API_URL}/admin-konten/${id}`, {
+      const response = await fetch(`${API_URL}/artikels/${id}`, {
         headers: {
           'Accept': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('bersekolah_auth_token')}`
@@ -74,9 +104,9 @@ export class ArtikelService {
       console.error('Error fetching article:', error);
       throw error;
     }
-  }
+  },
 
-  static async createArtikel(artikel: CreateArtikelRequest): Promise<Artikel> {
+  createArtikel: async (artikel: CreateArtikelRequest): Promise<Artikel> => {
     try {
       const formData = new FormData();
       formData.append('judul_halaman', artikel.judul_halaman);
@@ -89,7 +119,7 @@ export class ArtikelService {
         formData.append('gambar', artikel.gambar);
       }
 
-      const response = await fetch(`${API_URL}/admin-konten`, {
+      const response = await fetch(`${API_URL}/artikels`, {
         method: 'POST',
         headers: {
           'Accept': 'application/json',
@@ -109,9 +139,9 @@ export class ArtikelService {
       console.error('Error creating article:', error);
       throw error;
     }
-  }
+  },
 
-  static async updateArtikel(id: number, artikel: UpdateArtikelRequest): Promise<Artikel> {
+  updateArtikel: async (id: number, artikel: UpdateArtikelRequest): Promise<Artikel> => {
     try {
       const formData = new FormData();
       formData.append('judul_halaman', artikel.judul_halaman);
@@ -125,7 +155,7 @@ export class ArtikelService {
         formData.append('gambar', artikel.gambar);
       }
 
-      const response = await fetch(`${API_URL}/admin-konten/${id}`, {
+      const response = await fetch(`${API_URL}/artikels/${id}`, {
         method: 'POST',
         headers: {
           'Accept': 'application/json',
@@ -145,11 +175,11 @@ export class ArtikelService {
       console.error('Error updating article:', error);
       throw error;
     }
-  }
+  },
 
-  static async deleteArtikel(id: number): Promise<void> {
+  deleteArtikel: async (id: number): Promise<void> => {
     try {
-      const response = await fetch(`${API_URL}/admin-konten/${id}`, {
+      const response = await fetch(`${API_URL}/artikels/${id}`, {
         method: 'DELETE',
         headers: {
           'Accept': 'application/json',
@@ -165,12 +195,12 @@ export class ArtikelService {
       console.error('Error deleting article:', error);
       throw error;
     }
-  }
+  },
 
-  static async updateArtikelStatus(id: number, status: 'draft' | 'published' | 'archived'): Promise<Artikel> {
+  updateArtikelStatus: async (id: number, status: 'draft' | 'published' | 'archived'): Promise<Artikel> => {
     try {
-      const response = await fetch(`${API_URL}/admin-konten/${id}`, {
-        method: 'PATCH',
+      const response = await fetch(`${API_URL}/artikels/${id}/status`, {
+        method: 'PUT',
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
@@ -191,25 +221,4 @@ export class ArtikelService {
       throw error;
     }
   }
-
-  static getImageUrl(imagePath?: string): string {
-    if (!imagePath) {
-      return '/placeholder-avatar.png';
-    }
-    
-    // If the path already includes the domain or starts with http, return as is
-    if (imagePath.startsWith('http') || imagePath.startsWith('/storage')) {
-      return imagePath;
-    }
-    
-    // If it's just a filename, construct the full URL
-    if (!imagePath.includes('/')) {
-      const baseUrl = import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:8000';
-      return `${baseUrl}/storage/uploads/konten/${imagePath}`;
-    }
-    
-    // Otherwise, assume it's a relative path that needs the storage prefix
-    const baseUrl = import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:8000';
-    return `${baseUrl}/storage/${imagePath}`;
-  }
-}
+};
