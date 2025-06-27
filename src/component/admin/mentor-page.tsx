@@ -552,12 +552,12 @@ export default function MentorPage() {
                     onChange={handlePhotoChange}
                     accept="image/jpeg,image/png,image/jpg"
                   />
-                  <p className="text-sm text-muted-foreground mt-1">
+                  <p className="mt-1 text-sm text-muted-foreground">
                     Format: JPG, PNG. Maks 2MB.
                   </p>
                 </div>
                 {formData.photo && photoFile && (
-                  <div className="relative w-20 h-20 overflow-hidden rounded-md border">
+                  <div className="relative w-20 h-20 overflow-hidden border rounded-md">
                     <img 
                       src={formData.photo} 
                       alt="Preview foto mentor" 
@@ -569,7 +569,7 @@ export default function MentorPage() {
                         setFormData(prev => ({ ...prev, photo: "" }));
                         setPhotoFile(null);
                       }}
-                      className="absolute top-0 right-0 bg-red-500 text-white rounded-bl p-1"
+                      className="absolute top-0 right-0 p-1 text-white bg-red-500 rounded-bl"
                       aria-label="Hapus foto"
                     >
                       <XCircle className="w-4 h-4" />
