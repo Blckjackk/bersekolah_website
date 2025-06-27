@@ -38,8 +38,8 @@ export const TestimoniService = {
       const data = await response.json();
       console.log('Testimoni API response:', data);
       
-      // Handle different response formats
-      if (data.data) {
+      // Handle response format
+      if (data.success && data.data) {
         console.log('Using data.data format, found', data.data.length, 'testimonials');
         return data.data;
       } else if (Array.isArray(data)) {
@@ -51,7 +51,8 @@ export const TestimoniService = {
     } catch (error) {
       console.error('Error in getAllTestimoni:', error);
       throw error;
-    }  },
+    }
+  },
   // Get total testimoni count  
   getTotalTestimoni: async (): Promise<number> => {
     try {
@@ -71,8 +72,14 @@ export const TestimoniService = {
       if (!response.ok) throw new Error('Failed to fetch total testimoni');
 
       const data = await response.json();
-      const testimonials = data.data || data;
-      return Array.isArray(testimonials) ? testimonials.length : 0;
+      
+      if (data.success && data.data) {
+        return Array.isArray(data.data) ? data.data.length : 0;
+      } else if (Array.isArray(data)) {
+        return data.length;
+      }
+      
+      return 0;
     } catch (error) {
       console.error('Error fetching testimoni total:', error);
       return 0; // Default to 0 if error
@@ -99,7 +106,7 @@ export const TestimoniService = {
       const data = await response.json();
       console.log('Testimoni detail API response:', data);
       
-      return data.data || data;
+      return data.success ? data.data : data;
     } catch (error) {
       console.error(`Error in getTestimoniById (${id}):`, error);
       throw error;
@@ -149,7 +156,7 @@ export const TestimoniService = {
       
       const data = await response.json();
       console.log('Create testimoni API response:', data);
-      return data.data || data;
+      return data.success ? data.data : data;
     } catch (error) {
       console.error('Error in createTestimoni:', error);
       throw error;
@@ -201,7 +208,7 @@ export const TestimoniService = {
       
       const data = await response.json();
       console.log('Update testimoni API response:', data);
-      return data.data || data;
+      return data.success ? data.data : data;
     } catch (error) {
       console.error(`Error in updateTestimoni (${id}):`, error);
       throw error;
@@ -243,19 +250,16 @@ export const TestimoniService = {
         throw new Error('Unauthorized: No token found');
       }
       
-      const formData = new FormData();
-      formData.append('status', status);
-      formData.append('_method', 'PATCH'); // Laravel form method spoofing
-      
       console.log(`Updating testimoni ${id} status to ${status}`);
       
       const response = await fetch(`${API_URL}/admin/testimonials/${id}/status`, {
-        method: 'POST', // Using POST with _method for Laravel method spoofing
+        method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json'
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
         },
-        body: formData
+        body: JSON.stringify({ status })
       });
       
       if (!response.ok) {

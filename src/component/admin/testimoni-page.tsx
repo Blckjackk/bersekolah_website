@@ -220,7 +220,8 @@ export default function TestimoniPage() {
       ));
     } catch (err) {
       console.error("Error toggling testimoni status:", err);
-      showToast("Gagal mengubah status testimoni", "error");
+      const errorMessage = err instanceof Error ? err.message : "Gagal mengubah status testimoni";
+      showToast(errorMessage, "error");
     }
   };
   
@@ -245,7 +246,8 @@ export default function TestimoniPage() {
       fetchTestimoni();
     } catch (err) {
       console.error("Error creating testimoni:", err);
-      showToast("Gagal menambahkan testimoni", "error");
+      const errorMessage = err instanceof Error ? err.message : "Gagal menambahkan testimoni";
+      showToast(errorMessage, "error");
     } finally {
       setIsSubmitting(false);
     }
@@ -274,7 +276,8 @@ export default function TestimoniPage() {
       fetchTestimoni();
     } catch (err) {
       console.error("Error updating testimoni:", err);
-      showToast("Gagal memperbarui testimoni", "error");
+      const errorMessage = err instanceof Error ? err.message : "Gagal memperbarui testimoni";
+      showToast(errorMessage, "error");
     } finally {
       setIsSubmitting(false);
     }
@@ -296,7 +299,8 @@ export default function TestimoniPage() {
       fetchTestimoni();
     } catch (err) {
       console.error("Error deleting testimoni:", err);
-      showToast("Gagal menghapus testimoni", "error");
+      const errorMessage = err instanceof Error ? err.message : "Gagal menghapus testimoni";
+      showToast(errorMessage, "error");
     } finally {
       setIsSubmitting(false);
     }

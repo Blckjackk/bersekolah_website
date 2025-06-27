@@ -127,16 +127,27 @@ export default function ExportDataPage() {
         tables: tablesParam, 
         format: exportFormat,
         dateRange: exportDateRange
-      });
+      });      // Set appropriate Accept header based on format and adjust headers
+      let acceptHeader = 'application/json';
+      
+      if (exportFormat === 'excel') {
+        acceptHeader = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+      } else if (exportFormat === 'csv') {
+        acceptHeader = 'text/csv';
+      }
       
       // Jalankan request ke API
       const response = await fetch(`${baseURL}/export?${queryParams.toString()}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json'
+          'Accept': acceptHeader,
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache' 
         }
-      });      // Verifikasi respon
+      });
+      
+      // Verifikasi respon
       if (!response.ok) {
         // Try to parse error message from response
         let errorMessage = "Gagal mengunduh data";
@@ -148,30 +159,56 @@ export default function ExportDataPage() {
           errorMessage = `Error ${response.status}: ${response.statusText}`;
         }
         throw new Error(errorMessage);
-      }      // Buat nama file
+      }
+      
+      // Buat nama file
       const selectedFormat = exportFormats.find(format => format.id === exportFormat);
       const fileExtension = selectedFormat?.extension || '.xlsx';
-      const fileName = `bersekolah_export_${new Date().toISOString().slice(0, 10)}${fileExtension}`;
-      
-      // Handle different response types
+      const fileName = `bersekolah_export_${new Date().toISOString().slice(0, 10)}${fileExtension}`;      // Handle different response types
       let blob;
-      if (exportFormat === 'json' && response.headers.get('Content-Type')?.includes('application/json')) {
-        // For JSON format, we get JSON response
+      const contentType = response.headers.get('Content-Type');
+      
+      // Set correct MIME type for blob based on format
+      const mimeTypes = {
+        'excel': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'csv': 'text/csv',
+        'json': 'application/json'
+      };
+      
+      if (exportFormat === 'json' && contentType?.includes('application/json')) {
+        // For JSON format, get JSON response and create blob with proper formatting
         const jsonData = await response.json();
-        blob = new Blob([JSON.stringify(jsonData, null, 2)], { type: 'application/json' });
+        blob = new Blob([JSON.stringify(jsonData, null, 2)], { type: mimeTypes.json });
       } else {
-        // For Excel and CSV, we get binary response
+        // For Excel and CSV, get binary blob response directly
         blob = await response.blob();
       }
-
-      // Download file
-      const url = window.URL.createObjectURL(blob);
+      
+      // Check if blob is valid
+      if (!blob) {
+        throw new Error("Gagal mendapatkan data ekspor");
+      }
+      
+      // Download file with appropriate MIME type
+      const url = window.URL.createObjectURL(
+        new Blob([blob], { type: mimeTypes[exportFormat as keyof typeof mimeTypes] || 'application/octet-stream' })
+      );
+      
+      // Create hidden anchor and trigger download
       const a = document.createElement('a');
       a.style.display = 'none';
       a.href = url;
       a.download = fileName;
+      
+      // Append to body, click, then clean up
       document.body.appendChild(a);
       a.click();
+      
+      // Cleanup
+      setTimeout(() => {
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+      }, 100);
       window.URL.revokeObjectURL(url);
       
       // Notifikasi sukses
@@ -188,123 +225,104 @@ export default function ExportDataPage() {
         title: "Ekspor Gagal",
         description: error instanceof Error ? error.message : "Terjadi kesalahan saat mengekspor data",
         variant: "destructive"
-      });
-        // Mode pengembangan - langsung berikan file contoh
+      });      // Mode pengembangan - coba lagi dengan URL lokal
       if (import.meta.env.DEV) {
-        console.log("DEV mode: Creating fallback export file");
+        console.log("DEV mode: Retrying with local URL");
         
-        const dummyData = {
-          meta: {
-            exported_at: new Date().toISOString(),
-            exported_by: "Dev User",
-            tables_count: selectedTables.length,
-            tables: selectedTables
-          },
-          data: selectedTables.reduce<Record<string, any[]>>((acc, tableId) => {
-            // Generate more realistic dummy data based on table type
-            switch(tableId) {
-              case 'users':
-                acc[tableId] = [
-                  { id: 1, name: "Admin User", email: "admin@bersekolah.com", role: "admin", created_at: new Date().toISOString() },
-                  { id: 2, name: "Super Admin", email: "superadmin@bersekolah.com", role: "superadmin", created_at: new Date().toISOString() },
-                  { id: 3, name: "Regular User", email: "user@example.com", role: "user", created_at: new Date().toISOString() }
-                ];
-                break;
-              case 'beswans':
-                acc[tableId] = [
-                  { id: 1, name: "Beswan 1", nim: "12345", university: "Universitas Indonesia", created_at: new Date().toISOString() },
-                  { id: 2, name: "Beswan 2", nim: "23456", university: "ITB", created_at: new Date().toISOString() }
-                ];
-                break;
-              case 'calon_beswans':
-                acc[tableId] = [
-                  { id: 1, name: "Calon 1", email: "calon1@example.com", status: "pending", created_at: new Date().toISOString() },
-                  { id: 2, name: "Calon 2", email: "calon2@example.com", status: "approved", created_at: new Date().toISOString() }
-                ];
-                break;
-              default:
-                acc[tableId] = [
-                  { id: 1, name: `${tableId} Data 1`, created_at: new Date().toISOString() },
-                  { id: 2, name: `${tableId} Data 2`, created_at: new Date().toISOString() }
-                ];
-            }
-            return acc;
-          }, {} as Record<string, any[]>)
-        };        // Create appropriate file based on requested format
-        let blob;
-        let mimeType;
-        
-        switch (exportFormat) {
-          case 'csv':
-            // For CSV, generate simple CSV content
-            const headers = Object.keys(dummyData.data[selectedTables[0]][0]);
-            const csvRows = [];
-            
-            // Add table name
-            for (const table of selectedTables) {
-              csvRows.push(`TABLE: ${table.toUpperCase()}`);
-              csvRows.push(headers.join(','));
-              
-              // Add data rows
-              dummyData.data[table].forEach(row => {
-                csvRows.push(headers.map(header => {
-                  const val = row[header];
-                  // Quote strings with commas, wrap in quotes
-                  return typeof val === 'string' && val.includes(',') ? `"${val}"` : val;
-                }).join(','));
-              });
-              
-              csvRows.push(''); // Add empty row between tables
-            }
-            
-            blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
-            mimeType = 'text/csv';
-            break;
-            
-          case 'excel':
-            // In development mode, we'll just use CSV with Excel extension
-            // since we can't generate real Excel files on the client
-            const excelHeaders = Object.keys(dummyData.data[selectedTables[0]][0]);
-            const excelRows = [];
-            
-            for (const table of selectedTables) {
-              excelRows.push(`TABLE: ${table.toUpperCase()}`);
-              excelRows.push(excelHeaders.join(','));
-              
-              // Add data rows
-              dummyData.data[table].forEach(row => {
-                excelRows.push(excelHeaders.map(header => {
-                  const val = row[header];
-                  return typeof val === 'string' && val.includes(',') ? `"${val}"` : val;
-                }).join(','));
-              });
-              
-              excelRows.push(''); // Add empty row between tables
-            }
-            
-            blob = new Blob([excelRows.join('\n')], { type: 'application/vnd.ms-excel' });
-            mimeType = 'application/vnd.ms-excel';
-            break;
-            
-          case 'json':
-          default:
-            blob = new Blob([JSON.stringify(dummyData, null, 2)], { type: 'application/json' });
-            mimeType = 'application/json';
+        // Coba gunakan URL lokal yang spesifik (ini hanya untuk mode pengembangan)
+        const localApiURL = "http://localhost:8000/api";
+          try {
+          // Get auth token again to be safe
+          const devToken = localStorage.getItem('bersekolah_auth_token');
+          if (!devToken) {
+            throw new Error("Anda harus login untuk mengekspor data");
+          }
+          
+          // Persiapkan data untuk ekspor sebagai query params untuk GET request jika belum ada
+          const devTablesParam = selectedTables.join(',');
+          const devQueryParams = new URLSearchParams({
+            tables: devTablesParam, 
+            format: exportFormat,
+            dateRange: exportDateRange
+          });
+          
+          // Set headers for API request
+          const devHeaders: Record<string, string> = {
+            'Authorization': `Bearer ${devToken}`
+          };
+          
+          // For Excel format, we need to accept octet-stream or spreadsheet formats
+          if (exportFormat === 'excel') {
+            devHeaders['Accept'] = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel, application/octet-stream';
+          } else if (exportFormat === 'csv') {
+            devHeaders['Accept'] = 'text/csv, application/octet-stream';
+          } else {
+            devHeaders['Accept'] = 'application/json';
+          }
+          
+          // Notifikasi ke pengguna
+          toast({
+            title: "Mode Pengembangan",
+            description: "Mencoba menggunakan API lokal...",
+          });
+          
+          // Coba kembali request dengan URL lokal
+          const devResponse = await fetch(`${localApiURL}/export?${devQueryParams.toString()}`, {
+            method: 'GET',
+            headers: devHeaders
+          });
+          
+          // Tetap tampilkan error jika masih gagal
+          if (!devResponse.ok) {
+            throw new Error(`Error dari API lokal: ${devResponse.status} ${devResponse.statusText}`);
+          }
+          
+          // Proses response dari API lokal
+          let devBlob;
+          if (exportFormat === 'json' && devResponse.headers.get('Content-Type')?.includes('application/json')) {
+            const jsonData = await devResponse.json();
+            devBlob = new Blob([JSON.stringify(jsonData, null, 2)], { 
+              type: 'application/json'
+            });
+          } else {
+            devBlob = await devResponse.blob();
+          }
+          
+          // Download file
+          const devUrl = window.URL.createObjectURL(devBlob);
+          const devAnchor = document.createElement('a');
+          devAnchor.href = devUrl;
+          
+          const devFileName = `bersekolah_export_dev_${exportFormat}_${new Date().toISOString().slice(0, 10)}${
+            exportFormats.find(format => format.id === exportFormat)?.extension || '.json'
+          }`;
+          
+          devAnchor.download = devFileName;
+          document.body.appendChild(devAnchor);
+          devAnchor.click();
+          
+          setTimeout(() => {
+            document.body.removeChild(devAnchor);
+            window.URL.revokeObjectURL(devUrl);
+          }, 100);
+          
+          toast({
+            title: "Export Berhasil (DEV)",
+            description: `Data berhasil diekspor ke file ${devFileName}`,
+          });
+          
+          // Keluar dari handler jika berhasil
+          return;
+        } catch (devError) {
+          console.error("DEV mode retry failed:", devError);
+          toast({
+            title: "Gagal (DEV Mode)",
+            description: "Tidak dapat menggunakan API lokal. Periksa server Anda.",
+            variant: "destructive"
+          });
+          // No longer fallback to dummy data, instead throw the error to be handled properly
+          throw new Error("Export gagal: Tidak dapat terhubung ke server API lokal");
         }
-        
-        // Download the generated file
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        const devSelectedFormat = exportFormats.find(format => format.id === exportFormat);
-        a.download = `bersekolah_export_${exportFormat}_${new Date().toISOString().slice(0, 10)}${devSelectedFormat?.extension || '.json'}`;
-        a.click();
-        URL.revokeObjectURL(url);
-
-        toast({
-          title: "Mode Pengembangan",
-          description: "File contoh telah dibuat untuk mode pengembangan"
-        });
       }
     } finally {
       setIsLoading(false);
