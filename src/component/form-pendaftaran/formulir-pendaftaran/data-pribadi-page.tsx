@@ -190,7 +190,7 @@ export default function DataPribadiPage() {
         
         // ✅ Update toast menjadi showAlert
         if (user?.nama_lengkap) {
-          showAlert("success", "Data Dimuat", "Data pribadi berhasil dimuat dari server.")
+          showAlert("success", "Data Dimuat", "Data pribadi berhasil dimuat.")
         } else {
           showAlert("info", "Belum Ada Data", "Silakan isi form data pribadi.")
         }

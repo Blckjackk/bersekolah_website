@@ -3,6 +3,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "./sidebar.css";
+@import "./sidebar-responsive.css";
 
 @custom-variant dark (&:is(.dark *));
 

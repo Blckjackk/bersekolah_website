@@ -4,11 +4,25 @@
 }
 
 .sidebar-closed {
-  width: var(--sidebar-collapsed-width, 60px);
+  width: var(--sidebar-collapsed-width, 60px) !important;
+  min-width: 60px !important;
+  max-width: 60px !important;
 }
 
-/* Add this if you want to hide elements when sidebar is collapsed */
-.sidebar-closed .hide-when-collapsed {
+/* Hide text content when sidebar is collapsed */
+.sidebar-closed .hide-when-collapsed,
+.sidebar-closed .truncate:not(.icon-only),
+.sidebar-closed .text-sm,
+.sidebar-closed .text-xs {
+  display: none;
+}
+
+/* Show only icons in collapsed state */
+.sidebar-closed [data-sidebar="menu-button"] > div:first-child {
+  margin-right: 0;
+}
+
+.sidebar-closed [data-sidebar="menu-button"] > div:not(:first-child) {
   display: none;
 }
 
@@ -16,6 +30,8 @@
 @media (max-width: 768px) {
   .sidebar-closed {
     transform: translateX(-100%);
+    width: 0 !important;
+    min-width: 0 !important;
   }
 }
 
@@ -26,10 +42,13 @@
 
 /* Static positioning to ensure it doesn't disappear during navigation */
 .sidebar-container {
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 0;
   height: 100vh;
   z-index: 40;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 /* Ensure submenu items are visible and clickable in collapsed state */

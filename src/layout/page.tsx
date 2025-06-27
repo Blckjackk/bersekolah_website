@@ -11,10 +11,11 @@ import { Separator } from "@/components/ui/separator";
 import {
   SidebarInset,
   SidebarProvider,
-  SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
+import { CustomSidebarTrigger } from "@/component/layout/custom-sidebar-trigger";
+import { SidebarProvider as CustomSidebarProvider } from "@/contexts/SidebarContext";
 
 import type { ReactNode } from "react";
 
@@ -194,8 +195,7 @@ export default function Page({ children }: { children: ReactNode }) {
   };
 
   const getBreadcrumbLabel = (segment: string, index: number) => {
-    const labels: Record<string, string> = {
-      "form-pendaftaran": "Form Pendaftaran",
+    const labels: Record<string, string> = {      "form-pendaftaran": "Dashboard",
       pendaftaran: "Formulir",
       "data-pribadi": "Data Pribadi",
       "data-keluarga": "Data Keluarga",
@@ -233,48 +233,50 @@ export default function Page({ children }: { children: ReactNode }) {
   }
 
   return (
-    <SidebarProvider>
-      <AppSidebar />
-      <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
-          <div className="flex items-center gap-2 px-4">
-            <SidebarTrigger className="-ml-1" />
-            <Separator orientation="vertical" className="h-4 mr-2" />
-            <Breadcrumb>
-              <BreadcrumbList>
-                {pathSegments.length === 0 ? (
-                  <BreadcrumbItem className="block">
-                    <BreadcrumbPage>Dashboard</BreadcrumbPage>
-                  </BreadcrumbItem>
-                ) : (
-                  pathSegments.map((segment, index) => {
-                    const isLast = index === pathSegments.length - 1;
-                    const label = getBreadcrumbLabel(segment, index);
+    <CustomSidebarProvider>
+      <SidebarProvider>
+        <AppSidebar />
+        <SidebarInset>
+          <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
+            <div className="flex items-center gap-2 px-4">
+              <CustomSidebarTrigger className="-ml-1" />
+              <Separator orientation="vertical" className="h-4 mr-2" />
+              <Breadcrumb>
+                <BreadcrumbList>
+                  {pathSegments.length === 0 ? (
+                    <BreadcrumbItem className="block">
+                      <BreadcrumbPage>Dashboard</BreadcrumbPage>
+                    </BreadcrumbItem>
+                  ) : (
+                    pathSegments.map((segment, index) => {
+                      const isLast = index === pathSegments.length - 1;
+                      const label = getBreadcrumbLabel(segment, index);
 
-                    return (
-                      <div key={index} className="flex items-center gap-3">
-                        <BreadcrumbItem className="block">
-                          {!isLast ? (
-                            <BreadcrumbLink href={buildHref(index)}>
-                              {label}
-                            </BreadcrumbLink>
-                          ) : (
-                            <BreadcrumbPage>{label}</BreadcrumbPage>
-                          )}
-                        </BreadcrumbItem>
-                        {!isLast && <BreadcrumbSeparator className="block" />}
-                      </div>
-                    );
-                  })
-                )}
-              </BreadcrumbList>
-            </Breadcrumb>
+                      return (
+                        <div key={index} className="flex items-center gap-3">
+                          <BreadcrumbItem className="block">
+                            {!isLast ? (
+                              <BreadcrumbLink href={buildHref(index)}>
+                                {label}
+                              </BreadcrumbLink>
+                            ) : (
+                              <BreadcrumbPage>{label}</BreadcrumbPage>
+                            )}
+                          </BreadcrumbItem>
+                          {!isLast && <BreadcrumbSeparator className="block" />}
+                        </div>
+                      );
+                    })
+                  )}
+                </BreadcrumbList>
+              </Breadcrumb>
+            </div>
+          </header>
+          <div className="flex flex-col flex-1 gap-4 p-4 pt-0">
+            {children}
           </div>
-        </header>
-        <div className="flex flex-col flex-1 gap-4 p-4 pt-0">
-          {children}
-        </div>
-      </SidebarInset>
-    </SidebarProvider>
+        </SidebarInset>
+      </SidebarProvider>
+    </CustomSidebarProvider>
   );
 }

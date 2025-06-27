@@ -72,14 +72,21 @@ export default function KelolaArtikelPage({ defaultCategory = "news" }: { defaul
   const [editDialog, setEditDialog] = useState(false);
   const [deleteDialog, setDeleteDialog] = useState(false);
   const [selectedArtikel, setSelectedArtikel] = useState<Artikel | null>(null);
-    // Form states
-  const [formData, setFormData] = useState({
+  // Form states
+  const [formData, setFormData] = useState<{
+    judul_halaman: string;
+    slug: string;
+    deskripsi: string;
+    category: string;
+    status: "draft" | "published" | "archived";
+    gambar: File | null;
+  }>({
     judul_halaman: "",
     slug: "",
     deskripsi: "",
     category: defaultCategory, // Use the provided defaultCategory
-    status: "draft" as "draft" | "published" | "archived",
-    gambar: null as File | null,
+    status: "archived", // Default to archived for new articles
+    gambar: null,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   
@@ -166,14 +173,14 @@ export default function KelolaArtikelPage({ defaultCategory = "news" }: { defaul
       });
     }
   };
-    // Open create dialog
+  // Open create dialog
   const openCreateDialog = () => {
     setFormData({
       judul_halaman: "",
       slug: "",
       deskripsi: "",
       category: defaultCategory, // Use the provided defaultCategory
-      status: "draft",
+      status: "archived", // Default to archived for new articles
       gambar: null
     });
     setCreateDialog(true);
@@ -383,7 +390,7 @@ export default function KelolaArtikelPage({ defaultCategory = "news" }: { defaul
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold">Kelola Artikel</h1>
-          <p className="text-gray-600">Kelola konten dan artikel website</p>
+          <p className="text-gray-600">Kelola artikel terbaru</p>
         </div>
         <div className="flex items-center space-x-2">
           <Button 
@@ -556,46 +563,27 @@ export default function KelolaArtikelPage({ defaultCategory = "news" }: { defaul
                 URL halaman: example.com/{formData.slug}
               </p>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="category">Kategori</Label>
-                <Select
-                  name="category"
-                  value={formData.category}
-                  onValueChange={(value) => setFormData({ ...formData, category: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Pilih kategori" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="news">Berita</SelectItem>
-                    <SelectItem value="bertumbuh">Bertumbuh</SelectItem>
-                    <SelectItem value="berolahraga">Berolahraga</SelectItem>
-                    <SelectItem value="bercerita">bercerita</SelectItem>
-                    <SelectItem value="bersekolah_fest">Bersekolah Fest</SelectItem>
-                    <SelectItem value="berkunjung">Berkunjung</SelectItem>
-                    <SelectItem value="bertemu">Bertemu</SelectItem>
-                    <SelectItem value="beribadah">Beribadah</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label htmlFor="status">Status</Label>
-                <Select
-                  name="status"
-                  value={formData.status}
-                  onValueChange={(value) => setFormData({ ...formData, status: value as "draft" | "published" | "archived" })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Pilih status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="draft">Draft</SelectItem>
-                    <SelectItem value="published">Published</SelectItem>
-                    <SelectItem value="archived">Archived</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+            <div>
+              <Label htmlFor="category">Kategori</Label>
+              <Select
+                name="category"
+                value={formData.category}
+                onValueChange={(value) => setFormData({ ...formData, category: value })}
+              >
+                <SelectTrigger className="mt-1">
+                  <SelectValue placeholder="Pilih kategori" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="news">Berita</SelectItem>
+                  <SelectItem value="bertumbuh">Bertumbuh</SelectItem>
+                  <SelectItem value="berolahraga">Berolahraga</SelectItem>
+                  <SelectItem value="bercerita">bercerita</SelectItem>
+                  <SelectItem value="bersekolah_fest">Bersekolah Fest</SelectItem>
+                  <SelectItem value="berkunjung">Berkunjung</SelectItem>
+                  <SelectItem value="bertemu">Bertemu</SelectItem>
+                  <SelectItem value="beribadah">Beribadah</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div>
               <Label htmlFor="deskripsi">Konten / Deskripsi</Label>
@@ -609,18 +597,36 @@ export default function KelolaArtikelPage({ defaultCategory = "news" }: { defaul
               />
             </div>
             <div>
-              <Label htmlFor="gambar">Gambar</Label>
-              <Input
-                id="gambar"
-                name="gambar"
-                type="file"
-                onChange={handleImageChange}
-                className="mt-1"
-                accept="image/*"
-              />
-              <p className="mt-1 text-xs text-gray-500">
-                Format: JPG, PNG, atau GIF. Ukuran maksimal 2MB.
-              </p>
+              <Label htmlFor="gambar" className="text-sm font-medium text-gray-700">Gambar</Label>
+              <div className="mt-1">
+                <label 
+                  htmlFor="gambar"
+                  className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors"
+                >
+                  <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                    <Image className="w-8 h-8 mb-3 text-gray-400" />
+                    <p className="mb-2 text-sm text-gray-500">
+                      <span className="font-semibold">Klik untuk upload</span> atau drag & drop
+                    </p>
+                    <p className="text-xs text-gray-500">PNG, JPG atau GIF (Max. 2MB)</p>
+                  </div>
+                  <Input
+                    id="gambar"
+                    name="gambar"
+                    type="file"
+                    onChange={handleImageChange}
+                    className="hidden"
+                    accept="image/*"
+                  />
+                </label>
+                {formData.gambar && (
+                  <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded">
+                    <p className="text-sm text-blue-700">
+                      ✓ File terpilih: {formData.gambar.name}
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
           <DialogFooter>
@@ -742,26 +748,49 @@ export default function KelolaArtikelPage({ defaultCategory = "news" }: { defaul
 
             {/* --- Gambar --- */}
             <div>
-              <Label htmlFor="edit_gambar">Gambar</Label>
-              <Input
-                id="edit_gambar"
-                name="gambar"
-                type="file"
-                onChange={handleImageChange}
-                className="mt-1"
-                accept="image/*"
-              />
-              {selectedArtikel?.gambar && (
-                <div className="mt-2">
-                  <p className="mb-1 text-xs text-gray-500">Gambar Saat Ini:</p>
-                  <img
-                    src={ArtikelService.getImageUrl(selectedArtikel.gambar)}
-                    alt={selectedArtikel.judul_halaman}
-                    className="object-cover w-32 h-32 border rounded"
+              <Label htmlFor="edit_gambar" className="text-sm font-medium text-gray-700">Gambar</Label>
+              <div className="mt-1">
+                <label 
+                  htmlFor="edit_gambar"
+                  className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors"
+                >
+                  <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                    <Image className="w-8 h-8 mb-3 text-gray-400" />
+                    <p className="mb-2 text-sm text-gray-500">
+                      <span className="font-semibold">Klik untuk upload</span> atau drag & drop
+                    </p>
+                    <p className="text-xs text-gray-500">PNG, JPG atau GIF (Max. 2MB)</p>
+                  </div>
+                  <Input
+                    id="edit_gambar"
+                    name="gambar"
+                    type="file"
+                    onChange={handleImageChange}
+                    className="hidden"
+                    accept="image/*"
                   />
-                  <p className="mt-1 text-xs text-gray-500">
-                    Kosongkan jika tidak ingin mengganti gambar
-                  </p>
+                </label>
+                {formData.gambar && (
+                  <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded">
+                    <p className="text-sm text-blue-700">
+                      ✓ File terpilih: {formData.gambar.name}
+                    </p>
+                  </div>
+                )}
+              </div>
+              {selectedArtikel?.gambar && (
+                <div className="mt-3">
+                  <p className="mb-2 text-sm font-medium text-gray-700">Gambar Saat Ini:</p>
+                  <div className="p-2 border rounded-lg bg-gray-50">
+                    <img
+                      src={ArtikelService.getImageUrl(selectedArtikel.gambar) || ''}
+                      alt={selectedArtikel.judul_halaman}
+                      className="object-cover w-32 h-32 border rounded mx-auto"
+                    />
+                    <p className="mt-2 text-xs text-gray-500 text-center">
+                      Upload file baru untuk mengganti gambar ini
+                    </p>
+                  </div>
                 </div>
               )}
             </div>

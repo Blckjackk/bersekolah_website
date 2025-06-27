@@ -28,6 +28,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarRail,
 } from "@/components/ui/sidebar"
 import { useSidebar } from "@/contexts/SidebarContext"
 
@@ -211,7 +212,7 @@ const getNavData = (currentPath: string, applicationStatus: ApplicationStatus | 
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const [currentPath, setCurrentPath] = useState("")
-  const [applicationStatus, setApplicationStatus] = useState<ApplicationStatus | null>(null) // ✅ TAMBAHKAN state
+  const [applicationStatus, setApplicationStatus] = useState<ApplicationStatus | null>(null) 
   const { isOpen, sidebarRef } = useSidebar(); // Get sidebar state from context
   
   // Track current path
@@ -255,32 +256,27 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   }, [])
   // Get nav data based on current path and application status
   const data = getNavData(currentPath, applicationStatus)
-    return (
+  
+  return (
     <Sidebar 
       ref={sidebarRef}
       id="main-sidebar"
-      variant="inset" 
-      className={`sidebar-container sidebar ${!isOpen ? "sidebar-closed" : ""}`} 
+      collapsible="icon"
+      className={`sidebar-container sidebar ${!isOpen ? 'sidebar-closed' : ''}`} 
       {...props}
     >
         <SidebarHeader>
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton size="lg" asChild>
-                <a href="/form-pendaftaran">
-                  <div className="flex items-center justify-center rounded-lg aspect-square size-8 bg-sidebar-primary text-sidebar-primary-foreground">
-                    <Command className="size-4" />
-                  </div>
-                  <div className="grid flex-1 text-sm leading-tight text-left">
-                    <span className="font-semibold truncate">Yayasan Bersekolah</span>
-                    <span className="text-xs truncate text-sidebar-muted-foreground">
-                      Platform Pendaftaran
-                    </span>
-                  </div>
-                </a>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
+          <div className="flex items-center gap-2 px-4 py-2">
+            <div className="flex items-center justify-center rounded-lg aspect-square size-8 bg-sidebar-primary text-sidebar-primary-foreground">
+              <Command className="size-4" />
+            </div>
+            <div className="grid flex-1 text-sm leading-tight text-left">
+              <span className="font-semibold truncate">Yayasan Bersekolah</span>
+              <span className="text-xs truncate text-sidebar-muted-foreground">
+                Platform Pendaftaran
+              </span>
+            </div>
+          </div>
         </SidebarHeader>
         <SidebarContent>
           <NavMain items={data.navMain} />
@@ -288,6 +284,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarFooter>
           <NavUser />
         </SidebarFooter>
+        <SidebarRail />
     </Sidebar>
   )
 }
