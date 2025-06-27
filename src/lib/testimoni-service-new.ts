@@ -226,36 +226,22 @@ export const TestimoniService = {
 
   getTestimoniTotal: async (): Promise<{total: number, active: number, inactive: number}> => {
     try {
-      const token = localStorage.getItem('bersekolah_auth_token');
-      if (!token) {
-        throw new Error('Unauthorized: No token found');
-      }
-      
-      // Fetch all testimonials and count them
-      const response = await fetch(`${API_URL}/testimonis`, {
+      const response = await fetch(`${API_URL}/testimonis/total`, {
         headers: {
           'Accept': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${localStorage.getItem('bersekolah_auth_token')}`
         }
       });
-
-      if (!response.ok) throw new Error('Failed to fetch testimonials');
-
-      const data = await response.json();
-      const testimonials = data.data || [];
       
-      if (Array.isArray(testimonials)) {
-        const total = testimonials.length;
-        const active = testimonials.filter((t: Testimoni) => t.status === 'active').length;
-        const inactive = testimonials.filter((t: Testimoni) => t.status === 'inactive').length;
-        
-        return { total, active, inactive };
+      if (!response.ok) {
+        throw new Error('Failed to fetch testimonial stats');
       }
       
-      return { total: 0, active: 0, inactive: 0 };
+      const data = await response.json();
+      return data.data;
     } catch (error) {
-      console.error('Error fetching testimoni total:', error);
-      return { total: 0, active: 0, inactive: 0 };
+      console.error('Error fetching testimonial stats:', error);
+      throw error;
     }
   }
 };
