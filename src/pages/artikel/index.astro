@@ -1,41 +1,22 @@
 ---
-import Navbar from "../../component/Header";
 import AppLayout from "../../layout/app-layout.astro";
----
-  <AppLayout>
-  <section class="container px-4 py-8 mx-auto">
-    <h1 class="mb-6 text-3xl font-bold">Kegiatan</h1>
-    <div class="grid gap-6 md:grid-cols-2">
-      <!-- Artikel 1 -->
-      <div class="p-4 bg-white rounded shadow">
-        <img src="/assets/image/kegiatan-1.jpg" alt="Kegiatan 1" class="object-cover w-full h-48 mb-4 rounded" />
-        <h2 class="text-xl font-semibold">Kelas Bertumbuh Mei 2025</h2>
-        <p class="mb-2 text-sm text-gray-600">19 Mei 2025</p>
-        <p class="mb-3">Kegiatan donor darah bersama PMI Kota Bandung...</p>
-        <a href="/artikel/1" class="font-medium text-blue-600 hover:underline">Baca Selengkapnya</a>
-      </div>
+import ArtikelGrid from "../../component/artikel/ArtikelGrid";
 
-      <!-- Artikel 2 -->
-      <div class="p-4 bg-white rounded shadow">
-        <img src="/assets/image/kegiatan-2.jpg" alt="Kegiatan 2" class="object-cover w-full h-48 mb-4 rounded" />
-        <h2 class="text-xl font-semibold">Workshop Teknologi AI</h2>
-        <p class="mb-2 text-sm text-gray-600">20 Mei 2025</p>
-        <p class="mb-3">Pelatihan dan seminar seputar perkembangan teknologi kecerdasan buatan...</p>
-        <a href="/artikel/2" class="font-medium text-blue-600 hover:underline">Baca Selengkapnya</a>
-      </div>
-    </div>
-    <!-- Pagination -->
-    <div class="flex justify-center mt-8">
-      <nav class="inline-flex items-center space-x-1">
-        <a href="#" class="px-3 py-1 text-gray-700 bg-gray-200 rounded hover:bg-gray-300">&laquo; Prev</a>
-        <a href="#" class="px-3 py-1 text-white bg-blue-600 rounded">1</a>
-        <a href="#" class="px-3 py-1 text-gray-700 bg-gray-200 rounded hover:bg-gray-300">2</a>
-        <a href="#" class="px-3 py-1 text-gray-700 bg-gray-200 rounded hover:bg-gray-300">3</a>
-        <a href="#" class="px-3 py-1 text-gray-700 bg-gray-200 rounded hover:bg-gray-300">Next &raquo;</a>
-      </nav>
-    </div>
+const API_URL = import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:8000/api';
+let artikels = [];
+try {
+  const res = await fetch(`${API_URL}/artikels`);
+  if (res.ok) {
+    const data = await res.json();
+    artikels = data.data || [];
+  }
+} catch (e) {
+  artikels = [];
+}
+---
+<AppLayout>
+  <section class="container px-4 py-8 mx-auto">
+    <h1 class="mb-8 text-3xl font-bold text-center text-[#406386]">Kegiatan & Artikel</h1>
+    <ArtikelGrid client:load artikels={artikels} />
   </section>
 </AppLayout>
-
-<!-- </body>
-</html> -->

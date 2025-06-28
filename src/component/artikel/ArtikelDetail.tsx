@@ -1,103 +1,84 @@
 "use client";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 
-interface Article {
+interface Artikel {
   id: number;
-  gambar: string;
   judul_halaman: string;
-  category: string;
-  created_at: string;
-  author: string;
   deskripsi: string;
+  gambar_url?: string;
+  created_at?: string;
+  category?: string;
+  status?: string;
 }
 
-const ArtikelDetail = ({ articleId }: { articleId: string | null }) => {
-  const [article, setArticle] = useState<Article | null>(null);
+function formatDate(dateStr?: string) {
+  if (!dateStr) return "";
+  const d = new Date(dateStr);
+  return d.toLocaleDateString("id-ID", { year: "numeric", month: "long", day: "numeric" });
+}
+
+export default function ArtikelDetailComponent() {
+  const [artikel, setArtikel] = useState<Artikel | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    if (!articleId) {
+    let id = "";
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      id = params.get("id") || "";
+    }
+    console.log("ArtikelDetailComponent id from query:", id);
+    if (!id || id.trim() === "") {
+      setError("ID artikel tidak valid.");
       setLoading(false);
       return;
     }
-
-    fetch(`http://localhost:8000/api/konten/${articleId}`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.data) {
-          setArticle(data.data);
-        }
-        setLoading(false);
+    setLoading(true);
+    setError("");
+    const url = `${import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:8000/api'}/artikels/${id}`;
+    console.log("Fetching artikel detail from:", url);
+    fetch(url)
+      .then(res => {
+        console.log("API response status:", res.status);
+        return res.json();
       })
-      .catch((error) => {
-        console.error("Error fetching article:", error);
-        setLoading(false);
-      });
-  }, [articleId]);
+      .then(data => {
+        console.log("API response data:", data);
+        if (data && data.data) {
+          setArtikel(data.data);
+        } else {
+          setError("Artikel tidak ditemukan.");
+        }
+      })
+      .catch((err) => {
+        setError("Gagal mengambil data artikel.");
+        console.error("Fetch error:", err);
+      })
+      .finally(() => setLoading(false));
+  }, []);
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="w-12 h-12 border-t-2 border-b-2 border-[#406386] rounded-full animate-spin"></div>
-      </div>
-    );
-  }
-
-  if (!article) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
-        <p className="text-xl text-gray-600">Artikel tidak ditemukan</p>
-        <a href="/artikel" className="text-[#406386] hover:underline">
-          Kembali ke Daftar Artikel
-        </a>
-      </div>
-    );
-  }
+  if (loading) return <div className="py-12 text-center text-gray-500">Memuat artikel...</div>;
+  if (error) return <div className="py-12 text-center text-red-500">{error}</div>;
+  if (!artikel) return null;
 
   return (
-    <>
-      {/* Hero Section */}
-      <section className="relative min-h-[60vh] flex items-center justify-center">
-        <div className="absolute inset-0 bg-gradient-to-b from-black/70 to-black/50" />
-        <div
-          className="absolute inset-0 bg-center bg-no-repeat bg-cover"
-          style={{
-            backgroundImage: `url(${article.gambar ? `../ImageTemp/${article.gambar}` : "/assets/image/default-thumbnail.jpg"})`
-          }}
-        />
-        <div className="container relative z-10 px-4 mx-auto text-center text-white">
-          <span className="inline-block px-4 py-2 mb-6 text-sm font-medium bg-[#406386]/90 rounded-full">
-            {article.category}
-          </span>
-          <h1 className="max-w-4xl mx-auto mb-4 text-4xl font-bold leading-tight sm:text-5xl lg:text-6xl">
-            {article.judul_halaman}
-          </h1>
-          <div className="flex items-center justify-center gap-4 text-lg">
-            <span>{article.author}</span>
-            <span>•</span>
-            <time>{new Date(article.created_at).toLocaleDateString('id-ID', {
-              day: 'numeric',
-              month: 'long',
-              year: 'numeric'
-            })}</time>
-          </div>
-        </div>
-      </section>
-
-      {/* Content Section */}
-      <section className="py-16">
-        <div className="container px-4 mx-auto">
-          <div className="max-w-3xl mx-auto">
-            <div className="prose prose-lg prose-gray">
-              <p className="text-xl leading-relaxed text-gray-700">
-                {article.deskripsi}
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-    </>
+    <article className="max-w-3xl p-6 mx-auto mt-8 mb-16 bg-white shadow rounded-2xl md:p-10">
+      <img
+        src={artikel.gambar_url || "/assets/image/artikel/default.jpg"}
+        alt={artikel.judul_halaman}
+        className="object-cover w-full h-64 mb-6 border rounded-xl"
+        onError={e => {
+          (e.target as HTMLImageElement).src = "/assets/image/artikel/default.jpg";
+        }}
+      />
+      <h1 className="text-3xl font-bold text-[#406386] mb-2">{artikel.judul_halaman}</h1>
+      <div className="flex items-center gap-4 mb-4 text-sm text-gray-500">
+        <span>{formatDate(artikel.created_at)}</span>
+        {artikel.category && <span className="px-2 py-1 text-xs font-semibold text-blue-700 rounded bg-blue-50">{artikel.category}</span>}
+        {artikel.status && <span className="px-2 py-1 text-xs font-semibold rounded bg-slate-100 text-slate-500">{artikel.status}</span>}
+      </div>
+      <div className="text-lg leading-relaxed prose text-gray-800 max-w-none" dangerouslySetInnerHTML={{ __html: artikel.deskripsi }} />
+    </article>
   );
-};
-
-export default ArtikelDetail;
+}
