@@ -727,6 +727,14 @@ export default function DokumenWajibPage() {
 
   return (
     <div className="container py-6 mx-auto space-y-6">
+      {/* Header */}
+      <div className="mb-6">
+        <h1 className="mb-2 text-2xl font-bold">Dokumen Wajib</h1>
+        <p className="text-gray-600">
+          Unggah semua dokumen wajib yang diperlukan untuk melengkapi persyaratan beasiswa.
+        </p>
+      </div>
+
       {/* Alert Info */}
       <div className="space-y-4">
         <Alert className="border-blue-200 bg-blue-50">

@@ -7,21 +7,13 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible"
 import {
-  SidebarGroup,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem,
-} from "@/components/ui/sidebar"
-import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+
+import { useSidebar } from "@/contexts/SidebarContext"
 
 // ✅ UPDATE: Interface untuk support badge
 export interface NavItem {
@@ -48,62 +40,71 @@ export function NavMain({
 }: {
   items: NavGroup[]
 }) {
+  const { isOpen } = useSidebar()
+  
   return (
-    <SidebarGroup>
-      <SidebarGroupLabel>Platform</SidebarGroupLabel>
-      <SidebarMenu>
+    <div className="p-4 space-y-1">
+      {isOpen && (
+        <div className="px-2 py-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+          Platform
+        </div>
+      )}
+      <div className="space-y-1">
         {items.map((item) => (
           <Collapsible
             key={item.title}
-            asChild
             defaultOpen={item.isActive}
             className="group/collapsible"
           >
-            <SidebarMenuItem>
-              <CollapsibleTrigger asChild>
-                <SidebarMenuButton tooltip={item.title}>
-                  {item.icon && <item.icon />}
-                  <span>{item.title}</span>
-                  <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-                </SidebarMenuButton>
-              </CollapsibleTrigger>
+            <CollapsibleTrigger asChild>
+              <button 
+                className={`flex items-center w-full px-2 py-2 text-sm font-medium rounded-md hover:bg-accent hover:text-accent-foreground ${
+                  !isOpen ? 'justify-center' : ''
+                }`}
+                title={!isOpen ? item.title : undefined}
+              >
+                {item.icon && <item.icon className={`w-4 h-4 flex-shrink-0 ${isOpen ? 'mr-3' : ''}`} />}
+                {isOpen && (
+                  <>
+                    <span className="flex-1 text-left">{item.title}</span>
+                    <ChevronRight className="w-4 h-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                  </>
+                )}
+              </button>
+            </CollapsibleTrigger>
+            {isOpen && (
               <CollapsibleContent>
-                <SidebarMenuSub>
+                <div className="mt-1 space-y-1 pl-6">
                   {item.items?.map((subItem) => (
-                    <SidebarMenuSubItem key={subItem.title}>
+                    <div key={subItem.title}>
                       <TooltipProvider>
-                        <Tooltip>                          <TooltipTrigger asChild>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
                             {subItem.disabled ? (
-                              <SidebarMenuSubButton 
-                                isActive={false}
-                                className={`opacity-50 cursor-not-allowed`}
-                              >
-                                <span className="flex items-center justify-between w-full">
-                                  <span>{subItem.title}</span>
-                                  {subItem.badge && (
-                                    <subItem.badge.icon className={`h-4 w-4 ${subItem.badge.color}`} />
-                                  )}
-                                </span>
-                              </SidebarMenuSubButton>
+                              <div className="flex items-center justify-between w-full px-2 py-1.5 text-sm opacity-50 cursor-not-allowed rounded-md">
+                                <span>{subItem.title}</span>
+                                {subItem.badge && (
+                                  <subItem.badge.icon className={`h-4 w-4 ${subItem.badge.color}`} />
+                                )}
+                              </div>
                             ) : (
-                              <SidebarMenuSubButton 
-                                asChild
-                                isActive={subItem.isActive}
-                                className={`${subItem.isActive ? 'bg-sidebar-accent/30 font-medium border-l-2 border-primary' : 'hover:bg-sidebar-accent/10'}`}
-                              >                                <a 
-                                  href={subItem.url} 
-                                  className="flex items-center justify-between w-full cursor-pointer"
-                                  onClick={subItem.isActive ? (e) => {
-                                    e.preventDefault();
-                                    window.location.href = subItem.url;
-                                  } : undefined}
-                                >
-                                  <span>{subItem.title}</span>
-                                  {subItem.badge && (
-                                    <subItem.badge.icon className={`h-4 w-4 ${subItem.badge.color}`} />
-                                  )}
-                                </a>
-                              </SidebarMenuSubButton>
+                              <a 
+                                href={subItem.url} 
+                                className={`flex items-center justify-between w-full px-2 py-1.5 text-sm rounded-md transition-colors ${
+                                  subItem.isActive 
+                                    ? 'bg-accent/30 font-medium border-l-2 border-primary' 
+                                    : 'hover:bg-accent/10'
+                                }`}
+                                onClick={subItem.isActive ? (e) => {
+                                  e.preventDefault();
+                                  window.location.href = subItem.url;
+                                } : undefined}
+                              >
+                                <span>{subItem.title}</span>
+                                {subItem.badge && (
+                                  <subItem.badge.icon className={`h-4 w-4 ${subItem.badge.color}`} />
+                                )}
+                              </a>
                             )}
                           </TooltipTrigger>
                           {subItem.badge && (
@@ -113,14 +114,14 @@ export function NavMain({
                           )}
                         </Tooltip>
                       </TooltipProvider>
-                    </SidebarMenuSubItem>
+                    </div>
                   ))}
-                </SidebarMenuSub>
+                </div>
               </CollapsibleContent>
-            </SidebarMenuItem>
+            )}
           </Collapsible>
         ))}
-      </SidebarMenu>
-    </SidebarGroup>
+      </div>
+    </div>
   )
 }

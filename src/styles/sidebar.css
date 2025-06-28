@@ -51,6 +51,55 @@
   overflow-x: hidden;
 }
 
+/* Sticky footer for sidebar */
+.sidebar-footer-fixed {
+  position: absolute !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  background: var(--background) !important;
+  border-top: 1px solid var(--border) !important;
+  z-index: 1000 !important;
+  min-height: 80px !important;
+}
+
+/* NavUser dalam mode collapsed */
+.sidebar-closed .sidebar-footer-fixed {
+  width: 60px !important;
+  min-height: 60px !important;
+}
+
+/* Adjust NavUser content in collapsed mode */
+.sidebar-closed .sidebar-footer-fixed .hide-when-collapsed {
+  display: none !important;
+}
+
+/* Mobile responsive untuk footer */
+@media (max-width: 768px) {
+  .sidebar-footer-fixed {
+    width: 100% !important;
+    min-height: 70px !important;
+  }
+}
+
+/* Ensure content doesn't overlap with fixed footer */
+.sidebar-content-scrollable {
+  padding-bottom: 80px !important;
+  box-sizing: border-box;
+}
+
+/* Adjust padding for collapsed mode */
+.sidebar-closed .sidebar-content-scrollable {
+  padding-bottom: 60px !important;
+}
+
+/* Mobile padding adjustment */
+@media (max-width: 768px) {
+  .sidebar-content-scrollable {
+    padding-bottom: 70px !important;
+  }
+}
+
 /* Ensure submenu items are visible and clickable in collapsed state */
 .sidebar-closed .sidebar-collapsed-submenu {
   position: absolute;

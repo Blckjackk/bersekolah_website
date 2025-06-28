@@ -20,16 +20,6 @@ import {
 } from "lucide-react"
 import { NavMain } from "./nav-main"
 import { NavUser } from "./nav-user"
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarRail,
-} from "@/components/ui/sidebar"
 import { useSidebar } from "@/contexts/SidebarContext"
 
 // ✅ TAMBAHKAN: Interface untuk application status
@@ -210,10 +200,22 @@ const getNavData = (currentPath: string, applicationStatus: ApplicationStatus | 
   }
 }
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+export function AppSidebar() {
   const [currentPath, setCurrentPath] = useState("")
   const [applicationStatus, setApplicationStatus] = useState<ApplicationStatus | null>(null) 
   const { isOpen, sidebarRef } = useSidebar(); // Get sidebar state from context
+  const [isMobile, setIsMobile] = useState(false)
+
+  // Monitor window size for responsive behavior
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
   
   // Track current path
   useEffect(() => {
@@ -256,35 +258,41 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   }, [])
   // Get nav data based on current path and application status
   const data = getNavData(currentPath, applicationStatus)
-  
   return (
-    <Sidebar 
+    <div 
       ref={sidebarRef}
-      id="main-sidebar"
-      collapsible="icon"
-      className={`sidebar-container sidebar ${!isOpen ? 'sidebar-closed' : ''}`} 
-      {...props}
+      className="fixed left-0 top-0 h-screen bg-background border-r border-border z-30 flex flex-col"
+      style={{ 
+        width: isMobile ? (isOpen ? '16rem' : '0') : (isOpen ? '16rem' : '4rem'),
+        transform: isMobile && !isOpen ? 'translateX(-100%)' : 'translateX(0)'
+      }}
     >
-        <SidebarHeader>
-          <div className="flex items-center gap-2 px-4 py-2">
-            <div className="flex items-center justify-center rounded-lg aspect-square size-8 bg-sidebar-primary text-sidebar-primary-foreground">
-              <Command className="size-4" />
-            </div>
-            <div className="grid flex-1 text-sm leading-tight text-left">
-              <span className="font-semibold truncate">Yayasan Bersekolah</span>
-              <span className="text-xs truncate text-sidebar-muted-foreground">
-                Platform Pendaftaran
-              </span>
-            </div>
+      {/* Header - Fixed di atas */}
+      <div className="h-16 flex items-center px-4 border-b border-border flex-shrink-0 bg-background">
+        <div className="flex items-center gap-3">
+          <div className="flex items-center justify-center rounded-lg aspect-square size-8 bg-primary text-primary-foreground">
+            <Command className="size-4" />
           </div>
-        </SidebarHeader>
-        <SidebarContent>
-          <NavMain items={data.navMain} />
-        </SidebarContent>
-        <SidebarFooter>
+          {(isOpen || !isMobile) && (
+            <div className="flex flex-col">
+              <span className="font-semibold text-sm">Yayasan Bersekolah</span>
+              <span className="text-xs text-muted-foreground">Platform Pendaftaran</span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Content - Scrollable area */}
+      <div className="flex-1 overflow-y-auto">
+        <NavMain items={data.navMain} />
+      </div>
+
+      {/* Footer NavUser - Fixed di bottom */}
+      <div className="flex-shrink-0 bg-background border-t border-border">
+        <div className="p-4">
           <NavUser />
-        </SidebarFooter>
-        <SidebarRail />
-    </Sidebar>
+        </div>
+      </div>
+    </div>
   )
 }

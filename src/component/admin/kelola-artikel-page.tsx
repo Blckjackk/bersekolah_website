@@ -56,12 +56,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-import { ArtikelService } from "@/lib/artikel-service";
-import type { Artikel } from "@/lib/artikel-service";
+import { HalamanService } from "@/lib/halaman-service";
+import type { Halaman } from "@/lib/halaman-service";
 
 export default function KelolaArtikelPage({ defaultCategory = "news" }: { defaultCategory?: string }) {
-  // State for articles data
-  const [artikels, setArtikels] = useState<Artikel[]>([]);
+  // State for pages data
+  const [halaman, setHalaman] = useState<Halaman[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -71,22 +71,15 @@ export default function KelolaArtikelPage({ defaultCategory = "news" }: { defaul
   const [createDialog, setCreateDialog] = useState(false);
   const [editDialog, setEditDialog] = useState(false);
   const [deleteDialog, setDeleteDialog] = useState(false);
-  const [selectedArtikel, setSelectedArtikel] = useState<Artikel | null>(null);
-  // Form states
-  const [formData, setFormData] = useState<{
-    judul_halaman: string;
-    slug: string;
-    deskripsi: string;
-    category: string;
-    status: "draft" | "published" | "archived";
-    gambar: File | null;
-  }>({
+  const [selectedPage, setSelectedPage] = useState<Halaman | null>(null);
+    // Form states
+  const [formData, setFormData] = useState({
     judul_halaman: "",
     slug: "",
     deskripsi: "",
     category: defaultCategory, // Use the provided defaultCategory
-    status: "archived", // Default to archived for new articles
-    gambar: null,
+    status: "draft",
+    gambar: null as File | null,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   
@@ -101,9 +94,9 @@ export default function KelolaArtikelPage({ defaultCategory = "news" }: { defaul
     type: "success"
   });
   
-  // Fetch artikels data on component mount
+  // Fetch halaman data on component mount
   useEffect(() => {
-    fetchArtikels();
+    fetchHalaman();
   }, []);
   
   // Show toast message
@@ -116,8 +109,8 @@ export default function KelolaArtikelPage({ defaultCategory = "news" }: { defaul
     }, 5000);
   };
   
-  // Fetch artikels data
-  const fetchArtikels = async (isRefresh = false) => {
+  // Fetch halaman data
+  const fetchHalaman = async (isRefresh = false) => {
     try {
       if (isRefresh) {
         setIsRefreshing(true);
@@ -126,16 +119,16 @@ export default function KelolaArtikelPage({ defaultCategory = "news" }: { defaul
       }
       
       setError(null);
-      const data = await ArtikelService.getAllArtikels();
-      setArtikels(data);
+      const data = await HalamanService.getAllHalaman();
+      setHalaman(data);
       
       if (isRefresh) {
         showToast("Data berhasil diperbarui", "success");
       }
     } catch (err) {
-      console.error("Error fetching artikels:", err);
-      setError("Gagal memuat data artikel");
-      showToast("Gagal memuat data artikel", "error");
+      console.error("Error fetching halaman:", err);
+      setError("Gagal memuat data halaman");
+      showToast("Gagal memuat data halaman", "error");
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
@@ -173,115 +166,123 @@ export default function KelolaArtikelPage({ defaultCategory = "news" }: { defaul
       });
     }
   };
-  // Open create dialog
+    // Open create dialog
   const openCreateDialog = () => {
     setFormData({
       judul_halaman: "",
       slug: "",
       deskripsi: "",
       category: defaultCategory, // Use the provided defaultCategory
-      status: "archived", // Default to archived for new articles
+      status: "draft",
       gambar: null
     });
     setCreateDialog(true);
   };
   
   // Open edit dialog
-  const openEditDialog = (artikel: Artikel) => {
-    setSelectedArtikel(artikel);
+  const openEditDialog = (page: Halaman) => {
+    setSelectedPage(page);
     setFormData({
-      judul_halaman: artikel.judul_halaman,
-      slug: artikel.slug,
-      deskripsi: artikel.deskripsi,
-      category: artikel.category,
-      status: artikel.status,
+      judul_halaman: page.judul_halaman,
+      slug: page.slug,
+      deskripsi: page.deskripsi,
+      category: page.category,
+      status: page.status,
       gambar: null // Can't pre-populate file input
     });
     setEditDialog(true);
   };
   
   // Open delete dialog
-  const openDeleteDialog = (artikel: Artikel) => {
-    setSelectedArtikel(artikel);
+  const openDeleteDialog = (page: Halaman) => {
+    setSelectedPage(page);
     setDeleteDialog(true);
   };
   
-  // Create new artikel
-  const handleCreateArtikel = async () => {
+  // Create new halaman
+  const handleCreateHalaman = async () => {
     setIsSubmitting(true);
     try {
-      await ArtikelService.createArtikel({
-        judul_halaman: formData.judul_halaman,
-        slug: formData.slug,
-        deskripsi: formData.deskripsi,
-        category: formData.category,
-        status: formData.status,
-        gambar: formData.gambar || undefined
-      });
-      showToast("Artikel berhasil dibuat", "success");
+      const formDataObj = new FormData();
+      formDataObj.append("judul_halaman", formData.judul_halaman);
+      formDataObj.append("slug", formData.slug);
+      formDataObj.append("deskripsi", formData.deskripsi);
+      formDataObj.append("category", formData.category);
+      formDataObj.append("status", formData.status);
+      
+      if (formData.gambar) {
+        formDataObj.append("gambar", formData.gambar);
+      }
+      
+      await HalamanService.createHalaman(formDataObj);
+      showToast("Halaman berhasil dibuat", "success");
       setCreateDialog(false);
-      fetchArtikels(true);
+      fetchHalaman(true);
     } catch (err) {
-      console.error("Error creating artikel:", err);
-      showToast("Gagal membuat artikel", "error");
+      console.error("Error creating halaman:", err);
+      showToast("Gagal membuat halaman", "error");
     } finally {
       setIsSubmitting(false);
     }
   };
   
-  // Update existing artikel
-  const handleUpdateArtikel = async () => {
-    if (!selectedArtikel) return;
+  // Update existing halaman
+  const handleUpdateHalaman = async () => {
+    if (!selectedPage) return;
     
     setIsSubmitting(true);
     try {
-      await ArtikelService.updateArtikel(selectedArtikel.id, {
-        judul_halaman: formData.judul_halaman,
-        slug: formData.slug,
-        deskripsi: formData.deskripsi,
-        category: formData.category,
-        status: formData.status,
-        gambar: formData.gambar || undefined
-      });
-      showToast("Artikel berhasil diperbarui", "success");
+      const formDataObj = new FormData();
+      formDataObj.append("judul_halaman", formData.judul_halaman);
+      formDataObj.append("slug", formData.slug);
+      formDataObj.append("deskripsi", formData.deskripsi);
+      formDataObj.append("category", formData.category);
+      formDataObj.append("status", formData.status);
+      
+      if (formData.gambar) {
+        formDataObj.append("gambar", formData.gambar);
+      }
+      
+      await HalamanService.updateHalaman(selectedPage.id, formDataObj);
+      showToast("Halaman berhasil diperbarui", "success");
       setEditDialog(false);
-      fetchArtikels(true);
+      fetchHalaman(true);
     } catch (err) {
-      console.error("Error updating artikel:", err);
-      showToast("Gagal memperbarui artikel", "error");
+      console.error("Error updating halaman:", err);
+      showToast("Gagal memperbarui halaman", "error");
     } finally {
       setIsSubmitting(false);
     }
   };
   
-  // Delete artikel
-  const handleDeleteArtikel = async () => {
-    if (!selectedArtikel) return;
+  // Delete halaman
+  const handleDeleteHalaman = async () => {
+    if (!selectedPage) return;
     
     setIsSubmitting(true);
     try {
-      await ArtikelService.deleteArtikel(selectedArtikel.id);
-      showToast("Artikel berhasil dihapus", "success");
+      await HalamanService.deleteHalaman(selectedPage.id);
+      showToast("Halaman berhasil dihapus", "success");
       setDeleteDialog(false);
-      fetchArtikels(true);
+      fetchHalaman(true);
     } catch (err) {
-      console.error("Error deleting artikel:", err);
-      showToast("Gagal menghapus artikel", "error");
+      console.error("Error deleting halaman:", err);
+      showToast("Gagal menghapus halaman", "error");
     } finally {
       setIsSubmitting(false);
     }
   };
   
-  // Toggle artikel status
-  const handleToggleStatus = async (artikel: Artikel) => {
+  // Toggle halaman status
+  const handleToggleStatus = async (page: Halaman) => {
     try {
-      const newStatus = artikel.status === "published" ? "draft" : "published";
-      await ArtikelService.updateArtikelStatus(artikel.id, newStatus);
-      showToast(`Status artikel berhasil diubah menjadi ${newStatus}`, "success");
-      fetchArtikels(true);
+      const newStatus = page.status === "published" ? "draft" : "published";
+      await HalamanService.updateHalamanStatus(page.id, newStatus);
+      showToast(`Status halaman berhasil diubah menjadi ${newStatus}`, "success");
+      fetchHalaman(true);
     } catch (err) {
       console.error("Error updating status:", err);
-      showToast("Gagal mengubah status artikel", "error");
+      showToast("Gagal mengubah status halaman", "error");
     }
   };
   
@@ -294,11 +295,11 @@ export default function KelolaArtikelPage({ defaultCategory = "news" }: { defaul
     });
   };
   
-  // Filter artikels based on search term
-  const filteredArtikels = artikels.filter((artikel: Artikel) => 
-    artikel.judul_halaman.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    artikel.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    artikel.slug.toLowerCase().includes(searchTerm.toLowerCase())
+  // Filter halaman based on search term
+  const filteredHalaman = halaman.filter(page => 
+    page.judul_halaman.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    page.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    page.slug.toLowerCase().includes(searchTerm.toLowerCase())
   );
   
   // Get status badge based on status
@@ -339,7 +340,7 @@ export default function KelolaArtikelPage({ defaultCategory = "news" }: { defaul
         <div className="flex items-center justify-center h-64">
           <div className="flex flex-col items-center">
             <RefreshCw className="w-10 h-10 text-blue-500 animate-spin" />
-            <p className="mt-4 text-gray-600">Memuat data artikel...</p>
+            <p className="mt-4 text-gray-600">Memuat data halaman...</p>
           </div>
         </div>
       </div>
@@ -362,7 +363,7 @@ export default function KelolaArtikelPage({ defaultCategory = "news" }: { defaul
           </CardContent>
           <CardFooter className="bg-red-50">
             <Button 
-              onClick={() => fetchArtikels()}
+              onClick={() => fetchHalaman()}
               variant="outline"
               className="border-red-300 hover:bg-red-50"
             >
@@ -396,7 +397,7 @@ export default function KelolaArtikelPage({ defaultCategory = "news" }: { defaul
           <Button 
             variant="outline" 
             size="sm"
-            onClick={() => fetchArtikels(true)}
+            onClick={() => fetchHalaman(true)}
             disabled={isRefreshing}
           >
             <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`} />
@@ -427,13 +428,13 @@ export default function KelolaArtikelPage({ defaultCategory = "news" }: { defaul
       {/* Halaman List */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Daftar Artikel</CardTitle>
+          <CardTitle className="text-lg">Daftar Halaman</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[250px]">Judul Artikel</TableHead>
+                <TableHead className="w-[250px]">Judul Halaman</TableHead>
                 <TableHead className="w-[150px]">Slug</TableHead>
                 <TableHead className="w-[100px]">Kategori</TableHead>
                 <TableHead className="w-[100px]">Tanggal</TableHead>
@@ -442,10 +443,10 @@ export default function KelolaArtikelPage({ defaultCategory = "news" }: { defaul
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredArtikels.length === 0 && (
+              {filteredHalaman.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={6} className="py-8 text-center">
-                    <p className="text-gray-500">Belum ada data artikel</p>
+                    <p className="text-gray-500">Belum ada data halaman</p>
                     <Button 
                       variant="outline" 
                       size="sm"
@@ -453,20 +454,20 @@ export default function KelolaArtikelPage({ defaultCategory = "news" }: { defaul
                       className="mt-2"
                     >
                       <PlusCircle className="w-4 h-4 mr-2" />
-                      Tambah Artikel Baru
+                      Tambah Halaman Baru
                     </Button>
                   </TableCell>
                 </TableRow>
               )}
-              {filteredArtikels.map((artikel) => (
-                <TableRow key={artikel.id}>
+              {filteredHalaman.map((page) => (
+                <TableRow key={page.id}>
                   <TableCell>
                     <div className="flex items-center space-x-3">
-                      {artikel.gambar ? (
+                      {page.gambar ? (
                         <div className="w-8 h-8 overflow-hidden bg-gray-100 rounded">
                           <img 
-                            src={ArtikelService.getImageUrl(artikel.gambar)} 
-                            alt={artikel.judul_halaman}
+                            src={page.gambar} 
+                            alt={page.judul_halaman}
                             className="object-cover w-full h-full"
                           />
                         </div>
@@ -476,27 +477,27 @@ export default function KelolaArtikelPage({ defaultCategory = "news" }: { defaul
                         </div>
                       )}
                       <div>
-                        <p className="font-medium">{artikel.judul_halaman}</p>
+                        <p className="font-medium">{page.judul_halaman}</p>
                       </div>
                     </div>
                   </TableCell>
                   <TableCell className="font-mono text-sm">
-                    {artikel.slug}
+                    {page.slug}
                   </TableCell>
                   <TableCell>
                     <Badge variant="outline" className="capitalize">
-                      {artikel.category}
+                      {page.category}
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    {formatDate(artikel.created_at)}
+                    {formatDate(page.created_at)}
                   </TableCell>
                   <TableCell className="text-center">
                     <button 
-                      onClick={() => handleToggleStatus(artikel)}
+                      onClick={() => handleToggleStatus(page)}
                       className="inline-flex rounded-full hover:bg-gray-50"
                     >
-                      {getStatusBadge(artikel.status)}
+                      {getStatusBadge(page.status)}
                     </button>
                   </TableCell>
                   <TableCell className="text-right">
@@ -507,12 +508,12 @@ export default function KelolaArtikelPage({ defaultCategory = "news" }: { defaul
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => openEditDialog(artikel)}>
+                        <DropdownMenuItem onClick={() => openEditDialog(page)}>
                           <FileEdit className="w-4 h-4 mr-2" />
                           Edit
                         </DropdownMenuItem>
                         <DropdownMenuItem 
-                          onClick={() => openDeleteDialog(artikel)}
+                          onClick={() => openDeleteDialog(page)}
                           className="text-red-600"
                         >
                           <Trash2 className="w-4 h-4 mr-2" />
@@ -532,14 +533,14 @@ export default function KelolaArtikelPage({ defaultCategory = "news" }: { defaul
       <Dialog open={createDialog} onOpenChange={setCreateDialog}>
         <DialogContent className="w-[95vw] sm:w-full sm:max-w-[550px] max-h-[95vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Tambah Artikel Baru</DialogTitle>
+            <DialogTitle>Tambah Halaman Baru</DialogTitle>
             <DialogDescription>
-              Buat artikel baru pada website
+              Buat halaman atau artikel baru pada website
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div>
-              <Label htmlFor="judul_halaman">Judul Artikel</Label>
+              <Label htmlFor="judul_halaman">Judul Halaman</Label>
               <Input
                 id="judul_halaman"
                 name="judul_halaman"
@@ -563,27 +564,46 @@ export default function KelolaArtikelPage({ defaultCategory = "news" }: { defaul
                 URL halaman: example.com/{formData.slug}
               </p>
             </div>
-            <div>
-              <Label htmlFor="category">Kategori</Label>
-              <Select
-                name="category"
-                value={formData.category}
-                onValueChange={(value) => setFormData({ ...formData, category: value })}
-              >
-                <SelectTrigger className="mt-1">
-                  <SelectValue placeholder="Pilih kategori" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="news">Berita</SelectItem>
-                  <SelectItem value="bertumbuh">Bertumbuh</SelectItem>
-                  <SelectItem value="berolahraga">Berolahraga</SelectItem>
-                  <SelectItem value="bercerita">bercerita</SelectItem>
-                  <SelectItem value="bersekolah_fest">Bersekolah Fest</SelectItem>
-                  <SelectItem value="berkunjung">Berkunjung</SelectItem>
-                  <SelectItem value="bertemu">Bertemu</SelectItem>
-                  <SelectItem value="beribadah">Beribadah</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="category">Kategori</Label>
+                <Select
+                  name="category"
+                  value={formData.category}
+                  onValueChange={(value) => setFormData({ ...formData, category: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Pilih kategori" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="news">Berita</SelectItem>
+                    <SelectItem value="bertumbuh">Bertumbuh</SelectItem>
+                    <SelectItem value="berolahraga">Berolahraga</SelectItem>
+                    <SelectItem value="bercerita">bercerita</SelectItem>
+                    <SelectItem value="bersekolah_fest">Bersekolah Fest</SelectItem>
+                    <SelectItem value="berkunjung">Berkunjung</SelectItem>
+                    <SelectItem value="bertemu">Bertemu</SelectItem>
+                    <SelectItem value="beribadah">Beribadah</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="status">Status</Label>
+                <Select
+                  name="status"
+                  value={formData.status}
+                  onValueChange={(value) => setFormData({ ...formData, status: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Pilih status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="draft">Draft</SelectItem>
+                    <SelectItem value="published">Published</SelectItem>
+                    <SelectItem value="archived">Archived</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             <div>
               <Label htmlFor="deskripsi">Konten / Deskripsi</Label>
@@ -597,36 +617,18 @@ export default function KelolaArtikelPage({ defaultCategory = "news" }: { defaul
               />
             </div>
             <div>
-              <Label htmlFor="gambar" className="text-sm font-medium text-gray-700">Gambar</Label>
-              <div className="mt-1">
-                <label 
-                  htmlFor="gambar"
-                  className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors"
-                >
-                  <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                    <Image className="w-8 h-8 mb-3 text-gray-400" />
-                    <p className="mb-2 text-sm text-gray-500">
-                      <span className="font-semibold">Klik untuk upload</span> atau drag & drop
-                    </p>
-                    <p className="text-xs text-gray-500">PNG, JPG atau GIF (Max. 2MB)</p>
-                  </div>
-                  <Input
-                    id="gambar"
-                    name="gambar"
-                    type="file"
-                    onChange={handleImageChange}
-                    className="hidden"
-                    accept="image/*"
-                  />
-                </label>
-                {formData.gambar && (
-                  <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded">
-                    <p className="text-sm text-blue-700">
-                      ✓ File terpilih: {formData.gambar.name}
-                    </p>
-                  </div>
-                )}
-              </div>
+              <Label htmlFor="gambar">Gambar</Label>
+              <Input
+                id="gambar"
+                name="gambar"
+                type="file"
+                onChange={handleImageChange}
+                className="mt-1"
+                accept="image/*"
+              />
+              <p className="mt-1 text-xs text-gray-500">
+                Format: JPG, PNG, atau GIF. Ukuran maksimal 2MB.
+              </p>
             </div>
           </div>
           <DialogFooter>
@@ -638,7 +640,7 @@ export default function KelolaArtikelPage({ defaultCategory = "news" }: { defaul
               Batal
             </Button>
             <Button 
-              onClick={handleCreateArtikel}
+              onClick={handleCreateHalaman}
               disabled={isSubmitting}
               className="bg-[#406386] hover:bg-[#355475]"
             >
@@ -654,16 +656,16 @@ export default function KelolaArtikelPage({ defaultCategory = "news" }: { defaul
           className="w-[95vw] sm:w-full sm:max-w-[550px] max-h-[95vh] overflow-y-auto"
         >
           <DialogHeader>
-            <DialogTitle>Edit Artikel</DialogTitle>
+            <DialogTitle>Edit Halaman</DialogTitle>
             <DialogDescription>
-              Perbarui informasi artikel
+              Perbarui informasi halaman
             </DialogDescription>
           </DialogHeader>
 
           <div className="grid gap-4 py-4">
             {/* --- Input Judul --- */}
             <div>
-              <Label htmlFor="edit_judul_halaman">Judul Artikel</Label>
+              <Label htmlFor="edit_judul_halaman">Judul Halaman</Label>
               <Input
                 id="edit_judul_halaman"
                 name="judul_halaman"
@@ -720,7 +722,7 @@ export default function KelolaArtikelPage({ defaultCategory = "news" }: { defaul
                 <Select
                   name="status"
                   value={formData.status}
-                  onValueChange={(value) => setFormData({ ...formData, status: value as "draft" | "published" | "archived" })}
+                  onValueChange={(value) => setFormData({ ...formData, status: value })}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Pilih status" />
@@ -748,49 +750,26 @@ export default function KelolaArtikelPage({ defaultCategory = "news" }: { defaul
 
             {/* --- Gambar --- */}
             <div>
-              <Label htmlFor="edit_gambar" className="text-sm font-medium text-gray-700">Gambar</Label>
-              <div className="mt-1">
-                <label 
-                  htmlFor="edit_gambar"
-                  className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors"
-                >
-                  <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                    <Image className="w-8 h-8 mb-3 text-gray-400" />
-                    <p className="mb-2 text-sm text-gray-500">
-                      <span className="font-semibold">Klik untuk upload</span> atau drag & drop
-                    </p>
-                    <p className="text-xs text-gray-500">PNG, JPG atau GIF (Max. 2MB)</p>
-                  </div>
-                  <Input
-                    id="edit_gambar"
-                    name="gambar"
-                    type="file"
-                    onChange={handleImageChange}
-                    className="hidden"
-                    accept="image/*"
+              <Label htmlFor="edit_gambar">Gambar</Label>
+              <Input
+                id="edit_gambar"
+                name="gambar"
+                type="file"
+                onChange={handleImageChange}
+                className="mt-1"
+                accept="image/*"
+              />
+              {selectedPage?.gambar && (
+                <div className="mt-2">
+                  <p className="mb-1 text-xs text-gray-500">Gambar Saat Ini:</p>
+                  <img
+                    src={selectedPage.gambar || ''}
+                    alt={selectedPage.judul_halaman}
+                    className="object-cover w-32 h-32 border rounded"
                   />
-                </label>
-                {formData.gambar && (
-                  <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded">
-                    <p className="text-sm text-blue-700">
-                      ✓ File terpilih: {formData.gambar.name}
-                    </p>
-                  </div>
-                )}
-              </div>
-              {selectedArtikel?.gambar && (
-                <div className="mt-3">
-                  <p className="mb-2 text-sm font-medium text-gray-700">Gambar Saat Ini:</p>
-                  <div className="p-2 border rounded-lg bg-gray-50">
-                    <img
-                      src={ArtikelService.getImageUrl(selectedArtikel.gambar) || ''}
-                      alt={selectedArtikel.judul_halaman}
-                      className="object-cover w-32 h-32 border rounded mx-auto"
-                    />
-                    <p className="mt-2 text-xs text-gray-500 text-center">
-                      Upload file baru untuk mengganti gambar ini
-                    </p>
-                  </div>
+                  <p className="mt-1 text-xs text-gray-500">
+                    Kosongkan jika tidak ingin mengganti gambar
+                  </p>
                 </div>
               )}
             </div>
@@ -805,7 +784,7 @@ export default function KelolaArtikelPage({ defaultCategory = "news" }: { defaul
               Batal
             </Button>
             <Button
-              onClick={handleUpdateArtikel}
+              onClick={handleUpdateHalaman}
               disabled={isSubmitting}
               className="bg-[#406386] hover:bg-[#355475]"
             >
@@ -820,16 +799,16 @@ export default function KelolaArtikelPage({ defaultCategory = "news" }: { defaul
       <Dialog open={deleteDialog} onOpenChange={setDeleteDialog}>
         <DialogContent className="sm:max-w-[400px]">
           <DialogHeader>
-            <DialogTitle>Hapus Artikel</DialogTitle>
+            <DialogTitle>Hapus Halaman</DialogTitle>
             <DialogDescription>
-              Apakah Anda yakin ingin menghapus artikel ini? Tindakan ini tidak dapat dibatalkan.
+              Apakah Anda yakin ingin menghapus halaman ini? Tindakan ini tidak dapat dibatalkan.
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">
-            {selectedArtikel && (
+            {selectedPage && (
               <div className="p-4 border rounded-md bg-red-50">
-                <p className="font-medium">{selectedArtikel.judul_halaman}</p>
-                <p className="text-sm text-gray-500">{selectedArtikel.slug}</p>
+                <p className="font-medium">{selectedPage.judul_halaman}</p>
+                <p className="text-sm text-gray-500">{selectedPage.slug}</p>
               </div>
             )}
           </div>
@@ -843,7 +822,7 @@ export default function KelolaArtikelPage({ defaultCategory = "news" }: { defaul
             </Button>
             <Button 
               variant="destructive"
-              onClick={handleDeleteArtikel}
+              onClick={handleDeleteHalaman}
               disabled={isSubmitting}
             >
               {isSubmitting ? "Menghapus..." : "Hapus"}

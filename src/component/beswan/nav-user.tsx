@@ -23,14 +23,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import {
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  useSidebar,
-} from "@/components/ui/sidebar"
 import { useEffect, useState } from "react"
 import { useToast } from "@/hooks/use-toast"
+import { useSidebar } from "@/contexts/SidebarContext"
 
 // Interface untuk tipe data user
 interface User {
@@ -55,7 +50,7 @@ const defaultUser: User = {
 };
 
 export function NavUser() {
-  const { isMobile } = useSidebar()
+  const { isOpen } = useSidebar()
   const [user, setUser] = useState<User>(defaultUser);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
@@ -307,88 +302,79 @@ export function NavUser() {
   // Loading state
   if (isLoading) {
     return (
-      <SidebarMenu>
-        <SidebarMenuItem>
-          <SidebarMenuButton size="lg" disabled>
-            <div className="flex items-center gap-2">
-              <Loader2 className="w-4 h-4 animate-spin" />
-              <span className="text-sm">Memuat...</span>
-            </div>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
-      </SidebarMenu>
+      <div className="flex items-center gap-2 p-2">
+        <Loader2 className="w-4 h-4 animate-spin" />
+        {isOpen && <span className="text-sm">Memuat...</span>}
+      </div>
     );
   }
 
   return (
-    <SidebarMenu>
-      <SidebarMenuItem>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <SidebarMenuButton
-              size="lg"
-              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-            >
-              <Avatar className="w-8 h-8 rounded-lg">
-                <AvatarImage src={user.avatar} alt={user.name} />
-                <AvatarFallback className="text-blue-800 bg-blue-100 rounded-lg">
-                  {getInitials()}
-                </AvatarFallback>
-              </Avatar>
-              <div className="grid flex-1 text-sm leading-tight text-left">
-                <span className="font-semibold truncate">{user.name}</span>
-                <span className="text-xs truncate text-muted-foreground">{user.email}</span>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button className="flex items-center w-full gap-2 p-2 rounded-md hover:bg-accent hover:text-accent-foreground">
+          <Avatar className="w-8 h-8 rounded-lg">
+            <AvatarImage src={user.avatar} alt={user.name} />
+            <AvatarFallback className="text-blue-800 bg-blue-100 rounded-lg">
+              {getInitials()}
+            </AvatarFallback>
+          </Avatar>
+          {isOpen && (
+            <div className="flex-1 text-left hide-when-collapsed">
+              <div className="font-semibold truncate text-sm">{user.name}</div>
+              <div className="text-xs truncate text-muted-foreground">{user.email}</div>
+            </div>
+          )}
+          {isOpen && (
+            <ChevronsUpDown className="w-4 h-4 hide-when-collapsed" />
+          )}
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        className="w-56 rounded-lg"
+        side="right"
+        align="end"
+        sideOffset={4}
+      >
+        <DropdownMenuLabel className="p-0 font-normal">
+          <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
+            <Avatar className="w-8 h-8 rounded-lg">
+              <AvatarImage src={user.avatar} alt={user.name} />
+              <AvatarFallback className="text-blue-800 bg-blue-100 rounded-lg">
+                {getInitials()}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1 text-left">
+              <div className="font-semibold truncate text-sm">{user.name}</div>
+              <div className="text-xs truncate">{user.email}</div>
+              <div className="text-xs capitalize truncate text-muted-foreground">
+                {getUserRole()}
               </div>
-              <ChevronsUpDown className="ml-auto size-4" />
-            </SidebarMenuButton>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
-            side={isMobile ? "bottom" : "right"}
-            align="end"
-            sideOffset={4}
-          >
-            <DropdownMenuLabel className="p-0 font-normal">
-              <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                <Avatar className="w-8 h-8 rounded-lg">
-                  <AvatarImage src={user.avatar} alt={user.name} />
-                  <AvatarFallback className="text-blue-800 bg-blue-100 rounded-lg">
-                    {getInitials()}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="grid flex-1 text-sm leading-tight text-left">
-                  <span className="font-semibold truncate">{user.name}</span>
-                  <span className="text-xs truncate">{user.email}</span>
-                  <span className="text-xs capitalize truncate text-muted-foreground">
-                    {getUserRole()}
-                  </span>
-                  {user.phone && (
-                    <span className="text-xs truncate text-muted-foreground">
-                      {user.phone}
-                    </span>
-                  )}
+              {user.phone && (
+                <div className="text-xs truncate text-muted-foreground">
+                  {user.phone}
                 </div>
-              </div>
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem asChild>
-                <a href="/" className="flex items-center w-full">
-                  <PanelsTopLeft className="w-4 h-4 mr-2" />
-                  Halaman Utama
-                </a>
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuItem 
-              onClick={handleLogout} 
-              className="text-red-500 cursor-pointer hover:bg-red-50"
-            >
-              <LogOut className="w-4 h-4 mr-2" />
-              Keluar
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </SidebarMenuItem>
-    </SidebarMenu>
+              )}
+            </div>
+          </div>
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuGroup>
+          <DropdownMenuItem asChild>
+            <a href="/" className="flex items-center w-full">
+              <PanelsTopLeft className="w-4 h-4 mr-2" />
+              Halaman Utama
+            </a>
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
+        <DropdownMenuItem 
+          onClick={handleLogout} 
+          className="text-red-500 cursor-pointer hover:bg-red-50"
+        >
+          <LogOut className="w-4 h-4 mr-2" />
+          Keluar
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }

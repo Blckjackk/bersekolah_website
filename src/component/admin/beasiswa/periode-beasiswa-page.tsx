@@ -520,9 +520,9 @@ export default function PeriodeBeasiswaPage() {
           <CardTitle className="text-lg">Filter & Pencarian</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-            <div className="space-y-2">
-              <Label htmlFor="search" className="text-sm font-medium text-gray-700">Cari Periode</Label>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            <div>
+              <Label htmlFor="search">Cari Periode</Label>
               <div className="relative">
                 <Search className="absolute w-4 h-4 text-gray-400 left-3 top-3" />
                 <Input
@@ -535,8 +535,8 @@ export default function PeriodeBeasiswaPage() {
               </div>
             </div>
             
-            <div className="space-y-2">
-              <Label htmlFor="status" className="text-sm font-medium text-gray-700">Status</Label>
+            <div>
+              <Label htmlFor="status">Status</Label>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger>
                   <SelectValue placeholder="Semua Status" />

@@ -224,79 +224,28 @@ export default function AdminDokumenSosmedPage() {
   }
 
   const handlePreview = (doc: Document) => {
-    const baseUrl = import.meta.env.PUBLIC_API_BASE_URL_NO_API || 'http://localhost:8000'
+    const baseUrl = import.meta.env.PUBLIC_API_BASE_URL_NO_API
     
     let directFileUrl = doc.file_path
     
-    // Log untuk debug
-    console.log('=== ADMIN PREVIEW DEBUG INFO ===')
-    console.log('Original file path:', doc.file_path)
-    console.log('Base URL:', baseUrl)
-    
     if (directFileUrl.startsWith('http')) {
-      // URL sudah lengkap, tapi mungkin salah port/host
-      try {
-        const url = new URL(directFileUrl)
-        console.log('Parsed URL host:', url.host)
-        
-        // Check if URL needs to be modified
-        if (url.host !== '127.0.0.1:8000' && !url.host.includes(baseUrl.replace('http://', '').replace('https://', ''))) {
-          directFileUrl = directFileUrl.replace(url.origin, baseUrl)
-          console.log('URL host replaced, new URL:', directFileUrl)
-        }
-      } catch (e) {
-        console.error('Error parsing URL:', e)
-        // Fallback - treat as relative path
-        if (directFileUrl.startsWith('/storage/')) {
-          directFileUrl = `${baseUrl}${directFileUrl}`
-        } else if (directFileUrl.startsWith('storage/')) {
-          directFileUrl = `${baseUrl}/${directFileUrl}`
-        } else {
-          directFileUrl = `${baseUrl}/storage/${directFileUrl}`
-        }
-        console.log('Fallback path constructed:', directFileUrl)
+      const url = new URL(directFileUrl)
+      if (url.host !== '127.0.0.1:8000') {
+        directFileUrl = directFileUrl.replace(url.origin, baseUrl)
       }
     } else {
-      // Jika relatif path, gabungkan dengan base URL
       if (directFileUrl.startsWith('/storage/')) {
         directFileUrl = `${baseUrl}${directFileUrl}`
       } else if (directFileUrl.startsWith('storage/')) {
         directFileUrl = `${baseUrl}/${directFileUrl}`
-      } else if (directFileUrl.startsWith('/')) {
-        // Path starts with slash but not with /storage
-        directFileUrl = `${baseUrl}${directFileUrl}`
       } else {
-        // Path tanpa /storage prefix dan tanpa slash awal
         directFileUrl = `${baseUrl}/storage/${directFileUrl}`
       }
-      console.log('Relative path converted to:', directFileUrl)
     }
-    
-    // Ensure URL is fully qualified and remove any double slashes (except after protocol)
-    directFileUrl = directFileUrl.replace(/([^:]\/)\/+/g, '$1')
-    
-    // Test URL with fetch
-    console.log('Testing URL accessibility with HEAD request...')
-    fetch(directFileUrl, { method: 'HEAD' })
-      .then(response => {
-        console.log('URL test response:', response.status, response.statusText)
-        if (!response.ok) {
-          console.warn('URL might not be accessible:', directFileUrl)
-        } else {
-          console.log('URL is accessible:', directFileUrl)
-        }
-      })
-      .catch(error => {
-        console.error('Error testing URL:', error)
-      })
-    
-    // Add cache busting parameter
-    const cacheBustingUrl = `${directFileUrl}${directFileUrl.includes('?') ? '&' : '?'}cacheBuster=${Date.now()}`
-    console.log('URL with cache buster:', cacheBustingUrl)
     
     setSelectedDoc({
       ...doc,
-      file_path: cacheBustingUrl
+      file_path: directFileUrl
     })
     setPreviewDialog(true)
   }
@@ -512,9 +461,9 @@ export default function AdminDokumenSosmedPage() {
           <CardTitle className="text-lg">Filter & Pencarian</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-4">
-            <div className="space-y-2">
-              <Label htmlFor="search" className="text-sm font-medium text-gray-700">Cari Pendaftar/File</Label>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+            <div>
+              <Label htmlFor="search">Cari Pendaftar/File</Label>
               <div className="relative">
                 <Search className="absolute w-4 h-4 text-gray-400 left-3 top-3" />
                 <Input
@@ -527,8 +476,8 @@ export default function AdminDokumenSosmedPage() {
               </div>
             </div>
             
-            <div className="space-y-2">
-              <Label htmlFor="status" className="text-sm font-medium text-gray-700">Status</Label>
+            <div>
+              <Label htmlFor="status">Status</Label>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger>
                   <SelectValue placeholder="Semua Status" />
@@ -542,8 +491,8 @@ export default function AdminDokumenSosmedPage() {
               </Select>
             </div>
             
-            <div className="space-y-2">
-              <Label htmlFor="type" className="text-sm font-medium text-gray-700">Jenis Dokumen</Label>
+            <div>
+              <Label htmlFor="type">Jenis Dokumen</Label>
               <Select value={documentTypeFilter} onValueChange={setDocumentTypeFilter}>
                 <SelectTrigger>
                   <SelectValue placeholder="Semua Jenis" />
@@ -723,47 +672,6 @@ export default function AdminDokumenSosmedPage() {
                   src={selectedDoc.file_path} 
                   alt="Social Media Screenshot" 
                   className="object-contain max-w-full max-h-full"
-                  onLoad={() => {
-                    console.log('Image loaded successfully for admin preview')
-                  }}
-                  onError={(e) => {
-                    console.error('Failed to load image in admin preview:', selectedDoc.file_path)
-                    const target = e.target as HTMLImageElement
-                    
-                    // Try with cache-busting query param if not already tried
-                    if (!target.src.includes('?cacheBuster=')) {
-                      console.log('Retrying image load with fresh cache-busting...')
-                      const cacheBuster = new Date().getTime()
-                      target.src = `${selectedDoc.file_path.split('?')[0]}?cacheBuster=${cacheBuster}`
-                      return
-                    }
-                    
-                    // If still fails, show error message
-                    target.style.display = 'none'
-                    
-                    // Create error message with download link
-                    const errorDiv = document.createElement('div')
-                    errorDiv.className = 'flex flex-col items-center justify-center h-full text-gray-500 p-8 text-center'
-                    errorDiv.innerHTML = `
-                      <svg class="w-16 h-16 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.232 15.5c-.77.833.192 2.5 1.732 2.5z"></path>
-                      </svg>
-                      <h3 class="text-lg font-medium text-gray-900 mb-2">Gagal memuat gambar</h3>
-                      <p class="text-sm mb-4">Gambar tidak dapat ditampilkan dalam preview. Silakan unduh untuk melihat file.</p>
-                      <a 
-                        href="${selectedDoc.file_path.split('?')[0]}" 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                      >
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                        </svg>
-                        Unduh Gambar
-                      </a>
-                    `
-                    target.parentElement?.appendChild(errorDiv)
-                  }}
                 />
               </div>
             )}
