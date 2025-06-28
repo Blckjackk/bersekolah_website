@@ -19,7 +19,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { CheckCircle, ChevronLeft, ChevronRight, Loader2, XCircle, Info, X } from "lucide-react"
+import { CheckCircle, Loader2, XCircle, Info, X, Save } from "lucide-react"
 
 // Define form schema
 const formSchema = z.object({
@@ -541,17 +541,7 @@ export default function AlamatPage() {
                     <FormMessage />
                   </FormItem>
                 )}
-              />
-
-              <div className="flex items-center justify-between pt-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => window.history.back()}
-                >
-                  <ChevronLeft className="w-4 h-4 mr-2" /> Kembali
-                </Button>
-
+              />              <div className="flex justify-end pt-4">
                 <Button type="submit" disabled={isSubmitting}>
                   {isSubmitting ? (
                     <>
@@ -560,8 +550,7 @@ export default function AlamatPage() {
                     </>
                   ) : (
                     <>
-                      Simpan
-                      <ChevronRight className="w-4 h-4 ml-2" />
+                      <Save className="w-4 h-4 mr-2" /> Simpan Data Alamat
                     </>
                   )}
                 </Button>

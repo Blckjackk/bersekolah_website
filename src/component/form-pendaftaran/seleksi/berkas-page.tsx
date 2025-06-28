@@ -837,46 +837,6 @@ export default function SeleksiBerkasPage() {
             </div>
           </CardContent>
         </Card>
-
-        {/* Quick Actions */}
-        {!selectionStatus.finalized_at && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Aksi Cepat</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
-                <Button 
-                  variant="outline" 
-                  className="flex flex-col items-center h-auto gap-2 p-4"
-                  onClick={() => window.location.href = '/form-pendaftaran/dokumen/wajib'}
-                >
-                  <Upload className="w-5 h-5" />
-                  <span className="text-xs">Dokumen Wajib</span>
-                </Button>
-                
-                <Button 
-                  variant="outline" 
-                  className="flex flex-col items-center h-auto gap-2 p-4"
-                  onClick={() => window.location.href = '/form-pendaftaran/dokumen/sosmed'}
-                >
-                  <Instagram className="w-5 h-5" />
-                  <span className="text-xs">Sosial Media</span>
-                </Button>
-                
-                <Button 
-                  variant="outline" 
-                  className="flex flex-col items-center h-auto gap-2 p-4"
-                  onClick={() => checkDataStatus(true)}
-                  disabled={isRefreshing}
-                >
-                  <RefreshCw className={`w-5 h-5 ${isRefreshing ? 'animate-spin' : ''}`} />
-                  <span className="text-xs">Refresh Status</span>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
       </div>
 
       {/* Dialog Finalisasi */}

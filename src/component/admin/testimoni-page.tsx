@@ -52,7 +52,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 
 import { TestimoniService } from "@/lib/testimoni-service";
-import type { Testimoni, CreateTestimoniRequest, UpdateTestimoniRequest } from "@/lib/testimoni-service";
+import type { Testimoni } from "@/lib/testimoni-service";
 
 export default function TestimoniPage() {
   // State for testimoni data
@@ -209,9 +209,8 @@ export default function TestimoniPage() {
     try {
       const newStatus = item.status === 'active' ? 'inactive' : 'active';
       
-      // Use type assertion to bypass TypeScript issues temporarily
-      const service = TestimoniService as any;
-      await service.updateTestimoniStatus(item.id, newStatus);
+      // @ts-ignore - TypeScript can't properly recognize the imported service
+      await TestimoniService.updateTestimoniStatus(item.id, newStatus);
       
       showToast(`Status testimoni berhasil ${newStatus === 'active' ? 'diaktifkan' : 'dinonaktifkan'}`, "success");
       
@@ -230,22 +229,14 @@ export default function TestimoniPage() {
   const handleCreateTestimoni = async () => {
     try {
       setIsSubmitting(true);
-      // Validation
+        // Validation
       if (!formData.nama || !formData.angkatan_beswan || !formData.isi_testimoni) {
         showToast("Mohon lengkapi data yang diperlukan", "error");
         return;
       }
       
-      // Use type assertion to bypass TypeScript issues temporarily
-      const service = TestimoniService as any;
-      await service.createTestimoni({
-        nama: formData.nama,
-        angkatan_beswan: formData.angkatan_beswan,
-        sekarang_dimana: formData.sekarang_dimana,
-        isi_testimoni: formData.isi_testimoni,
-        status: formData.status,
-        foto_testimoni: photoFile || undefined
-      });
+      // @ts-ignore - TypeScript can't properly recognize the imported service
+      const result = await TestimoniService.createTestimoni(formData, photoFile);
       
       showToast("Testimoni berhasil ditambahkan", "success");
       setCreateDialog(false);
@@ -268,22 +259,14 @@ export default function TestimoniPage() {
     
     try {
       setIsSubmitting(true);
-      // Validation
+        // Validation
       if (!formData.nama || !formData.angkatan_beswan || !formData.isi_testimoni) {
         showToast("Mohon lengkapi data yang diperlukan", "error");
         return;
       }
       
-      // Use type assertion to bypass TypeScript issues temporarily
-      const service = TestimoniService as any;
-      await service.updateTestimoni(selectedTestimoni.id, {
-        nama: formData.nama,
-        angkatan_beswan: formData.angkatan_beswan,
-        sekarang_dimana: formData.sekarang_dimana,
-        isi_testimoni: formData.isi_testimoni,
-        status: formData.status,
-        foto_testimoni: photoFile || undefined
-      });
+      // @ts-ignore - TypeScript can't properly recognize the imported service
+      await TestimoniService.updateTestimoni(selectedTestimoni.id, formData, photoFile);
       
       showToast("Testimoni berhasil diperbarui", "success");
       setEditDialog(false);
@@ -303,12 +286,11 @@ export default function TestimoniPage() {
   // Handle delete testimoni
   const handleDeleteTestimoni = async () => {
     if (!selectedTestimoni) return;
-    try {
+      try {
       setIsSubmitting(true);
       
-      // Use type assertion to bypass TypeScript issues temporarily
-      const service = TestimoniService as any;
-      await service.deleteTestimoni(selectedTestimoni.id);
+      // @ts-ignore - TypeScript can't properly recognize the imported service
+      await TestimoniService.deleteTestimoni(selectedTestimoni.id);
       
       showToast("Testimoni berhasil dihapus", "success");
       setDeleteDialog(false);
@@ -467,12 +449,12 @@ export default function TestimoniPage() {
                   <TableRow key={item.id}>
                     <TableCell>                      <div className="relative w-10 h-10 overflow-hidden rounded-full">
                         <img 
-                          src={TestimoniService.getImageUrl(item.foto_testimoni)} 
+                          src={item.foto_testimoni ? `${import.meta.env.PUBLIC_API_BASE_URL}/storage/${item.foto_testimoni}` : ''} 
                           alt={item.nama}
                           className="object-cover w-full h-full"
                           onError={(e) => {
                             const target = e.target as HTMLImageElement;
-                            target.src = '/assets/image/testimoni/default.jpg';
+                            target.src = '';
                           }}
                         />
                       </div>

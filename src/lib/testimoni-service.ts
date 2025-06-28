@@ -11,251 +11,267 @@ export interface Testimoni {
   tanggal_input: string;
 }
 
-export interface CreateTestimoniRequest {
-  nama: string;
-  angkatan_beswan: string;
-  sekarang_dimana?: string;
-  isi_testimoni: string;
-  foto_testimoni?: File;
-  status: 'active' | 'inactive';
-}
-
-export interface UpdateTestimoniRequest {
-  nama: string;
-  angkatan_beswan: string;
-  sekarang_dimana?: string;
-  isi_testimoni: string;
-  foto_testimoni?: File;
-  status: 'active' | 'inactive';
-}
-
 export const TestimoniService = {
-  // Helper function to get correct image URL
-  getImageUrl: (imagePath?: string): string => {
-    // If no image path provided, return default
-    if (!imagePath || imagePath === 'null' || imagePath === '') {
-      return '/assets/image/testimoni/default.jpg';
-    }
-    
-    // If it's already 'default.jpg', return the correct path
-    if (imagePath === 'default.jpg') {
-      return '/assets/image/testimoni/default.jpg';
-    }
-    
-    // If the path already starts with /assets, return as is
-    if (imagePath.startsWith('/assets')) {
-      return imagePath;
-    }
-    
-    // If the path already includes the domain, return as is
-    if (imagePath.startsWith('http')) {
-      return imagePath;
-    }
-    
-    // Extract filename
-    let filename = imagePath;
-    if (filename.includes('/')) {
-      filename = filename.split('/').pop() || 'default.jpg';
-    }
-    
-    // Return local path for frontend assets
-    return `/assets/image/testimoni/${filename}`;
-  },
-
   getAllTestimoni: async (): Promise<Testimoni[]> => {
-    try {
-      const response = await fetch(`${API_URL}/testimonis`, {
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('bersekolah_auth_token')}`
-        }
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch testimonials');
-      }
-      
-      const data = await response.json();
-      return data.data || [];
-    } catch (error) {
-      console.error('Error fetching testimonials:', error);
-      throw error;
-    }
-  },
-
-  getTestimoniById: async (id: number): Promise<Testimoni> => {
-    try {
-      const response = await fetch(`${API_URL}/testimonis/${id}`, {
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('bersekolah_auth_token')}`
-        }
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch testimonial');
-      }
-      
-      const data = await response.json();
-      return data.data;
-    } catch (error) {
-      console.error('Error fetching testimonial:', error);
-      throw error;
-    }
-  },
-
-  createTestimoni: async (testimoni: CreateTestimoniRequest): Promise<Testimoni> => {
-    try {
-      const formData = new FormData();
-      formData.append('nama', testimoni.nama);
-      formData.append('angkatan_beswan', testimoni.angkatan_beswan);
-      if (testimoni.sekarang_dimana) {
-        formData.append('sekarang_dimana', testimoni.sekarang_dimana);
-      }
-      formData.append('isi_testimoni', testimoni.isi_testimoni);
-      formData.append('status', testimoni.status);
-      
-      if (testimoni.foto_testimoni) {
-        formData.append('foto_testimoni', testimoni.foto_testimoni);
-      }
-
-      const response = await fetch(`${API_URL}/testimonis`, {
-        method: 'POST',
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('bersekolah_auth_token')}`
-        },
-        body: formData
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to create testimonial');
-      }
-      
-      const data = await response.json();
-      return data.data;
-    } catch (error) {
-      console.error('Error creating testimonial:', error);
-      throw error;
-    }
-  },
-
-  updateTestimoni: async (id: number, testimoni: UpdateTestimoniRequest): Promise<Testimoni> => {
-    try {
-      const formData = new FormData();
-      formData.append('nama', testimoni.nama);
-      formData.append('angkatan_beswan', testimoni.angkatan_beswan);
-      if (testimoni.sekarang_dimana) {
-        formData.append('sekarang_dimana', testimoni.sekarang_dimana);
-      }
-      formData.append('isi_testimoni', testimoni.isi_testimoni);
-      formData.append('status', testimoni.status);
-      formData.append('_method', 'PUT');
-      
-      if (testimoni.foto_testimoni) {
-        formData.append('foto_testimoni', testimoni.foto_testimoni);
-      }
-
-      const response = await fetch(`${API_URL}/testimonis/${id}`, {
-        method: 'POST',
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('bersekolah_auth_token')}`
-        },
-        body: formData
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to update testimonial');
-      }
-      
-      const data = await response.json();
-      return data.data;
-    } catch (error) {
-      console.error('Error updating testimonial:', error);
-      throw error;
-    }
-  },
-
-  deleteTestimoni: async (id: number): Promise<void> => {
-    try {
-      const response = await fetch(`${API_URL}/testimonis/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('bersekolah_auth_token')}`
-        }
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to delete testimonial');
-      }
-    } catch (error) {
-      console.error('Error deleting testimonial:', error);
-      throw error;
-    }
-  },
-
-  updateTestimoniStatus: async (id: number, status: 'active' | 'inactive'): Promise<Testimoni> => {
-    try {
-      const response = await fetch(`${API_URL}/testimonis/${id}/status`, {
-        method: 'PUT',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('bersekolah_auth_token')}`
-        },
-        body: JSON.stringify({ status })
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to update testimonial status');
-      }
-      
-      const data = await response.json();
-      return data.data;
-    } catch (error) {
-      console.error('Error updating testimonial status:', error);
-      throw error;
-    }
-  },
-
-  getTestimoniTotal: async (): Promise<{total: number, active: number, inactive: number}> => {
     try {
       const token = localStorage.getItem('bersekolah_auth_token');
       if (!token) {
         throw new Error('Unauthorized: No token found');
       }
       
-      // Fetch all testimonials and count them
-      const response = await fetch(`${API_URL}/testimonis`, {
+      console.log('Fetching all testimonials from:', `${API_URL}/admin/testimonials`);
+      
+      const response = await fetch(`${API_URL}/admin/testimonials`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        console.error('Failed to fetch testimonials:', response.status, response.statusText);
+        const errorText = await response.text();
+        console.error('Error response:', errorText);
+        throw new Error(`Failed to fetch testimoni: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log('Testimoni API response:', data);
+      
+      // Handle response format
+      if (data.success && data.data) {
+        console.log('Using data.data format, found', data.data.length, 'testimonials');
+        return data.data;
+      } else if (Array.isArray(data)) {
+        console.log('Using array format, found', data.length, 'testimonials');
+        return data;
+      }
+      console.log('No testimonials found in response');
+      return [];
+    } catch (error) {
+      console.error('Error in getAllTestimoni:', error);
+      throw error;
+    }
+  },
+  // Get total testimoni count  
+  getTotalTestimoni: async (): Promise<number> => {
+    try {
+      const token = localStorage.getItem('bersekolah_auth_token');
+      if (!token) {
+        throw new Error('Unauthorized: No token found');
+      }
+      
+      // We'll just use the main endpoint and count the items
+      const response = await fetch(`${API_URL}/admin/testimonials`, {
         headers: {
           'Accept': 'application/json',
           'Authorization': `Bearer ${token}`
         }
       });
 
-      if (!response.ok) throw new Error('Failed to fetch testimonials');
+      if (!response.ok) throw new Error('Failed to fetch total testimoni');
 
       const data = await response.json();
-      const testimonials = data.data || [];
       
-      if (Array.isArray(testimonials)) {
-        const total = testimonials.length;
-        const active = testimonials.filter((t: Testimoni) => t.status === 'active').length;
-        const inactive = testimonials.filter((t: Testimoni) => t.status === 'inactive').length;
-        
-        return { total, active, inactive };
+      if (data.success && data.data) {
+        return Array.isArray(data.data) ? data.data.length : 0;
+      } else if (Array.isArray(data)) {
+        return data.length;
       }
       
-      return { total: 0, active: 0, inactive: 0 };
+      return 0;
     } catch (error) {
       console.error('Error fetching testimoni total:', error);
-      return { total: 0, active: 0, inactive: 0 };
+      return 0; // Default to 0 if error
     }
-  }
+  },
+    getTestimoniById: async (id: number): Promise<Testimoni> => {
+    try {
+      const token = localStorage.getItem('bersekolah_auth_token');
+      if (!token) {
+        throw new Error('Unauthorized: No token found');
+      }
+      
+      const response = await fetch(`${API_URL}/admin/testimonials/${id}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch testimoni: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log('Testimoni detail API response:', data);
+      
+      return data.success ? data.data : data;
+    } catch (error) {
+      console.error(`Error in getTestimoniById (${id}):`, error);
+      throw error;
+    }
+  },
+    createTestimoni: async (testimoniData: any, photoFile: File | null): Promise<Testimoni> => {
+    try {
+      const token = localStorage.getItem('bersekolah_auth_token');
+      if (!token) {
+        throw new Error('Unauthorized: No token found');
+      }
+      
+      const formData = new FormData();
+      
+      // Add testimoni data to form
+      formData.append('nama', testimoniData.nama);
+      formData.append('angkatan_beswan', testimoniData.angkatan_beswan);
+      
+      if (testimoniData.sekarang_dimana) {
+        formData.append('sekarang_dimana', testimoniData.sekarang_dimana);
+      }
+      
+      formData.append('isi_testimoni', testimoniData.isi_testimoni);
+      formData.append('status', testimoniData.status);
+      
+      // Add photo if provided
+      if (photoFile) {
+        formData.append('foto_testimoni', photoFile);
+      }
+      
+      console.log('Creating testimoni with data:', testimoniData);
+      
+      const response = await fetch(`${API_URL}/admin/testimonials`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json'
+        },
+        body: formData
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('API error response:', errorData);
+        throw new Error(errorData.message || `Failed to create testimoni: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log('Create testimoni API response:', data);
+      return data.success ? data.data : data;
+    } catch (error) {
+      console.error('Error in createTestimoni:', error);
+      throw error;
+    }
+  },
+    updateTestimoni: async (id: number, testimoniData: any, photoFile: File | null): Promise<Testimoni> => {
+    try {
+      const token = localStorage.getItem('bersekolah_auth_token');
+      if (!token) {
+        throw new Error('Unauthorized: No token found');
+      }
+      
+      const formData = new FormData();
+      
+      // Add testimoni data to form
+      formData.append('nama', testimoniData.nama);
+      formData.append('angkatan_beswan', testimoniData.angkatan_beswan);
+      
+      if (testimoniData.sekarang_dimana) {
+        formData.append('sekarang_dimana', testimoniData.sekarang_dimana);
+      }
+      
+      formData.append('isi_testimoni', testimoniData.isi_testimoni);
+      formData.append('status', testimoniData.status);
+      
+      formData.append('_method', 'PUT'); // Laravel form method spoofing
+      
+      // Add photo if provided
+      if (photoFile) {
+        formData.append('foto_testimoni', photoFile);
+      }
+      
+      console.log(`Updating testimoni ${id} with data:`, testimoniData);
+      
+      const response = await fetch(`${API_URL}/admin/testimonials/${id}`, {
+        method: 'POST', // Using POST with _method for Laravel method spoofing
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json'
+        },
+        body: formData
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('API error response:', errorData);
+        throw new Error(errorData.message || `Failed to update testimoni: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log('Update testimoni API response:', data);
+      return data.success ? data.data : data;
+    } catch (error) {
+      console.error(`Error in updateTestimoni (${id}):`, error);
+      throw error;
+    }
+  },
+    deleteTestimoni: async (id: number): Promise<void> => {
+    try {
+      const token = localStorage.getItem('bersekolah_auth_token');
+      if (!token) {
+        throw new Error('Unauthorized: No token found');
+      }
+      
+      console.log(`Deleting testimoni ${id}`);
+      
+      const response = await fetch(`${API_URL}/admin/testimonials/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('API error response:', errorData);
+        throw new Error(errorData.message || `Failed to delete testimoni: ${response.status}`);
+      }
+      
+      console.log(`Testimoni ${id} deleted successfully`);
+    } catch (error) {
+      console.error(`Error in deleteTestimoni (${id}):`, error);
+      throw error;
+    }
+  },
+    updateTestimoniStatus: async (id: number, status: 'active' | 'inactive'): Promise<void> => {
+    try {
+      const token = localStorage.getItem('bersekolah_auth_token');
+      if (!token) {
+        throw new Error('Unauthorized: No token found');
+      }
+      
+      console.log(`Updating testimoni ${id} status to ${status}`);
+      
+      const response = await fetch(`${API_URL}/admin/testimonials/${id}/status`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ status })
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('API error response:', errorData);
+        throw new Error(errorData.message || `Failed to update testimoni status: ${response.status}`);
+      }
+      
+      console.log(`Testimoni ${id} status updated to ${status} successfully`);
+    } catch (error) {
+      console.error(`Error in updateTestimoniStatus (${id}):`, error);
+      throw error;
+    }
+  },
 };

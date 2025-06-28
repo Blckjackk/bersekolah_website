@@ -516,11 +516,8 @@ export default function ProgresPage() {
                           </div>
                         ))}
                       </div>
-                    </div>
-                  )}
-                  
-                  {index < applicationProgress.stages.length - 1 && (
-                    <div className="py-1 pl-3">
+                    </div>                  )}                    {index < applicationProgress.stages.length - 1 && (
+                    <div className="ml-[3px] py-2">
                       <ArrowRight className="w-4 h-4 text-gray-300 rotate-90" />
                     </div>
                   )}
