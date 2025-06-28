@@ -20,15 +20,6 @@ import {
 } from "lucide-react"
 import { NavMain } from "./nav-main"
 import { NavUser } from "./nav-user"
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-} from "@/components/ui/sidebar"
 import { useSidebar } from "@/contexts/SidebarContext"
 
 // ✅ TAMBAHKAN: Interface untuk application status
@@ -94,15 +85,15 @@ const getNavData = (currentPath: string, applicationStatus: ApplicationStatus | 
         icon: Home,
         isActive: dashboardActive,
         items: [
-          {
-            title: "Beranda",
+          {            title: "Beranda",
             url: "/form-pendaftaran",
             disabled: false,
+            isActive: currentPath === '/form-pendaftaran'
           },
-          {
-            title: "Pengumuman",
+          {            title: "Pengumuman",
             url: "/form-pendaftaran/pengumuman", 
             disabled: false,
+            isActive: currentPath === '/form-pendaftaran/pengumuman'
           },
         ],
       },
@@ -111,20 +102,20 @@ const getNavData = (currentPath: string, applicationStatus: ApplicationStatus | 
         icon: ClipboardList,
         isActive: currentPath.includes('/form-pendaftaran/pendaftaran/'),
         items: [
-          {
-            title: "Data Pribadi",
+          {            title: "Data Pribadi",
             url: "/form-pendaftaran/pendaftaran/data-pribadi",
             disabled: false,
+            isActive: currentPath === '/form-pendaftaran/pendaftaran/data-pribadi'
           },
-          {
-            title: "Data Keluarga",
+          {            title: "Data Keluarga",
             url: "/form-pendaftaran/pendaftaran/data-keluarga",
             disabled: false,
+            isActive: currentPath === '/form-pendaftaran/pendaftaran/data-keluarga'
           },
-          {
-            title: "Alamat & Kontak",
+          {            title: "Alamat & Kontak",
             url: "/form-pendaftaran/pendaftaran/alamat",
             disabled: false,
+            isActive: currentPath === '/form-pendaftaran/pendaftaran/alamat'
           },
         ],
       },
@@ -133,20 +124,20 @@ const getNavData = (currentPath: string, applicationStatus: ApplicationStatus | 
         icon: Upload,
         isActive: currentPath.includes('/form-pendaftaran/dokumen/'),
         items: [
-          {
-            title: "Dokumen Wajib",
+          {            title: "Dokumen Wajib",
             url: "/form-pendaftaran/dokumen/wajib",
             disabled: false,
+            isActive: currentPath === '/form-pendaftaran/dokumen/wajib'
           },
-          {
-            title: "Bukti Sosial Media",
+          {            title: "Bukti Sosial Media",
             url: "/form-pendaftaran/dokumen/sosmed",
             disabled: false,
+            isActive: currentPath === '/form-pendaftaran/dokumen/sosmed'
           },
-          {
-            title: "Dokumen Pendukung",
+          {            title: "Dokumen Pendukung",
             url: "/form-pendaftaran/dokumen/pendukung",
             disabled: false,
+            isActive: currentPath === '/form-pendaftaran/dokumen/pendukung'
           },
         ],
       },
@@ -155,10 +146,10 @@ const getNavData = (currentPath: string, applicationStatus: ApplicationStatus | 
         icon: Clock,
         isActive: currentPath.includes('/form-pendaftaran/seleksi/'),
         items: [
-          {
-            title: "Seleksi Berkas",
+          {            title: "Seleksi Berkas",
             url: "/form-pendaftaran/seleksi/berkas",
             disabled: false,
+            isActive: currentPath === '/form-pendaftaran/seleksi/berkas',
             // ✅ TAMBAHKAN: Indikator finalisasi
             badge: canFinalize && !isFinalized ? {
               icon: AlertCircle,
@@ -166,20 +157,20 @@ const getNavData = (currentPath: string, applicationStatus: ApplicationStatus | 
               tooltip: "Siap untuk finalisasi"
             } : undefined
           },
-          {
-            title: "Jadwal Wawancara",
+          {            title: "Jadwal Wawancara",
             url: "/form-pendaftaran/seleksi/jadwal-wawancara",
             disabled: !canAccessInterview || applicationStatus?.status === 'ditolak', // ✅ UPDATED: Lock jika ditolak
+            isActive: currentPath === '/form-pendaftaran/seleksi/jadwal-wawancara',
             badge: !canAccessInterview || applicationStatus?.status === 'ditolak' ? {
               icon: Lock,
               color: "text-gray-400",
               tooltip: applicationStatus?.status === 'ditolak' ? "Tidak lolos seleksi berkas" : "Menunggu lolos seleksi berkas"
             } : undefined
           },
-          {
-            title: "Hasil Seleksi", // ✅ UPDATED: Rename dari "Hasil Wawancara"
+          {            title: "Hasil Seleksi", // ✅ UPDATED: Rename dari "Hasil Wawancara"
             url: "/form-pendaftaran/seleksi/hasil-wawancara",
             disabled: !canAccessResult,
+            isActive: currentPath === '/form-pendaftaran/seleksi/hasil-wawancara',
             badge: !canAccessResult ? {
               icon: Lock,
               color: "text-gray-400",
@@ -193,15 +184,15 @@ const getNavData = (currentPath: string, applicationStatus: ApplicationStatus | 
         icon: CheckCircle,
         isActive: currentPath.includes('/form-pendaftaran/status/'),
         items: [
-          {
-            title: "Progres Pendaftaran",
+          {            title: "Progres Pendaftaran",
             url: "/form-pendaftaran/status/progres",
             disabled: false,
+            isActive: currentPath === '/form-pendaftaran/status/progres'
           },
-          {
-            title: "Status Kelulusan",
+          {            title: "Status Kelulusan",
             url: "/form-pendaftaran/status/kelulusan",
             disabled: false,
+            isActive: currentPath === '/form-pendaftaran/status/kelulusan'
           },
         ],
       },
@@ -209,10 +200,22 @@ const getNavData = (currentPath: string, applicationStatus: ApplicationStatus | 
   }
 }
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+export function AppSidebar() {
   const [currentPath, setCurrentPath] = useState("")
-  const [applicationStatus, setApplicationStatus] = useState<ApplicationStatus | null>(null) // ✅ TAMBAHKAN state
+  const [applicationStatus, setApplicationStatus] = useState<ApplicationStatus | null>(null) 
   const { isOpen, sidebarRef } = useSidebar(); // Get sidebar state from context
+  const [isMobile, setIsMobile] = useState(false)
+
+  // Monitor window size for responsive behavior
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
   
   // Track current path
   useEffect(() => {
@@ -255,39 +258,41 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   }, [])
   // Get nav data based on current path and application status
   const data = getNavData(currentPath, applicationStatus)
-    return (
-    <Sidebar 
+  return (
+    <div 
       ref={sidebarRef}
-      id="main-sidebar"
-      variant="inset" 
-      className={`sidebar-container sidebar ${!isOpen ? "sidebar-closed" : ""}`} 
-      {...props}
+      className="fixed left-0 top-0 h-screen bg-background border-r border-border z-30 flex flex-col"
+      style={{ 
+        width: isMobile ? (isOpen ? '16rem' : '0') : (isOpen ? '16rem' : '4rem'),
+        transform: isMobile && !isOpen ? 'translateX(-100%)' : 'translateX(0)'
+      }}
     >
-        <SidebarHeader>
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton size="lg" asChild>
-                <a href="/form-pendaftaran">
-                  <div className="flex items-center justify-center rounded-lg aspect-square size-8 bg-sidebar-primary text-sidebar-primary-foreground">
-                    <Command className="size-4" />
-                  </div>
-                  <div className="grid flex-1 text-sm leading-tight text-left">
-                    <span className="font-semibold truncate">Yayasan Bersekolah</span>
-                    <span className="text-xs truncate text-sidebar-muted-foreground">
-                      Platform Pendaftaran
-                    </span>
-                  </div>
-                </a>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarHeader>
-        <SidebarContent>
-          <NavMain items={data.navMain} />
-        </SidebarContent>
-        <SidebarFooter>
+      {/* Header - Fixed di atas */}
+      <div className="h-16 flex items-center px-4 border-b border-border flex-shrink-0 bg-background">
+        <div className="flex items-center gap-3">
+          <div className="flex items-center justify-center rounded-lg aspect-square size-8 bg-primary text-primary-foreground">
+            <Command className="size-4" />
+          </div>
+          {(isOpen || !isMobile) && (
+            <div className="flex flex-col">
+              <span className="font-semibold text-sm">Yayasan Bersekolah</span>
+              <span className="text-xs text-muted-foreground">Platform Pendaftaran</span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Content - Scrollable area */}
+      <div className="flex-1 overflow-y-auto">
+        <NavMain items={data.navMain} />
+      </div>
+
+      {/* Footer NavUser - Fixed di bottom */}
+      <div className="flex-shrink-0 bg-background border-t border-border">
+        <div className="p-4">
           <NavUser />
-        </SidebarFooter>
-    </Sidebar>
+        </div>
+      </div>
+    </div>
   )
 }

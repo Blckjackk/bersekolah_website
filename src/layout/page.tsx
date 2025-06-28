@@ -8,13 +8,10 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar";
 import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
+import { CustomSidebarTrigger } from "@/component/layout/custom-sidebar-trigger";
+import { SidebarProvider as CustomSidebarProvider, useSidebar } from "@/contexts/SidebarContext";
 
 import type { ReactNode } from "react";
 
@@ -52,10 +49,31 @@ const getAuthData = () => {
 };
 
 export default function Page({ children }: { children: ReactNode }) {
+  return (
+    <CustomSidebarProvider>
+      <PageContent>{children}</PageContent>
+    </CustomSidebarProvider>
+  );
+}
+
+function PageContent({ children }: { children: ReactNode }) {
+  const { isOpen } = useSidebar();
   const [pathSegments, setPathSegments] = useState<string[]>([]);
   const [currentPath, setCurrentPath] = useState("");
   const [isAuthChecking, setIsAuthChecking] = useState(true);
   const [isAuthorized, setIsAuthorized] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Monitor window size for responsive behavior
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Auth middleware check
   useEffect(() => {
@@ -194,8 +212,7 @@ export default function Page({ children }: { children: ReactNode }) {
   };
 
   const getBreadcrumbLabel = (segment: string, index: number) => {
-    const labels: Record<string, string> = {
-      "form-pendaftaran": "Form Pendaftaran",
+    const labels: Record<string, string> = {      "form-pendaftaran": "Dashboard",
       pendaftaran: "Formulir",
       "data-pribadi": "Data Pribadi",
       "data-keluarga": "Data Keluarga",
@@ -233,12 +250,29 @@ export default function Page({ children }: { children: ReactNode }) {
   }
 
   return (
-    <SidebarProvider>
+    <div className="min-h-screen">
+      {/* Mobile overlay */}
+      {isMobile && isOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-20"
+          onClick={() => {/* Optionally close sidebar on backdrop click */}}
+        />
+      )}
+      
+      {/* Sidebar - Fixed position */}
       <AppSidebar />
-      <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
-          <div className="flex items-center gap-2 px-4">
-            <SidebarTrigger className="-ml-1" />
+      
+      {/* Main content area - Adjust margin for sidebar */}
+      <div 
+        className={`transition-all duration-300 ease-in-out ${
+          isMobile 
+            ? "ml-0" 
+            : (isOpen ? "ml-64" : "ml-16")
+        }`}
+      >
+        <header className="flex h-16 shrink-0 items-center gap-2 border-b bg-background px-4 sticky top-0 z-10">
+          <div className="flex items-center gap-2">
+            <CustomSidebarTrigger className="-ml-1" />
             <Separator orientation="vertical" className="h-4 mr-2" />
             <Breadcrumb>
               <BreadcrumbList>
@@ -271,10 +305,10 @@ export default function Page({ children }: { children: ReactNode }) {
             </Breadcrumb>
           </div>
         </header>
-        <div className="flex flex-col flex-1 gap-4 p-4 pt-0">
+        <main className="p-4 min-h-[calc(100vh-4rem)]">
           {children}
-        </div>
-      </SidebarInset>
-    </SidebarProvider>
+        </main>
+      </div>
+    </div>
   );
 }

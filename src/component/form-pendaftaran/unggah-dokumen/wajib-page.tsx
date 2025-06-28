@@ -549,37 +549,101 @@ export default function DokumenWajibPage() {
 
   const handlePreview = (uploadedDoc: UploadedDocument) => {
     // Convert API file path to direct storage URL
-    const baseUrl = import.meta.env.PUBLIC_API_BASE_URL_NO_API // http://127.0.0.1:8000
+    const baseUrl = import.meta.env.PUBLIC_API_BASE_URL_NO_API || 'http://localhost:8000';
     
-    let directFileUrl = uploadedDoc.file_path
+    let directFileUrl = uploadedDoc.file_path;
+    
+    // Log untuk debug
+    console.log('=== PREVIEW DEBUG INFO ===');
+    console.log('Original file path:', uploadedDoc.file_path);
+    console.log('Document file type:', uploadedDoc.file_type);
+    console.log('Base URL:', baseUrl);
     
     // Jika file_path adalah URL lengkap, gunakan apa adanya
     if (directFileUrl.startsWith('http')) {
       // URL sudah lengkap, tapi mungkin salah port/host
-      // Replace host jika perlu
-      const url = new URL(directFileUrl)
-      if (url.host !== '127.0.0.1:8000') {
-        directFileUrl = directFileUrl.replace(url.origin, baseUrl)
+      try {
+        const url = new URL(directFileUrl);
+        console.log('Parsed URL host:', url.host);
+        
+        // Check if URL needs to be modified
+        if (url.host !== '127.0.0.1:8000' && !url.host.includes(baseUrl.replace('http://', '').replace('https://', ''))) {
+          directFileUrl = directFileUrl.replace(url.origin, baseUrl);
+          console.log('URL host replaced, new URL:', directFileUrl);
+        }
+      } catch (e) {
+        console.error('Error parsing URL:', e);
+        // Fallback - treat as relative path
+        if (directFileUrl.startsWith('/storage/')) {
+          directFileUrl = `${baseUrl}${directFileUrl}`;
+        } else if (directFileUrl.startsWith('storage/')) {
+          directFileUrl = `${baseUrl}/${directFileUrl}`;
+        } else {
+          directFileUrl = `${baseUrl}/storage/${directFileUrl}`;
+        }
+        console.log('Fallback path constructed:', directFileUrl);
       }
     } else {
       // Jika relatif path, gabungkan dengan base URL
       if (directFileUrl.startsWith('/storage/')) {
-        directFileUrl = `${baseUrl}${directFileUrl}`
+        directFileUrl = `${baseUrl}${directFileUrl}`;
       } else if (directFileUrl.startsWith('storage/')) {
-        directFileUrl = `${baseUrl}/${directFileUrl}`
+        directFileUrl = `${baseUrl}/${directFileUrl}`;
+      } else if (directFileUrl.startsWith('/')) {
+        // Path starts with slash but not with /storage
+        directFileUrl = `${baseUrl}${directFileUrl}`;
       } else {
-        // Path tanpa /storage prefix
-        directFileUrl = `${baseUrl}/storage/${directFileUrl}`
+        // Path tanpa /storage prefix dan tanpa slash awal
+        directFileUrl = `${baseUrl}/storage/${directFileUrl}`;
       }
+      console.log('Relative path converted to:', directFileUrl);
     }
+    
+    // Ensure URL is fully qualified and remove any double slashes (except after protocol)
+    directFileUrl = directFileUrl.replace(/([^:]\/)\/+/g, '$1');
+    
+    // Test URL with fetch
+    console.log('Testing URL accessibility with HEAD request...');
+    fetch(directFileUrl, { method: 'HEAD' })
+      .then(response => {
+        console.log('URL test response:', response.status, response.statusText);
+        if (!response.ok) {
+          console.warn('URL might not be accessible:', directFileUrl);
+        } else {
+          console.log('URL is accessible:', directFileUrl);
+        }
+      })
+      .catch(error => {
+        console.error('Error testing URL:', error);
+      });
     
     const docWithCorrectedPath = {
       ...uploadedDoc,
       file_path: directFileUrl
-    }
+    };
+      console.log('Final document for preview:', docWithCorrectedPath);
     
-    setPreviewDoc(docWithCorrectedPath)
-    setPreviewDialog(true)
+    // Add cache busting parameter
+    const cacheBustingUrl = `${directFileUrl}${directFileUrl.includes('?') ? '&' : '?'}cacheBuster=${Date.now()}`;
+    console.log('URL with cache buster:', cacheBustingUrl);
+    
+    // Update document with cache-busted URL
+    docWithCorrectedPath.file_path = cacheBustingUrl;
+    
+    setPreviewDoc(docWithCorrectedPath);
+    setPreviewDialog(true);
+    
+    // Auto-set fallback to visible after 3 seconds if it's a PDF
+    if (docWithCorrectedPath.file_name.toLowerCase().endsWith('.pdf') || 
+        docWithCorrectedPath.file_type === 'pdf') {
+      setTimeout(() => {
+        const fallback = document.getElementById('pdf-fallback');
+        if (fallback) {
+          console.log('Setting PDF fallback visible as precaution');
+          fallback.style.display = 'flex';
+        }
+      }, 3000);
+    }
   }
   
   const getStatusBadge = (status: string) => {
@@ -663,6 +727,14 @@ export default function DokumenWajibPage() {
 
   return (
     <div className="container py-6 mx-auto space-y-6">
+      {/* Header */}
+      <div className="mb-6">
+        <h1 className="mb-2 text-2xl font-bold">Dokumen Wajib</h1>
+        <p className="text-gray-600">
+          Unggah semua dokumen wajib yang diperlukan untuk melengkapi persyaratan beasiswa.
+        </p>
+      </div>
+
       {/* Alert Info */}
       <div className="space-y-4">
         <Alert className="border-blue-200 bg-blue-50">
@@ -984,70 +1056,141 @@ export default function DokumenWajibPage() {
             </Button>
           </DialogFooter>
         </DialogContent>
-      </Dialog>
-
-      {/* Dialog Preview */}
+      </Dialog>      {/* Dialog Preview */}
       <Dialog open={previewDialog} onOpenChange={setPreviewDialog}>
         <DialogContent className="max-w-4xl">
           <DialogHeader>
             <DialogTitle>Preview Dokumen</DialogTitle>
             {previewDoc && (
               <DialogDescription>
-                <div className="flex items-center gap-2">
-                  <span>{previewDoc.file_name}</span>
-                  {getStatusBadge(previewDoc.status)}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium">{previewDoc.file_name}</span>
+                    {getStatusBadge(previewDoc.status)}
+                  </div>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => {
+                      // Open file in new tab
+                      window.open(previewDoc.file_path, '_blank');
+                    }}
+                    className="text-blue-600 hover:text-blue-800"
+                  >
+                    <Download className="w-4 h-4 mr-2" />
+                    Buka di Tab Baru
+                  </Button>
                 </div>
+                {previewDoc.keterangan && (
+                  <div className="mt-2 p-2 bg-gray-50 border rounded-md text-sm">
+                    <span className="font-medium">Keterangan: </span>
+                    <span>{previewDoc.keterangan}</span>
+                  </div>
+                )}
               </DialogDescription>
             )}
           </DialogHeader>
-          
-          <div className="max-h-[70vh] overflow-auto border rounded-lg bg-gray-50">
-            {previewDoc && (
-              <div className="relative w-full h-full">
-                {/* Check if file is PDF */}
-                {previewDoc.file_type === 'pdf' || previewDoc.file_name.toLowerCase().endsWith('.pdf') ? (
+            <div className="max-h-[70vh] overflow-auto border rounded-lg bg-gray-50">
+            {previewDoc ? (
+              previewDoc.file_type === 'pdf' || previewDoc.file_name.toLowerCase().endsWith('.pdf') ? (
+                <div className="relative w-full h-[65vh]">
                   <iframe
                     src={previewDoc.file_path}
-                    className="w-full h-[65vh] border-0 rounded-lg"
+                    className="w-full h-full border-0 rounded-lg"
                     title={`Preview ${previewDoc.file_name}`}
-                    onError={() => {
-                      console.error('Failed to load PDF in iframe')
+                    onLoad={() => console.log('PDF iframe loaded successfully')}
+                  />
+                  <div 
+                    id="pdf-fallback" 
+                    className="absolute inset-0 flex-col items-center justify-center p-8 text-center bg-gray-50 hidden"
+                  >
+                    <svg className="w-16 h-16 text-gray-400 mb-4 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">Preview PDF tidak dapat ditampilkan</h3>
+                    <p className="text-gray-500 mb-4">File PDF tidak dapat ditampilkan dalam preview. Silakan unduh untuk melihat isi dokumen.</p>
+                    <a 
+                      href={previewDoc.file_path} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                      </svg>
+                      Unduh PDF
+                    </a>
+                  </div>
+                </div>
+              ) : previewDoc.file_type?.includes('image') || ['jpg', 'jpeg', 'png', 'gif'].some(ext => previewDoc.file_name.toLowerCase().endsWith(`.${ext}`)) ? (
+                <div className="flex items-center justify-center min-h-[65vh] p-4">
+                  <img 
+                    src={previewDoc.file_path} 
+                    alt={`Preview ${previewDoc.file_name}`} 
+                    className="object-contain max-w-full max-h-[65vh] rounded-lg shadow-sm"
+                    onLoad={() => console.log('Image loaded successfully')}
+                    onError={(e) => {
+                      console.error('Failed to load image, showing fallback');
+                      const target = e.target as HTMLImageElement;
+                      
+                      // Try with cache-busting query param
+                      if (!target.src.includes('?nocache=')) {
+                        console.log('Retrying image load with cache-busting...');
+                        const cacheBuster = new Date().getTime();
+                        target.src = `${previewDoc.file_path}?nocache=${cacheBuster}`;
+                        return;
+                      }
+                      
+                      target.style.display = 'none';
+                      // Show fallback content
+                      const parent = target.parentElement;
+                      if (parent) {
+                        parent.innerHTML = `
+                          <div class="flex flex-col items-center justify-center p-8 text-center">
+                            <svg class="w-16 h-16 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            <h3 class="text-lg font-medium text-gray-900 mb-2">Preview gambar tidak tersedia</h3>
+                            <p class="text-gray-500 mb-4">File gambar ini tidak dapat ditampilkan dalam preview. Silakan unduh untuk melihat gambar.</p>
+                            <a href="${previewDoc.file_path}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                              </svg>
+                              Unduh Gambar
+                            </a>
+                          </div>
+                        `;
+                      }
                     }}
                   />
-                ) : (
-                  /* For image files */
-                  <div className="flex items-center justify-center min-h-[400px] p-4">
-                    <img 
-                      src={previewDoc.file_path} 
-                      alt="Document Preview" 
-                      className="max-w-full max-h-full object-contain rounded-lg shadow-sm"
-                      onError={(e) => {
-                        console.error('Failed to load image, falling back to download link')
-                        const target = e.target as HTMLImageElement
-                        target.style.display = 'none'
-                        // Show fallback content
-                        const parent = target.parentElement
-                        if (parent) {
-                          parent.innerHTML = `
-                            <div class="flex flex-col items-center justify-center p-8 text-center">
-                              <svg class="w-16 h-16 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                              </svg>
-                              <h3 class="text-lg font-medium text-gray-900 mb-2">Preview tidak tersedia</h3>
-                              <p class="text-gray-500 mb-4">File ini tidak dapat ditampilkan dalam preview. Silakan unduh untuk melihat isi dokumen.</p>
-                              <a href="${previewDoc.file_path}" target="_blank" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                </svg>
-                                Unduh File
-                              </a>
-                            </div>
-                          `
-                        }
-                      }}
-                    />
-                  </div>
-                )}
+                </div>
+              ) : (
+                // For other file types
+                <div className="flex flex-col items-center justify-center p-8 text-center min-h-[65vh]">
+                  <svg className="w-16 h-16 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                  </svg>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">Preview tidak tersedia</h3>
+                  <p className="text-gray-500 mb-4">Format file ini tidak dapat ditampilkan dalam preview. Silakan unduh untuk melihat isi dokumen.</p>
+                  <a 
+                    href={previewDoc.file_path} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    Unduh File
+                  </a>
+                </div>
+              )
+            ) : (
+              <div className="flex items-center justify-center min-h-[65vh]">
+                <div className="flex items-center space-x-2">
+                  <Loader2 className="w-6 h-6 text-blue-600 animate-spin" />
+                  <span className="text-gray-500">Memuat preview...</span>
+                </div>
               </div>
             )}
           </div>
@@ -1059,13 +1202,11 @@ export default function DokumenWajibPage() {
             {previewDoc && (
               <Button 
                 variant="default"
-                onClick={() => {
-                  // Open file in new tab for download
-                  window.open(previewDoc.file_path, '_blank')
-                }}
+                className="bg-blue-600 hover:bg-blue-700"
+                onClick={() => window.open(previewDoc.file_path, '_blank')}
               >
                 <Download className="w-4 h-4 mr-2" />
-                Unduh
+                Unduh File
               </Button>
             )}
           </DialogFooter>
@@ -1073,4 +1214,52 @@ export default function DokumenWajibPage() {
       </Dialog>
     </div>
   )
+}
+
+// Check if file is a PDF based on file extension or type
+const isFilePDF = (fileName: string, fileType?: string): boolean => {
+  if (!fileName && !fileType) return false;
+  
+  // Check file type if available
+  if (fileType) {
+    if (fileType.toLowerCase() === 'pdf' || 
+        fileType.toLowerCase() === 'application/pdf' || 
+        fileType.toLowerCase().includes('pdf')) {
+      return true;
+    }
+  }
+  
+  // Check filename extension
+  if (fileName) {
+    if (fileName.toLowerCase().endsWith('.pdf')) {
+      return true;
+    }
+    
+    // Also check for "pdf" in the filename as a fallback
+    if (fileName.toLowerCase().includes('pdf')) {
+      return true;
+    }
+  }
+  
+  return false;
+}
+
+// Check if file is an image based on extension or type
+const isFileImage = (fileName: string, fileType?: string): boolean => {
+  if (!fileName && !fileType) return false;
+  
+  // Check file type if available
+  if (fileType) {
+    if (fileType.toLowerCase().includes('image/') || 
+        ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].some(ext => fileType.toLowerCase().includes(ext))) {
+      return true;
+    }
+  }
+  
+  // Check file extension
+  if (fileName) {
+    const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp'];
+    return imageExtensions.some(ext => fileName.toLowerCase().endsWith(ext));
+  }
+    return false;
 }

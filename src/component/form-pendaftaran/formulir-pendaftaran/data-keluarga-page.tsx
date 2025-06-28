@@ -565,11 +565,7 @@ export default function DataKeluargaPage() {
           </CardContent>
           <CardFooter className="px-6 py-3 border-t bg-gray-50">
             <p className="text-sm text-muted-foreground">
-              <Info className="inline w-3 h-3 mr-1" /> Data keluarga ini dibutuhkan untuk pertimbangan pemberian beasiswa sesuai dengan{" "}
-              <a href="#" className="text-blue-600 hover:underline">
-                Ketentuan Seleksi
-              </a>{" "}
-              Yayasan Bersekolah.
+              <Info className="inline w-3 h-3 mr-1" /> Seluruh informasi yang diberikan bersifat rahasia dan hanya digunakan untuk keperluan verifikasi beasiswa.
             </p>
           </CardFooter>
         </Card>
