@@ -30,6 +30,7 @@ export function NavMain({
       title: string
       url: string
       icon?: LucideIcon
+      isActive?: boolean // <-- tambahkan agar submenu support highlight
     }[]
   }[]
 }) {
@@ -45,10 +46,14 @@ export function NavMain({
                 <SidebarMenuButton 
                   tooltip={item.title}
                   asChild
-                  className={item.isActive ? "bg-sidebar-accent text-sidebar-accent-foreground" : ""}
+                  className={
+                    item.isActive
+                      ? "bg-accent/30 font-semibold border-l-2 border-primary text-primary"
+                      : "hover:bg-accent/10"
+                  }
                 >
-                  <a href={item.url}>
-                    {item.icon && <item.icon />}
+                  <a href={item.url} className="flex items-center gap-2 px-3 py-2 rounded-md">
+                    {item.icon && <item.icon className="w-4 h-4 mr-2" />}
                     <span>{item.title}</span>
                   </a>
                 </SidebarMenuButton>
@@ -68,9 +73,13 @@ export function NavMain({
                 <CollapsibleTrigger asChild>
                   <SidebarMenuButton 
                     tooltip={item.title}
-                    className={item.isActive ? "bg-sidebar-accent text-sidebar-accent-foreground" : ""}
+                    className={
+                      item.isActive
+                        ? "bg-accent/30 font-semibold border-l-2 border-primary text-primary"
+                        : "hover:bg-accent/10"
+                    }
                   >
-                    {item.icon && <item.icon />}
+                    {item.icon && <item.icon className="w-4 h-4 mr-2" />}
                     <span>{item.title}</span>
                     <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
                   </SidebarMenuButton>
@@ -79,9 +88,15 @@ export function NavMain({
                   <SidebarMenuSub>
                     {item.items?.map((subItem) => (
                       <SidebarMenuSubItem key={subItem.title}>
-                        <SidebarMenuSubButton asChild>
-                          <a href={subItem.url}>
-                            {subItem.icon && <subItem.icon className="w-4 h-4" />}
+                        <SidebarMenuSubButton asChild
+                          className={
+                            subItem.isActive
+                              ? "bg-accent/30 font-semibold border-l-2 border-primary text-primary"
+                              : "hover:bg-accent/10"
+                          }
+                        >
+                          <a href={subItem.url} className="flex items-center gap-2 px-3 py-2 rounded-md">
+                            {subItem.icon && <subItem.icon className="w-4 h-4 mr-2" />}
                             <span>{subItem.title}</span>
                           </a>
                         </SidebarMenuSubButton>

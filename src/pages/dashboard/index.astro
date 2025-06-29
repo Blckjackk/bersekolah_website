@@ -304,34 +304,6 @@ const formatDate = (dateString: string) => {
       </Card>
     </div>
 
-    <!-- Application Status Grid -->
-    <div class="grid gap-6 mt-6 md:grid-cols-7">
-      <!-- Application Status Grid -->
-      <div class="md:col-span-12">
-        <Card>
-          <CardHeader>
-            <CardTitle>Status Pendaftaran Beasiswa</CardTitle>
-          </CardHeader>
-          <CardContent>            <div class="grid grid-cols-3 gap-4 mb-6">
-              <div class="p-4 text-center rounded-lg bg-yellow-50">
-                <p class="mb-1 text-sm text-yellow-600">Menunggu</p>
-                <p class="text-2xl font-bold text-yellow-600" id="app-pending">{applicationStats.pending || 0}</p>
-              </div>
-              <div class="p-4 text-center rounded-lg bg-green-50">
-                <p class="mb-1 text-sm text-green-600">Diterima</p>
-                <p class="text-2xl font-bold text-green-600" id="app-approved">{applicationStats.approved || 0}</p>
-              </div>
-              <div class="p-4 text-center rounded-lg bg-red-50">
-                <p class="mb-1 text-sm text-red-600">Ditolak</p>
-                <p class="text-2xl font-bold text-red-600" id="app-rejected">{applicationStats.rejected || 0}</p>
-              </div>
-            </div>
-                      
-          </CardContent>
-        </Card>
-      </div>      <!-- Quick Actions -->
-      
-    </div>
   </div>
 </DashboardAdmin>
 

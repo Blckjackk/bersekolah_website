@@ -141,7 +141,56 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const [userData, setUserData] = React.useState(data.user);
   const [navItems, setNavItems] = React.useState(data.navMain);
   const { isOpen, sidebarRef } = useSidebar(); // Get sidebar state from context
-  
+  const [currentPath, setCurrentPath] = React.useState("");
+
+  // Update currentPath on mount and on popstate
+  React.useEffect(() => {
+    const updatePath = () => setCurrentPath(window.location.pathname);
+    updatePath();
+    window.addEventListener('popstate', updatePath);
+    return () => window.removeEventListener('popstate', updatePath);
+  }, []);
+
+  // Mark active menu/submenu every path change, always from base data (not prev)
+  React.useEffect(() => {
+    // Use latest menu (with superadmin if needed)
+    const baseNav = isSuperAdmin ? [
+      ...data.navMain,
+      {
+        title: "Super Admin Tools",
+        url: "#",
+        icon: Shield,
+        items: [
+          {
+            title: "Manajemen Admin",
+            url: "/dashboard/manage-admin",
+            icon: Shield,
+          },
+          {
+            title: "Export Data",
+            url: "/dashboard/export-data",
+            icon: Database,
+          },
+        ]
+      }
+    ] : data.navMain;
+    const markActive = (items: any[]) => items.map(item => {
+      const hasSub = Array.isArray(item.items);
+      const isActive = hasSub
+        ? item.items.some((sub: any) => sub.url === currentPath)
+        : item.url === currentPath;
+      return {
+        ...item,
+        isActive,
+        items: hasSub ? item.items.map((sub: any) => ({
+          ...sub,
+          isActive: sub.url === currentPath
+        })) : undefined
+      };
+    });
+    setNavItems(markActive(baseNav));
+  }, [currentPath, isSuperAdmin]);
+
   // Hook untuk mendapatkan informasi user saat komponen dimount
   React.useEffect(() => {
     // Get user data from localStorage
@@ -149,47 +198,19 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       const userStr = localStorage.getItem('bersekolah_user');
       if (userStr) {
         const user = JSON.parse(userStr);
-        
-        // Set user data
         setUserData({
           name: user.name || 'Admin',
           email: user.email || 'admin@bersekolah.com',
           avatar: user.avatar || '/images/admin-avatar.jpg',
         });
-        
-        // Periksa apakah pengguna adalah superadmin
         const userIsSuperAdmin = user.role === 'superadmin';
         setIsSuperAdmin(userIsSuperAdmin);
-        console.log('User role:', user.role, 'Is SuperAdmin:', userIsSuperAdmin);
-        
-        // Jika superadmin, tambahkan menu khusus
-        if (userIsSuperAdmin) {
-          setNavItems([
-            ...data.navMain,
-            {
-              title: "Super Admin Tools",
-              url: "#",
-              icon: Shield,
-              items: [
-                {
-                  title: "Manajemen Admin",
-                  url: "/dashboard/manage-admin",
-                  icon: Shield,
-                },                {
-                  title: "Export Data",
-                  url: "/dashboard/export-data",
-                  icon: Database,
-                },
-               
-              ]
-            }
-          ]);
-        }
       }
     } catch (error) {
       console.error('Error parsing user data:', error);
     }
-  }, []);  // Use the controlled prop to manage the sidebar state
+  }, []);
+
   return (
     <Sidebar 
       ref={sidebarRef} 
@@ -213,7 +234,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={navItems} />
-      </SidebarContent>      <SidebarFooter>
+      </SidebarContent>
+      <SidebarFooter>
         <NavUser />
         {isSuperAdmin && (
           <div className="px-4 py-2 mt-2 text-xs font-semibold text-center text-sidebar-primary">

@@ -101,12 +101,13 @@ export default function KelolaArtikelPage({ defaultCategory = "news" }: { defaul
   
   // Show toast message
   const showToast = (message: string, type: "success" | "error") => {
-    setToast({ visible: true, message, type });
-    
-    // Hide toast after 5 seconds
+    setToast((prev) => ({ visible: false, message: "", type })); // Reset dulu
     setTimeout(() => {
-      setToast({ ...toast, visible: false });
-    }, 5000);
+      setToast({ visible: true, message, type });
+      setTimeout(() => {
+        setToast((prev) => ({ ...prev, visible: false }));
+      }, 5000);
+    }, 50); // Delay kecil agar reset benar
   };
   
   // Fetch halaman data
