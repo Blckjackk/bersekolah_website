@@ -334,6 +334,12 @@ export default function KelolaArtikelPage({ defaultCategory = "news" }: { defaul
     }
   };
 
+  // Helper untuk membangun URL gambar dari nama file
+  const getImageUrl = (gambar: string | null | undefined): string | undefined => {
+    if (!gambar) return undefined;
+    return `/assets/image/artikel/${gambar}`;
+  };
+  
   // Loading state
   if (isLoading) {
     return (
@@ -467,10 +473,17 @@ export default function KelolaArtikelPage({ defaultCategory = "news" }: { defaul
                       {page.gambar ? (
                         <div className="w-8 h-8 overflow-hidden bg-gray-100 rounded">
                           <img 
-                            src={page.gambar} 
+                            src={`/assets/image/artikel/${page.gambar}`}
                             alt={page.judul_halaman}
                             className="object-cover w-full h-full"
+                            onError={(e) => {
+                              // Fallback jika gambar tidak ditemukan
+                              e.currentTarget.onerror = null;
+                              e.currentTarget.src = "/assets/image/artikel/default.jpg";
+                            }}
                           />
+                          {/* Debug: tampilkan nama file gambar */}
+                          <span style={{fontSize: '10px', color: '#888'}}>{page.gambar}</span>
                         </div>
                       ) : (
                         <div className="flex items-center justify-center w-8 h-8 bg-gray-100 rounded">
@@ -764,7 +777,7 @@ export default function KelolaArtikelPage({ defaultCategory = "news" }: { defaul
                 <div className="mt-2">
                   <p className="mb-1 text-xs text-gray-500">Gambar Saat Ini:</p>
                   <img
-                    src={selectedPage.gambar || ''}
+                    src={`/assets/image/artikel/${selectedPage.gambar}`}
                     alt={selectedPage.judul_halaman}
                     className="object-cover w-32 h-32 border rounded"
                   />

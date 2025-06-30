@@ -7,7 +7,7 @@ export default function NotFoundPage() {
     <div className="container mx-auto flex flex-col items-center justify-center min-h-[70vh] px-4 py-16 text-center">
       <div className="max-w-3xl">
         <img
-          src="/ImageTemp/404 Not Found.jpg"
+          src="/storage/404 Not Found.jpg"
           alt="404 - Halaman Tidak Ditemukan"
           className="mx-auto mb-8 max-w-full h-auto rounded-lg shadow-lg"
           width={500}

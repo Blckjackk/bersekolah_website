@@ -11,7 +11,7 @@ const MentorCard = ({ mentor }) => {
           <div className="relative h-full overflow-hidden bg-white shadow-lg rounded-2xl">
             <div className="relative h-full">
               <img 
-                src={`/assets/ImageTemp/${mentor.photo}`}
+                src={`/storage/mentor/${mentor.photo}`}
                 alt={mentor.name} 
                 className="object-cover w-full h-full"
               />
@@ -52,7 +52,7 @@ const MentorCard = ({ mentor }) => {
               {/* Header dengan foto mini */}
               <div className="flex items-center flex-shrink-0 pb-2 mb-3 border-b border-white/20">
                 <img 
-                  src={`/assets/ImageTemp/${mentor.photo}`}
+                  src={`/storage/mentor/${mentor.photo}`}
                   alt={mentor.name} 
                   className="flex-shrink-0 object-cover w-10 h-10 mr-3 border-2 rounded-full border-white/30"
                 />

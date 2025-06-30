@@ -19,9 +19,9 @@ export const TestimoniService = {
         throw new Error('Unauthorized: No token found');
       }
       
-      console.log('Fetching all testimonials from:', `${API_URL}/admin/testimonials`);
+      console.log('Fetching all testimonials from:', `${API_URL}/testimoni`);
       
-      const response = await fetch(`${API_URL}/admin/testimonials`, {
+      const response = await fetch(`${API_URL}/testimoni`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Accept': 'application/json'
@@ -62,7 +62,7 @@ export const TestimoniService = {
       }
       
       // We'll just use the main endpoint and count the items
-      const response = await fetch(`${API_URL}/admin/testimonials`, {
+      const response = await fetch(`${API_URL}/testimoni`, {
         headers: {
           'Accept': 'application/json',
           'Authorization': `Bearer ${token}`
@@ -92,7 +92,7 @@ export const TestimoniService = {
         throw new Error('Unauthorized: No token found');
       }
       
-      const response = await fetch(`${API_URL}/admin/testimonials/${id}`, {
+      const response = await fetch(`${API_URL}/testimoni/${id}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Accept': 'application/json'
@@ -139,7 +139,7 @@ export const TestimoniService = {
       
       console.log('Creating testimoni with data:', testimoniData);
       
-      const response = await fetch(`${API_URL}/admin/testimonials`, {
+      const response = await fetch(`${API_URL}/testimoni`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -191,7 +191,7 @@ export const TestimoniService = {
       
       console.log(`Updating testimoni ${id} with data:`, testimoniData);
       
-      const response = await fetch(`${API_URL}/admin/testimonials/${id}`, {
+      const response = await fetch(`${API_URL}/testimoni/${id}`, {
         method: 'POST', // Using POST with _method for Laravel method spoofing
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -214,7 +214,7 @@ export const TestimoniService = {
       throw error;
     }
   },
-    deleteTestimoni: async (id: number): Promise<void> => {
+    deleteTestimoni: async (id: number): Promise<Testimoni> => {
     try {
       const token = localStorage.getItem('bersekolah_auth_token');
       if (!token) {
@@ -223,7 +223,7 @@ export const TestimoniService = {
       
       console.log(`Deleting testimoni ${id}`);
       
-      const response = await fetch(`${API_URL}/admin/testimonials/${id}`, {
+      const response = await fetch(`${API_URL}/testimoni/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -237,23 +237,25 @@ export const TestimoniService = {
         throw new Error(errorData.message || `Failed to delete testimoni: ${response.status}`);
       }
       
-      console.log(`Testimoni ${id} deleted successfully`);
+      const data = await response.json();
+      console.log('Delete testimoni API response:', data);
+      return data.success ? data.data : data;
     } catch (error) {
       console.error(`Error in deleteTestimoni (${id}):`, error);
       throw error;
     }
   },
-    updateTestimoniStatus: async (id: number, status: 'active' | 'inactive'): Promise<void> => {
+    updateTestimoniStatus: async (id: number, status: 'active' | 'inactive'): Promise<Testimoni> => {
     try {
       const token = localStorage.getItem('bersekolah_auth_token');
       if (!token) {
         throw new Error('Unauthorized: No token found');
       }
       
-      console.log(`Updating testimoni ${id} status to ${status}`);
+      console.log(`Updating testimoni ${id} status to:`, status);
       
-      const response = await fetch(`${API_URL}/admin/testimonials/${id}/status`, {
-        method: 'PATCH',
+      const response = await fetch(`${API_URL}/testimoni/${id}/status`, {
+        method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Accept': 'application/json',
@@ -268,7 +270,9 @@ export const TestimoniService = {
         throw new Error(errorData.message || `Failed to update testimoni status: ${response.status}`);
       }
       
-      console.log(`Testimoni ${id} status updated to ${status} successfully`);
+      const data = await response.json();
+      console.log('Update testimoni status API response:', data);
+      return data.success ? data.data : data;
     } catch (error) {
       console.error(`Error in updateTestimoniStatus (${id}):`, error);
       throw error;

@@ -8,7 +8,7 @@ const Program = () => {
       id: 1,
       title: "Program Beasiswa",
       description: "Program dukungan pembinaan bagi pelajar SMP dan SMA untuk bisa terus bersemangat bersekolah dan mengembangkan diri.",
-      image: "/ImageTemp/ProgramBeasiswa.jpg",
+      image: "/storage/ProgramBeasiswa.jpg",
       icon: <GraduationCap className="w-8 h-8 text-blue-600" />,
       buttonText: "Lihat Detail",
       href: "/program"
@@ -17,7 +17,7 @@ const Program = () => {
       id: 2,
       title: "Program Donasi", 
       description: "Setiap donasi yang Anda berikan akan membantu kami dalam memberikan beasiswa kepada pelajar yang memiliki semangat.",
-      image: "/ImageTemp/Donasi.png",
+      image: "/storage/Donasi.png",
       icon: <Heart className="w-8 h-8 text-red-600" />,
       buttonText: "Donasi Sekarang",
       href: "/donasi"
@@ -26,7 +26,7 @@ const Program = () => {
       id: 3,
       title: "Program Mentoring",
       description: "Program pendampingan bagi pelajar yang ingin mengembangkan diri dan mendapatkan bimbingan dari mentor berpengalaman.",
-      image: "/ImageTemp/Mentor.png",
+      image: "/storage/Mentor.png",
       icon: <Users className="w-8 h-8 text-green-600" />,
       buttonText: "Kenali Mentor Kami", 
       href: "/tentang"

@@ -51,7 +51,7 @@ const defaultUser: User = {
   name: "",
   email: "",
   role: "",
-  avatar: "/ImageTemp/Beswan.png", // Menggunakan gambar yang sudah ada
+  avatar: "/storage/Beswan.png", // Menggunakan gambar yang sudah ada
 };
 
 export function NavUser() {
@@ -164,7 +164,7 @@ export function NavUser() {
             email: userEmail || 'Email tidak tersedia',
             phone: userData.phone,
             role: userData.role || 'user',
-            avatar: userData.avatar || '/ImageTemp/Beswan.png',
+            avatar: userData.avatar || '/storage/Beswan.png',
             status: userData.status,
             created_at: userData.created_at,
             updated_at: userData.updated_at,

@@ -47,7 +47,7 @@ const ArtikelDetail = ({ articleId }: { articleId: string | null }) => {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
         <p className="text-xl text-gray-600">Artikel tidak ditemukan</p>
-        <a href="/artikel" className="text-[#406386] hover:underline">
+        <a href="/company-profile/artikel" className="text-[#406386] hover:underline">
           Kembali ke Daftar Artikel
         </a>
       </div>
@@ -56,42 +56,47 @@ const ArtikelDetail = ({ articleId }: { articleId: string | null }) => {
 
   return (
     <>
-      {/* Hero Section */}
-      <section className="relative min-h-[60vh] flex items-center justify-center">
-        <div className="absolute inset-0 bg-gradient-to-b from-black/70 to-black/50" />
-        <div
-          className="absolute inset-0 bg-center bg-no-repeat bg-cover"
-          style={{
-            backgroundImage: `url(${article.gambar ? `../ImageTemp/${article.gambar}` : "/assets/image/default-thumbnail.jpg"})`
-          }}
+      {/* Gambar Utama */}
+      <section className="relative w-full min-h-[320px] md:min-h-[420px] flex items-end justify-center overflow-hidden">
+        <img
+          src={article.gambar ? `/assets/image/artikel/${article.gambar}` : "/assets/image/default-thumbnail.jpg"}
+          alt={article.judul_halaman}
+          className="absolute inset-0 w-full h-full object-cover object-center z-0 opacity-90"
         />
-        <div className="container relative z-10 px-4 mx-auto text-center text-white">
-          <span className="inline-block px-4 py-2 mb-6 text-sm font-medium bg-[#406386]/90 rounded-full">
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent z-10" />
+        <div className="relative z-20 w-full max-w-4xl px-4 pb-10 mx-auto text-white">
+          <span className="inline-block px-4 py-2 mb-4 text-xs font-semibold bg-[#406386]/90 rounded-full shadow-lg">
             {article.category}
           </span>
-          <h1 className="max-w-4xl mx-auto mb-4 text-4xl font-bold leading-tight sm:text-5xl lg:text-6xl">
+          <h1 className="mb-2 text-3xl md:text-5xl font-bold leading-tight drop-shadow-lg">
             {article.judul_halaman}
           </h1>
-          <div className="flex items-center justify-center gap-4 text-lg">
-            <span>{article.author}</span>
+          <div className="flex flex-wrap items-center gap-3 text-sm md:text-base text-gray-200/90">
+            <span className="font-medium">{article.author}</span>
             <span>•</span>
             <time>{new Date(article.created_at).toLocaleDateString('id-ID', {
-              day: 'numeric',
-              month: 'long',
-              year: 'numeric'
+              day: 'numeric', month: 'long', year: 'numeric'
             })}</time>
           </div>
         </div>
       </section>
 
-      {/* Content Section */}
-      <section className="py-16">
+      {/* Isi Artikel */}
+      <section className="py-12 bg-gradient-to-b from-white to-gray-50 min-h-[300px]">
         <div className="container px-4 mx-auto">
-          <div className="max-w-3xl mx-auto">
-            <div className="prose prose-lg prose-gray">
-              <p className="text-xl leading-relaxed text-gray-700">
+          <div className="max-w-3xl mx-auto bg-white rounded-xl shadow-lg p-8 md:p-12 -mt-32 relative z-20">
+            <div className="prose prose-lg max-w-none text-gray-800">
+              <p className="text-lg leading-relaxed mb-6 whitespace-pre-line">
                 {article.deskripsi}
               </p>
+            </div>
+            <div className="mt-8 flex justify-end">
+              <a
+                href="/company-profile/artikel"
+                className="inline-block px-6 py-2 rounded-lg bg-[#406386] text-white font-semibold hover:bg-[#2d4663] transition-all duration-200 shadow"
+              >
+                ← Kembali ke Daftar Artikel
+              </a>
             </div>
           </div>
         </div>

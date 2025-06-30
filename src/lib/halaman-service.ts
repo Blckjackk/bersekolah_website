@@ -39,18 +39,28 @@ export type HalamanFormData = z.infer<typeof HalamanFormSchema>;
 
 export const HalamanService = {
   getAllHalaman: async () => {
+    const token = localStorage.getItem('bersekolah_auth_token');
     try {
       const response = await fetch(`${API_URL}/admin-konten`, {
         headers: {
           'Accept': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('bersekolah_auth_token')}`
+          'Authorization': `Bearer ${token}`
         }
       });
-
-      if (!response.ok) throw new Error('Failed to fetch halaman');
-
-      const data = await response.json();
-      return data.data || [];
+      if (response.ok) {
+        const data = await response.json();
+        return data.data || [];
+      } else if (response.status === 401 || response.status === 403) {
+        // Fallback ke endpoint public jika tidak authorized
+        const publicRes = await fetch(`${API_URL}/konten`, {
+          headers: { 'Accept': 'application/json' }
+        });
+        if (!publicRes.ok) throw new Error('Failed to fetch halaman (public)');
+        const data = await publicRes.json();
+        return data.data || [];
+      } else {
+        throw new Error('Failed to fetch halaman');
+      }
     } catch (error) {
       console.error('Error fetching halaman:', error);
       throw error;

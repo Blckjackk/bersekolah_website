@@ -119,7 +119,7 @@ const Faq = () => {
         <div className='w-full mb-6 md:w-1/2 md:mb-0'>
           <div className="relative w-full aspect-video md:aspect-auto md:h-full">
             <img 
-              src="/ImageTemp/FAQ.png" 
+              src="/storage/FAQ.png" 
               alt="Siswa sedang belajar bersama" 
               className='object-cover w-full h-full shadow-md rounded-xl' 
               loading="lazy"

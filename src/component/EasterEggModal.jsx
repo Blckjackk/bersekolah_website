@@ -49,7 +49,7 @@ const EasterEggModal = ({ isOpen, onClose }) => {
     {
       name: "Julian Dwi Satrio",
       role: "Frontend Developer", 
-      image: "../../ImageTemp/julian.png",
+      image: "/storage/julian.png",
       index: 0,
       socials: [
         { type: 'instagram', url: 'https://instagram.com/juliandwii', icon: Instagram, color: 'text-pink-400 bg-pink-500/10 hover:bg-pink-500/20 border-pink-500/20' },
@@ -63,7 +63,7 @@ const EasterEggModal = ({ isOpen, onClose }) => {
     {
       name: "Abdurrahman Al Ghifari",
       role: "Quality Assurance Analyst",
-      image: "../../ImageTemp/Ghifari.png",
+      image: "/storage/Ghifari.png",
       index: 1,
       socials: [
         { type: 'instagram', url: 'https://instagram.com/ghifaaaarr_', icon: Instagram, color: 'text-pink-400 bg-pink-500/10 hover:bg-pink-500/20 border-pink-500/20' },
@@ -77,7 +77,7 @@ const EasterEggModal = ({ isOpen, onClose }) => {
     {
       name: "Ahmad Izzuddin Azzam", 
       role: "Backend Developer",
-      image: "../../ImageTemp/Azzam.png",
+      image: "/storage/Azzam.png",
       index: 2,
       socials: [
         { type: 'instagram', url: 'https://instagram.com/izzuddn.azzm', icon: Instagram, color: 'text-pink-400 bg-pink-500/10 hover:bg-pink-500/20 border-pink-500/20' },
@@ -91,7 +91,7 @@ const EasterEggModal = ({ isOpen, onClose }) => {
     {
       name: "Arya Jagadditha",
       role: "Project Manager",
-      image: "../../ImageTemp/Rhea.png",
+      image: "/storage/Rhea.png",
       index: 3,
       socials: [
         { type: 'instagram', url: 'https://instagram.com/jgdthaa', icon: Instagram, color: 'text-pink-400 bg-pink-500/10 hover:bg-pink-500/20 border-pink-500/20' },

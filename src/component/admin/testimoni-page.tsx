@@ -449,12 +449,12 @@ export default function TestimoniPage() {
                   <TableRow key={item.id}>
                     <TableCell>                      <div className="relative w-10 h-10 overflow-hidden rounded-full">
                         <img 
-                          src={item.foto_testimoni ? `${import.meta.env.PUBLIC_API_BASE_URL}/storage/${item.foto_testimoni}` : ''} 
+                          src={item.foto_testimoni ? `/storage/testimoni/${item.foto_testimoni}` : '/storage/testimoni/default.jpg'} 
                           alt={item.nama}
                           className="object-cover w-full h-full"
                           onError={(e) => {
                             const target = e.target as HTMLImageElement;
-                            target.src = '';
+                            target.src = '/storage/testimoni/default.jpg';
                           }}
                         />
                       </div>
@@ -664,12 +664,12 @@ export default function TestimoniPage() {
                 <div className="mt-2">
                   <p className="mb-1 text-sm font-medium">Foto saat ini:</p>
                   <div className="relative w-20 h-20 overflow-hidden rounded-md">                    <img
-                      src={`${import.meta.env.PUBLIC_API_BASE_URL}/storage/${formData.foto_testimoni}`}
+                      src={`/storage/testimoni/${formData.foto_testimoni}`}
                       alt="Foto testimoni"
                       className="object-cover w-full h-full"
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
-                        target.src = '';
+                        target.src = '/storage/testimoni/default.jpg';
                       }}
                     />
                   </div>
@@ -717,12 +717,12 @@ export default function TestimoniPage() {
               <div className="flex items-center gap-4 p-4 border rounded-md bg-muted/50">
                 <div className="relative w-16 h-16 overflow-hidden rounded-full">
                   <img
-                    src={selectedTestimoni.foto_testimoni ? `${import.meta.env.PUBLIC_API_BASE_URL}/storage/${selectedTestimoni.foto_testimoni}` : ''}
+                    src={selectedTestimoni.foto_testimoni ? `/storage/testimoni/${selectedTestimoni.foto_testimoni}` : '/storage/testimoni/default.jpg'}
                     alt={selectedTestimoni.nama}
                     className="object-cover w-full h-full"
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
-                      target.src = '';
+                      target.src = '/storage/testimoni/default.jpg';
                     }}
                   />
                 </div>

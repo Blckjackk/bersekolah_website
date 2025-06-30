@@ -24,7 +24,7 @@ const MentorSection = () => {
           name: mentor.name,
           position: mentor.position || "Mentor Bersekolah",
           description: mentor.description || "Mentor Bersekolah yang berdedikasi untuk membantu para beswan.",
-          image: mentor.photo ? `${import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:8000'}/${mentor.photo}` : "/ImageTemp/default-mentor.png",
+          image: mentor.photo ? `/storage/mentor/${mentor.photo}` : "/storage/mentor/default-mentor.png",
           location: mentor.location || "Indonesia",
           joinYear: mentor.created_at ? new Date(mentor.created_at).getFullYear().toString() : "2025",
           email: mentor.email || "mentor@bersekolah.org",

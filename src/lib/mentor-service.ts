@@ -15,16 +15,16 @@ export const MentorService = {
   getImageUrl: (imagePath?: string): string => {
     // If no image path provided, return default
     if (!imagePath || imagePath === 'null' || imagePath === '') {
-      return '/assets/image/mentor/default.jpg';
+      return '/storage/mentor/default.jpg';
     }
     
     // If it's already 'default.jpg', return the correct path
     if (imagePath === 'default.jpg') {
-      return '/assets/image/mentor/default.jpg';
+      return '/storage/mentor/default.jpg';
     }
     
-    // If the path already starts with /assets, return as is (for local files)
-    if (imagePath.startsWith('/assets')) {
+    // If the path already starts with /storage, return as is (for storage files)
+    if (imagePath.startsWith('/storage')) {
       return imagePath;
     }
     
@@ -39,8 +39,8 @@ export const MentorService = {
       filename = filename.split('/').pop() || 'default.jpg';
     }
     
-    // Return local path for frontend assets
-    return `/assets/image/mentor/${filename}`;
+    // Return storage path for frontend assets
+    return `/storage/mentor/${filename}`;
   },
   getAllMentors: async (): Promise<Mentor[]> => {
     try {
@@ -132,7 +132,7 @@ export const MentorService = {
       }
       
       const formData = new FormData();
-        // Add mentor data to form
+      // Add mentor data to form
       formData.append('name', mentorData.name);
       formData.append('email', mentorData.email);
       
@@ -176,7 +176,7 @@ export const MentorService = {
       }
       
       const formData = new FormData();
-        // Add mentor data to form
+      // Add mentor data to form
       formData.append('name', mentorData.name);
       formData.append('email', mentorData.email);
       formData.append('_method', 'PUT'); // Laravel form method spoofing
@@ -242,7 +242,6 @@ export const MentorService = {
       throw error;
     }
   },
-  // updateMentorStatus method removed as it's no longer needed
   
   // Method to get active mentors for public display
   getPublicMentors: async (): Promise<Mentor[]> => {

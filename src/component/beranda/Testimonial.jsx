@@ -21,7 +21,7 @@ const Testimonial = () => {
           role: item.angkatan_beswan,
           company: item.sekarang_dimana,
           quote: item.isi_testimoni,
-          image: `../../ImageTemp/${item.foto_testimoni}`, // pastikan Laravel storage:link sudah dibuat
+          image: `/storage/testimoni/${item.foto_testimoni}`, // pastikan Laravel storage:link sudah dibuat
           rating: '⭐⭐⭐⭐⭐' // tambahkan rating statis atau ambil dari backend kalau ada
         }))
 

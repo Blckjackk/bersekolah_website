@@ -18,6 +18,7 @@ import { Avatar } from "@heroui/react";
 import { ChevronDown, User, Settings, LogOut } from "lucide-react";
 // Import only for reference, we'll create a custom public fetch function
 import { fetchBeasiswaPeriods } from "@/lib/beasiswa-periods-service";
+import ApiConfig from "@/lib/config/api-config";
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -52,11 +53,11 @@ export default function Header() {
   // Menu navigasi utama
   const navItems = [
     { name: "Beranda", href: "/" },
-    { name: "Tentang Kami", href: "/tentang" },
-    { name: "Program Beasiswa", href: "/program" },
-    { name: "Donasi", href: "/donasi" },
-    { name: "Kontak", href: "/kontak" },
-    { name: "Artikel", href: "/artikel" },
+    { name: "Tentang Kami", href: "/company-profile/tentang" },
+    { name: "Program Beasiswa", href: "/company-profile/program" },
+    { name: "Donasi", href: "/company-profile/donasi" },
+    { name: "Kontak", href: "/company-profile/kontak" },
+    { name: "Artikel", href: "/company-profile/artikel" },
   ];
 
   // Initial setup
@@ -225,6 +226,12 @@ export default function Header() {
     return userData.name.substring(0, 2).toUpperCase();
   };
 
+  // Get logo URL from backend
+  const getLogoUrl = () => {
+    const baseURL = ApiConfig.baseURL.replace('/api', '');
+    return `${baseURL}/assets/image/navbar/logo.png`;
+  };
+
   return (
     <Navbar isBordered isMenuOpen={isMenuOpen} onMenuOpenChange={setIsMenuOpen}>
       {/* Toggle Menu untuk Mobile dan Tablet */}
@@ -235,14 +242,14 @@ export default function Header() {
       {/* Logo untuk Mobile dan Tablet */}
       <NavbarContent className="pr-3 md:hidden" justify="start">
         <NavbarBrand className="ml-4">
-          <img src="/assets/image/navbar/logo.png" className="max-w-[100px]" alt="Logo Bersekolah" />
+          <img src={getLogoUrl()} className="max-w-[100px]" alt="Logo Bersekolah" />
         </NavbarBrand>
       </NavbarContent>
 
       {/* Menu Desktop */}
       <NavbarContent className="hidden gap-4 md:flex" justify="center">
         <NavbarBrand className="mr-6">
-          <img src="/assets/image/navbar/logo.png" className="max-w-[100px]" alt="Logo Bersekolah" />
+          <img src={getLogoUrl()} className="max-w-[100px]" alt="Logo Bersekolah" />
         </NavbarBrand>
         
         {/* Nav Items untuk Desktop */}
@@ -264,7 +271,7 @@ export default function Header() {
             <DropdownTrigger>
               <Button 
                 variant="light" 
-                className="flex items-center gap-1"
+                className="flex gap-1 items-center"
               >
                 Menu Lainnya <ChevronDown size={16} />
               </Button>
@@ -290,7 +297,7 @@ export default function Header() {
         {isLoggedIn ? (
           <Dropdown placement="bottom-end">
             <DropdownTrigger>
-              <div className="flex items-center gap-2 cursor-pointer">
+              <div className="flex gap-2 items-center cursor-pointer">
                 <Avatar
                   isBordered
                   className="border-[#406386]"
@@ -325,8 +332,8 @@ export default function Header() {
           <>
             <NavbarItem className="hidden lg:flex">
               <Link 
-                href="/masuk" 
-                className={isActive("/masuk") ? "text-[#406386] font-semibold" : "text-foreground"}
+                href="/auth/login" 
+                className={isActive("/auth/login") ? "text-[#406386] font-semibold" : "text-foreground"}
               >
                 Masuk
               </Link>
@@ -335,8 +342,8 @@ export default function Header() {
               <NavbarItem>
                 <Button 
                   as={Link} 
-                  className={isActive("/daftar") ? "bg-[#406386] text-white" : "bg-warning text-warning-foreground"}
-                  href="/daftar" 
+                  className={isActive("/auth/register") ? "bg-[#406386] text-white" : "bg-warning text-warning-foreground"}
+                  href="/auth/register" 
                   variant="flat"
                 >
                   Daftar
@@ -367,8 +374,8 @@ export default function Header() {
           <>
             <NavbarMenuItem>
               <Link
-                className={`w-full ${isActive("/masuk") ? "text-[#406386] font-semibold" : "text-foreground"}`}
-                href="/masuk"
+                className={`w-full ${isActive("/auth/login") ? "text-[#406386] font-semibold" : "text-foreground"}`}
+                href="/auth/login"
                 size="lg"
               >
                 Masuk
@@ -378,8 +385,8 @@ export default function Header() {
               <NavbarMenuItem>
                 <Button 
                   as={Link} 
-                  className={isActive("/daftar") ? "bg-[#406386] text-white" : "bg-warning text-warning-foreground"}
-                  href="/daftar" 
+                  className={isActive("/auth/register") ? "bg-[#406386] text-white" : "bg-warning text-warning-foreground"}
+                  href="/auth/register" 
                   variant="flat"
                   fullWidth
                 >

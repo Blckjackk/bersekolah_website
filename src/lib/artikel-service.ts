@@ -32,20 +32,20 @@ export interface UpdateArtikelRequest {
 }
 
 export const ArtikelService = {
-  // Helper function to get correct image URL
+  // Helper function untuk mendapatkan URL gambar artikel
   getImageUrl: (imagePath?: string): string => {
     // If no image path provided, return default
     if (!imagePath || imagePath === 'null' || imagePath === '') {
-      return '/assets/image/artikel/default.jpg';
+      return '/storage/artikel/default.jpg';
     }
     
     // If it's already 'default.jpg', return the correct path
     if (imagePath === 'default.jpg') {
-      return '/assets/image/artikel/default.jpg';
+      return '/storage/artikel/default.jpg';
     }
     
-    // If the path already starts with /assets, return as is
-    if (imagePath.startsWith('/assets')) {
+    // If the path already starts with /storage, return as is (for storage files)
+    if (imagePath.startsWith('/storage')) {
       return imagePath;
     }
     
@@ -54,14 +54,14 @@ export const ArtikelService = {
       return imagePath;
     }
     
-    // Extract filename
+    // Extract filename from any path structure
     let filename = imagePath;
     if (filename.includes('/')) {
       filename = filename.split('/').pop() || 'default.jpg';
     }
     
-    // Return local path for frontend assets
-    return `/assets/image/artikel/${filename}`;
+    // Return storage path for frontend assets
+    return `/storage/artikel/${filename}`;
   },
 
   getAllArtikels: async (): Promise<Artikel[]> => {

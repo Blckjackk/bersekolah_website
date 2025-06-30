@@ -8,13 +8,13 @@ const Footer = () => {
 
   const navigation = {
     main: [
-      { name: 'Beranda', href: '/' },
-      { name: 'Tentang Kami', href: '/tentang' },
-      { name: 'Program Beasiswa', href: '/beasiswa' },
-      { name: 'Donasi', href: '/donasi' },
+      { name: 'Beranda', href: '/company-profile' },
+      { name: 'Tentang Kami', href: '/company-profile/tentang' },
+      { name: 'Program Beasiswa', href: '/company-profile/program' },
+      { name: 'Donasi', href: '/company-profile/donasi' },
     ],
     resources: [
-      { name: 'Artikel', href: '/artikel' },
+      { name: 'Artikel', href: '/company-profile/artikel' },
       { name: 'Testimoni', href: '/testimoni' },
       { name: 'Bantuan', href: '/bantuan' },
       { name: 'FAQ', href: '/faq' },
@@ -22,7 +22,7 @@ const Footer = () => {
     legal: [
       { name: 'Kebijakan Privasi', href: '/privacy' },
       { name: 'Syarat Layanan', href: '/terms' },
-      { name: 'Kontak', href: '/kontak' },
+      { name: 'Kontak', href: '/company-profile/kontak' },
       { name: 'Karir', href: '/karir' },
     ]
   };
