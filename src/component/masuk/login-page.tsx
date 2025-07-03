@@ -51,9 +51,9 @@ export default function LoginPage() {
   // Tampilkan loading indicator selama pengecekan
   if (isLoading) {
     return (
-      <div className="grid min-h-svh place-items-center bg-background">
-        <div className="flex flex-col items-center gap-4 text-center">
-          <div className="w-16 h-16 border-4 rounded-full border-primary/20 border-t-primary animate-spin"></div>
+      <div className="grid place-items-center min-h-svh bg-background">
+        <div className="flex flex-col gap-4 items-center text-center">
+          <div className="w-16 h-16 rounded-full border-4 animate-spin border-primary/20 border-t-primary"></div>
           <div>
             <h3 className="text-lg font-medium">Memeriksa status login...</h3>
             <p className="text-sm text-muted-foreground">Mohon tunggu sebentar</p>
@@ -64,7 +64,7 @@ export default function LoginPage() {
   }
   return (
     <div className="grid min-h-svh lg:grid-cols-2">
-      <div className="flex flex-col gap-4 p-6 md:p-10">        <div className="flex items-center justify-center flex-1">
+      <div className="flex flex-col gap-4 p-6 md:p-10">        <div className="flex flex-1 justify-center items-center">
           <div className="w-full max-w-xs">
             <LoginForm />
           </div>
@@ -73,14 +73,14 @@ export default function LoginPage() {
         <div className="mt-6 text-sm text-center text-muted-foreground">
           <p>Dengan masuk, Anda menyetujui <a href="/terms" className="underline underline-offset-4 hover:text-foreground">Ketentuan Layanan</a> dan <a href="/privacy" className="underline underline-offset-4 hover:text-foreground">Kebijakan Privasi</a> kami.</p>
         </div>
-      </div>      <div className="relative hidden bg-muted lg:block">
+      </div>      <div className="hidden relative bg-muted lg:block">
         <img
           src="/storage/ProgramBeasiswa.jpg"
           alt="Image"
           className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-        <div className="absolute max-w-md text-white bottom-8 left-8">
+        <div className="absolute inset-0 bg-gradient-to-t to-transparent from-black/60"></div>
+        <div className="absolute bottom-8 left-8 max-w-md text-white">
           <h2 className="mb-2 text-2xl font-bold">Masa Depan Cerah Dimulai Dari Sini</h2>
           <p>Berikan kesempatan pendidikan terbaik untuk mereka yang membutuhkan melalui program beasiswa Bersekolah.</p>
         </div>

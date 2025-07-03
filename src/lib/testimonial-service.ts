@@ -19,11 +19,13 @@ export type Testimonial = z.infer<typeof TestimonialSchema>;
 export const TestimonialService = {
   getAllTestimonials: async () => {
     try {
+      const token = localStorage.getItem('bersekolah_auth_token');
+      const headers: Record<string, string> = {
+        'Accept': 'application/json',
+      };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
       const response = await fetch(`${API_URL}/testimoni`, {
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('bersekolah_auth_token')}`
-        }
+        headers
       });
 
       if (!response.ok) throw new Error('Failed to fetch testimonials');
