@@ -225,7 +225,7 @@ export default function Header() {
     }
     return userData.name.substring(0, 2).toUpperCase();
   };
-
+ // tambah
   // Get logo URL from backend
   const getLogoUrl = () => {
     const baseURL = ApiConfig.baseURL.replace('/api', '');
@@ -271,7 +271,7 @@ export default function Header() {
             <DropdownTrigger>
               <Button 
                 variant="light" 
-                className="flex gap-1 items-center"
+                className="flex items-center gap-1"
               >
                 Menu Lainnya <ChevronDown size={16} />
               </Button>
@@ -297,7 +297,7 @@ export default function Header() {
         {isLoggedIn ? (
           <Dropdown placement="bottom-end">
             <DropdownTrigger>
-              <div className="flex gap-2 items-center cursor-pointer">
+              <div className="flex items-center gap-2 cursor-pointer">
                 <Avatar
                   isBordered
                   className="border-[#406386]"
