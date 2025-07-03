@@ -52,8 +52,8 @@ export default function RegisterPage() {
   // Tampilkan loading indicator selama pengecekan
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-svh">
-        <div className="w-12 h-12 border-t-2 border-b-2 rounded-full animate-spin border-primary"></div>
+      <div className="flex justify-center items-center min-h-svh">
+        <div className="w-12 h-12 rounded-full border-t-2 border-b-2 animate-spin border-primary"></div>
       </div>
     );
   }
@@ -61,7 +61,7 @@ export default function RegisterPage() {
   return (
     <div className="grid min-h-svh lg:grid-cols-2">
       {/* Bagian Image (posisi di kiri untuk desktop) */}
-      <div className="relative order-first hidden bg-muted lg:block">
+      <div className="hidden relative order-first bg-muted lg:block">
         <img
           src="../../ImageTemp/Beswan.png"
           alt="Background Image"
@@ -71,7 +71,7 @@ export default function RegisterPage() {
       
       {/* Bagian Form (posisi di kanan untuk desktop) */}
       <div className="flex flex-col order-last gap-4 p-6 md:p-10">
-        <div className="flex items-center justify-center flex-1">
+        <div className="flex flex-1 justify-center items-center">
           <div className="w-full max-w-xs">
             <RegisterForm />
           </div>

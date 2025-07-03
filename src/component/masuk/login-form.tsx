@@ -211,7 +211,7 @@ export function LoginForm({
 
   return (
     <form onSubmit={handleSubmit} className={cn("flex flex-col gap-6", className)} {...props}>
-      <div className="flex flex-col items-center gap-2 text-center">
+      <div className="flex flex-col gap-2 items-center text-center">
         <h1 className="text-2xl font-bold">Masuk ke Akun</h1>
         <p className="text-sm text-balance text-muted-foreground">
           Masukkan email dan password untuk melanjutkan
@@ -255,7 +255,7 @@ export function LoginForm({
             />
             <button
               type="button"
-              className="absolute -translate-y-1/2 right-3 top-1/2 text-muted-foreground hover:text-foreground"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
               onClick={togglePasswordVisibility}
               tabIndex={-1}
             >

@@ -332,8 +332,8 @@ export default function Header() {
           <>
             <NavbarItem className="hidden lg:flex">
               <Link 
-                href="/auth/login" 
-                className={isActive("/auth/login") ? "text-[#406386] font-semibold" : "text-foreground"}
+                href="/masuk" 
+                className={isActive("/masuk") ? "text-[#406386] font-semibold" : "text-foreground"}
               >
                 Masuk
               </Link>
@@ -342,8 +342,8 @@ export default function Header() {
               <NavbarItem>
                 <Button 
                   as={Link} 
-                  className={isActive("/auth/register") ? "bg-[#406386] text-white" : "bg-warning text-warning-foreground"}
-                  href="/auth/register" 
+                  className={isActive("/daftar") ? "bg-[#406386] text-white" : "bg-warning text-warning-foreground"}
+                  href="/daftar" 
                   variant="flat"
                 >
                   Daftar
@@ -374,8 +374,8 @@ export default function Header() {
           <>
             <NavbarMenuItem>
               <Link
-                className={`w-full ${isActive("/auth/login") ? "text-[#406386] font-semibold" : "text-foreground"}`}
-                href="/auth/login"
+                className={`w-full ${isActive("/masuk") ? "text-[#406386] font-semibold" : "text-foreground"}`}
+                href="/masuk"
                 size="lg"
               >
                 Masuk
@@ -385,8 +385,8 @@ export default function Header() {
               <NavbarMenuItem>
                 <Button 
                   as={Link} 
-                  className={isActive("/auth/register") ? "bg-[#406386] text-white" : "bg-warning text-warning-foreground"}
-                  href="/auth/register" 
+                  className={isActive("/daftar") ? "bg-[#406386] text-white" : "bg-warning text-warning-foreground"}
+                  href="/daftar" 
                   variant="flat"
                   fullWidth
                 >
