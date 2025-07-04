@@ -521,7 +521,7 @@ export default function PeriodeBeasiswaPage() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            <div>
+            <div className="space-y-2">
               <Label htmlFor="search">Cari Periode</Label>
               <div className="relative">
                 <Search className="absolute w-4 h-4 text-gray-400 left-3 top-3" />
@@ -535,7 +535,7 @@ export default function PeriodeBeasiswaPage() {
               </div>
             </div>
             
-            <div>
+            <div className="space-y-2">
               <Label htmlFor="status">Status</Label>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger>
