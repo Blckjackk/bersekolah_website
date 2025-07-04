@@ -16,7 +16,8 @@ import {
   Clock,
   CheckCircle,
   AlertCircle,
-  Lock
+  Lock,
+  X
 } from "lucide-react"
 import { NavMain } from "./nav-main"
 import { NavUser } from "./nav-user"
@@ -203,8 +204,13 @@ const getNavData = (currentPath: string, applicationStatus: ApplicationStatus | 
 export function AppSidebar() {
   const [currentPath, setCurrentPath] = useState("")
   const [applicationStatus, setApplicationStatus] = useState<ApplicationStatus | null>(null) 
-  const { isOpen, sidebarRef } = useSidebar(); // Get sidebar state from context
+  const { isOpen, sidebarRef, toggle } = useSidebar(); // Add toggle to destructuring
   const [isMobile, setIsMobile] = useState(false)
+  const [touchStart, setTouchStart] = useState<number | null>(null)
+  const [touchEnd, setTouchEnd] = useState<number | null>(null)
+
+  // Minimum swipe distance required to trigger close
+  const minSwipeDistance = 50
 
   // Monitor window size for responsive behavior
   useEffect(() => {
@@ -256,43 +262,127 @@ export function AppSidebar() {
     
     return () => clearInterval(interval)
   }, [])
+
+  // Handle touch events for swipe to close on mobile
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (!isMobile) return;
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  }
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isMobile) return;
+    setTouchEnd(e.targetTouches[0].clientX);
+  }
+
+  const handleTouchEnd = () => {
+    if (!isMobile || !touchStart || !touchEnd) return;
+    
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    
+    // Only close if swipe started from near the edge (first 50px of sidebar)
+    if (isLeftSwipe && isOpen && touchStart < 50) {
+      toggle();
+    }
+  }
+
   // Get nav data based on current path and application status
   const data = getNavData(currentPath, applicationStatus)
   return (
-    <div 
-      ref={sidebarRef}
-      className="fixed left-0 top-0 h-screen bg-background border-r border-border z-30 flex flex-col"
-      style={{ 
-        width: isMobile ? (isOpen ? '16rem' : '0') : (isOpen ? '16rem' : '4rem'),
-        transform: isMobile && !isOpen ? 'translateX(-100%)' : 'translateX(0)'
-      }}
-    >
-      {/* Header - Fixed di atas */}
-      <div className="h-16 flex items-center px-4 border-b border-border flex-shrink-0 bg-background">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center justify-center rounded-lg aspect-square size-8 bg-primary text-primary-foreground">
-            <Command className="size-4" />
-          </div>
-          {(isOpen || !isMobile) && (
-            <div className="flex flex-col">
-              <span className="font-semibold text-sm">Yayasan Bersekolah</span>
-              <span className="text-xs text-muted-foreground">Platform Pendaftaran</span>
+    <>
+      {/* Mobile overlay */}
+      {isMobile && isOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-20"
+          onClick={() => {
+            // Close sidebar on mobile when clicking overlay
+            toggle();
+          }}
+        />
+      )}
+      
+      <div 
+        ref={sidebarRef}
+        className={`fixed left-0 top-0 h-screen bg-background border-r border-border z-30 flex flex-col sidebar-smooth-transition ${
+          isMobile 
+            ? `sidebar-mobile ${isOpen ? 'sidebar-mobile-visible' : 'sidebar-mobile-hidden'}` 
+            : 'sidebar-desktop'
+        }`}
+        style={{ 
+          width: isMobile ? '16rem' : (isOpen ? '16rem' : '4rem')
+        }}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
+        {/* Header - Fixed di atas */}
+        <div className="h-16 flex items-center px-4 border-b border-border flex-shrink-0 bg-background">
+          <div className="flex items-center gap-3 flex-1">
+            <div 
+              className={`flex items-center justify-center rounded-lg aspect-square size-8 bg-primary text-primary-foreground transition-colors ${
+                !isOpen && !isMobile ? 'sidebar-logo-clickable' : ''
+              }`}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (!isOpen && !isMobile) {
+                  toggle();
+                }
+              }}
+              title={!isOpen && !isMobile ? "Klik untuk membuka sidebar" : ""}
+            >
+              <Command className="size-4" />
             </div>
+            <div className={`flex flex-col sidebar-text-transition ${
+              isOpen || isMobile 
+                ? 'sidebar-content-expanded' 
+                : 'sidebar-content-collapsed'
+            }`}>
+              <span className="font-semibold text-sm whitespace-nowrap">Yayasan Bersekolah</span>
+              <span className="text-xs text-muted-foreground whitespace-nowrap">Platform Pendaftaran</span>
+            </div>
+          </div>
+          
+          {/* Mobile close button */}
+          {isMobile && isOpen && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                toggle();
+              }}
+              className="flex items-center justify-center w-8 h-8 rounded-md hover:bg-accent/10 transition-colors"
+              aria-label="Tutup sidebar"
+              title="Tutup sidebar"
+            >
+              <X className="w-4 h-4" />
+            </button>
           )}
         </div>
-      </div>
 
-      {/* Content - Scrollable area */}
-      <div className="flex-1 overflow-y-auto">
-        <NavMain items={data.navMain} />
-      </div>
-
-      {/* Footer NavUser - Fixed di bottom */}
-      <div className="flex-shrink-0 bg-background border-t border-border">
-        <div className="p-4">
-          <NavUser />
+        {/* Content - Scrollable area */}
+        <div className="flex-1 overflow-y-auto">
+          <NavMain items={data.navMain} />
         </div>
+
+        {/* Footer NavUser - Fixed di bottom */}
+        <div className="flex-shrink-0 bg-background border-t border-border">
+          <div className="p-4">
+            <NavUser />
+          </div>
+        </div>
+
+        {/* Hover trigger for collapsed state on desktop */}
+        {!isOpen && !isMobile && (
+          <div 
+            className="sidebar-hover-expand"
+            onClick={(e) => {
+              e.stopPropagation();
+              toggle();
+            }}
+            title="Klik untuk membuka sidebar"
+          />
+        )}
       </div>
-    </div>
+    </>
   )
 }

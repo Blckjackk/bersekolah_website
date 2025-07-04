@@ -57,7 +57,7 @@ export default function Page({ children }: { children: ReactNode }) {
 }
 
 function PageContent({ children }: { children: ReactNode }) {
-  const { isOpen } = useSidebar();
+  const { isOpen, toggle } = useSidebar();
   const [pathSegments, setPathSegments] = useState<string[]>([]);
   const [currentPath, setCurrentPath] = useState("");
   const [isAuthChecking, setIsAuthChecking] = useState(true);
@@ -255,7 +255,10 @@ function PageContent({ children }: { children: ReactNode }) {
       {isMobile && isOpen && (
         <div 
           className="fixed inset-0 bg-black/50 z-20"
-          onClick={() => {/* Optionally close sidebar on backdrop click */}}
+          onClick={() => {
+            // Close sidebar on mobile when clicking overlay
+            toggle();
+          }}
         />
       )}
       

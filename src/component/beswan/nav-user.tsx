@@ -304,7 +304,13 @@ export function NavUser() {
     return (
       <div className="flex items-center gap-2 p-2">
         <Loader2 className="w-4 h-4 animate-spin" />
-        {isOpen && <span className="text-sm">Memuat...</span>}
+        <div className={`overflow-hidden transition-all duration-300 ease-in-out ${
+          isOpen 
+            ? 'opacity-100 translate-x-0 w-auto' 
+            : 'opacity-0 -translate-x-4 w-0'
+        }`}>
+          <span className="text-sm whitespace-nowrap">Memuat...</span>
+        </div>
       </div>
     );
   }
@@ -312,22 +318,28 @@ export function NavUser() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button className="flex items-center w-full gap-2 p-2 rounded-md hover:bg-accent hover:text-accent-foreground">
-          <Avatar className="w-8 h-8 rounded-lg">
+        <button className="flex items-center w-full gap-2 p-2 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors">
+          <Avatar className="w-8 h-8 rounded-lg flex-shrink-0">
             <AvatarImage src={user.avatar} alt={user.name} />
             <AvatarFallback className="text-blue-800 bg-blue-100 rounded-lg">
               {getInitials()}
             </AvatarFallback>
           </Avatar>
-          {isOpen && (
-            <div className="flex-1 text-left hide-when-collapsed">
-              <div className="font-semibold truncate text-sm">{user.name}</div>
-              <div className="text-xs truncate text-muted-foreground">{user.email}</div>
-            </div>
-          )}
-          {isOpen && (
-            <ChevronsUpDown className="w-4 h-4 hide-when-collapsed" />
-          )}
+          <div className={`flex-1 text-left overflow-hidden transition-all duration-300 ease-in-out ${
+            isOpen 
+              ? 'opacity-100 translate-x-0 w-auto' 
+              : 'opacity-0 -translate-x-4 w-0'
+          }`}>
+            <div className="font-semibold truncate text-sm whitespace-nowrap">{user.name}</div>
+            <div className="text-xs truncate text-muted-foreground whitespace-nowrap">{user.email}</div>
+          </div>
+          <div className={`overflow-hidden transition-all duration-300 ease-in-out ${
+            isOpen 
+              ? 'opacity-100 translate-x-0 w-auto' 
+              : 'opacity-0 -translate-x-4 w-0'
+          }`}>
+            <ChevronsUpDown className="w-4 h-4" />
+          </div>
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent

@@ -391,13 +391,11 @@ export default function BerandaPage() {
       {/* Greeting and Status Overview */}
       <Card className="flex-1">
         <CardHeader>
-          <CardTitle>Selamat Datang, {userData.name}</CardTitle>
-          <CardDescription>Portal Pendaftaran Beasiswa Yayasan Bersekolah</CardDescription>
+          <CardTitle>Selamat Datang, {userData.name}</CardTitle> 
         </CardHeader>        <CardContent>
           <div className="space-y-6">
             {/* Sambutan untuk calon beswan */}
             <div className="p-4 border border-blue-100 rounded-lg bg-blue-50">
-              <h3 className="mb-2 text-lg font-medium text-blue-800">Sambutan untuk Calon Beswan</h3>
               <p className="text-blue-700">
                 Selamat datang di Portal Pendaftaran Beasiswa Yayasan Bersekolah! Kami sangat mengapresiasi tekad dan semangat Anda untuk mengikuti program beasiswa ini. 
                 Kami percaya bahwa pendidikan adalah kunci menuju masa depan yang lebih baik, dan kami berkomitmen untuk mendukung Anda dalam meraih impian.

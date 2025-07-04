@@ -17,6 +17,33 @@
   display: none;
 }
 
+/* Collapsed state specific styles */
+.sidebar-collapsed {
+  width: 4rem !important;
+  min-width: 4rem !important;
+}
+
+.sidebar-collapsed .hide-when-collapsed {
+  display: none !important;
+  opacity: 0 !important;
+}
+
+/* Clickable expand area for collapsed sidebar */
+.sidebar-expand-trigger {
+  position: absolute;
+  right: -8px;
+  top: 0;
+  width: 16px;
+  height: 100%;
+  cursor: pointer;
+  z-index: 45;
+  transition: background-color 0.2s ease;
+}
+
+.sidebar-expand-trigger:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
 /* Show only icons in collapsed state */
 .sidebar-closed [data-sidebar="menu-button"] > div:first-child {
   margin-right: 0;
@@ -147,49 +174,81 @@
   right: -12px;
 }
 
-/* Ensure submenu items are visible and clickable in collapsed state */
-.sidebar-closed .sidebar-collapsed-submenu {
-  position: absolute;
-  left: 100%;
-  top: 0;
-  min-width: 180px;
-  background: var(--background);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  z-index: 50;
-  display: none;
+/* Enhanced smooth animations for sidebar */
+.sidebar-smooth-transition {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.sidebar-closed .group\/collapsible:hover .sidebar-collapsed-submenu {
-  display: block;
+.sidebar-text-transition {
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+              transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Make sure all buttons are clickable */
-.sidebar-closed button,
-.sidebar-closed a {
-  pointer-events: auto !important;
+/* Improved collapsed state animations */
+.sidebar-content-expanded {
+  opacity: 1;
+  transform: translateX(0);
+  width: auto;
+  max-width: none;
+  overflow: visible;
 }
 
-/* Collapse button */
-.sidebar-toggle {
-  position: absolute;
-  bottom: 20px;
-  right: -12px;
-  width: 24px;
-  height: 24px;
-  background: var(--primary);
-  color: var(--primary-foreground);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.sidebar-content-collapsed {
+  opacity: 0;
+  transform: translateX(-16px);
+  width: 0;
+  max-width: 0;
+  overflow: hidden;
+}
+
+/* Logo area click enhancement */
+.sidebar-logo-clickable {
   cursor: pointer;
-  z-index: 41;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-  border: none;
+  transition: background-color 0.2s ease;
+  border-radius: 0.375rem;
+  padding: 0.25rem;
 }
 
-.sidebar-closed .sidebar-toggle {
-  right: -12px;
+.sidebar-logo-clickable:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Hover area for expanding collapsed sidebar */
+.sidebar-hover-expand {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 8px;
+  height: 100%;
+  cursor: e-resize;
+  transition: all 0.2s ease;
+  z-index: 50;
+}
+
+.sidebar-hover-expand:hover {
+  width: 12px;
+  background: linear-gradient(90deg, transparent 0%, rgba(59, 130, 246, 0.2) 100%);
+}
+
+/* Smooth width transitions for desktop sidebar */
+@media (min-width: 768px) {
+  .sidebar-desktop {
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+
+/* Mobile sidebar slide animations */
+@media (max-width: 767px) {
+  .sidebar-mobile {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .sidebar-mobile-hidden {
+    transform: translateX(-100%);
+  }
+  
+  .sidebar-mobile-visible {
+    transform: translateX(0);
+  }
 }
