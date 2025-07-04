@@ -342,8 +342,8 @@ export default function MentorPage() {
   // Simple loading state
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="flex items-center gap-2">
+      <div className="flex justify-center items-center h-64">
+        <div className="flex gap-2 items-center">
           <Loader2 className="w-6 h-6 animate-spin" />
           <span>Memuat data mentor...</span>
         </div>
@@ -363,7 +363,7 @@ export default function MentorPage() {
       )}
 
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Data Mentor</h1>
         <div className="flex gap-2">
           <Button 
@@ -376,7 +376,7 @@ export default function MentorPage() {
             Refresh
           </Button>
           <Button onClick={handleOpenCreateDialog} size="sm">
-            <PlusCircle className="w-4 h-4 mr-2" />
+            <PlusCircle className="mr-2 w-4 h-4" />
             Tambah Mentor
           </Button>
         </div>
@@ -385,7 +385,7 @@ export default function MentorPage() {
       {/* Search and filter */}
       <Card className="overflow-hidden">
         <CardHeader className="bg-muted/50">
-          <CardTitle className="flex items-center gap-2 text-lg">
+          <CardTitle className="flex gap-2 items-center text-lg">
             <Users className="w-5 h-5" /> 
             Daftar Mentor
           </CardTitle>
@@ -396,7 +396,7 @@ export default function MentorPage() {
               Cari Mentor
             </Label>
             <div className="relative">
-              <Search className="absolute w-4 h-4 -translate-y-1/2 left-3 top-1/2 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 w-4 h-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 id="search"
                 placeholder="Cari berdasarkan nama atau email..."
@@ -411,7 +411,7 @@ export default function MentorPage() {
           <div className="grid gap-4 mb-6 md:grid-cols-2">
             <Card className="w-full">
               <CardContent className="p-6">
-                <div className="flex items-center justify-between">
+                <div className="flex justify-between items-center">
                   <div>
                     <p className="text-sm text-muted-foreground">Total Mentor</p>
                     <p className="text-2xl font-bold">{mentors.length}</p>
@@ -423,7 +423,7 @@ export default function MentorPage() {
 
             <Card className="w-full">
               <CardContent className="p-6">
-                <div className="flex items-center justify-between">
+                <div className="flex justify-between items-center">
                   <div>
                     <p className="text-sm text-muted-foreground">Aktif</p>
                     <p className="text-2xl font-bold">{mentors.length}</p>
@@ -457,7 +457,7 @@ export default function MentorPage() {
                 filteredMentors.map((mentor) => (
                   <TableRow key={mentor.id}>
                     <TableCell>
-                      <div className="relative w-10 h-10 overflow-hidden rounded-full">
+                      <div className="overflow-hidden relative w-10 h-10 rounded-full">
                         <img 
                           src={MentorService.getImageUrl(mentor.photo_url || mentor.photo)} 
                           alt={mentor.name}
@@ -477,18 +477,18 @@ export default function MentorPage() {
                     <TableCell className="text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="w-8 h-8 p-0">
+                          <Button variant="ghost" className="p-0 w-8 h-8">
                             <span className="sr-only">Menu</span>
                             <MoreHorizontal className="w-4 h-4" />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onClick={() => handleEditClick(mentor)}>
-                            <FileEdit className="w-4 h-4 mr-2" />
+                            <FileEdit className="mr-2 w-4 h-4" />
                             Edit
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => handleOpenDeleteDialog(mentor)} className="text-red-600 focus:text-red-600">
-                            <Trash2 className="w-4 h-4 mr-2" />
+                            <Trash2 className="mr-2 w-4 h-4" />
                             Hapus
                           </DropdownMenuItem>
                         </DropdownMenuContent>
@@ -544,7 +544,7 @@ export default function MentorPage() {
               </div>
             </div>            <div className="space-y-2">
               <Label htmlFor="photo">Foto</Label>
-              <div className="flex items-start gap-4">
+              <div className="flex gap-4 items-start">
                 <div className="flex-1">
                   <Input
                     id="photo"
@@ -557,7 +557,7 @@ export default function MentorPage() {
                   </p>
                 </div>
                 {formData.photo && photoFile && (
-                  <div className="relative w-20 h-20 overflow-hidden border rounded-md">
+                  <div className="overflow-hidden relative w-20 h-20 rounded-md border">
                     <img 
                       src={formData.photo} 
                       alt="Preview foto mentor" 
@@ -586,7 +586,7 @@ export default function MentorPage() {
             <Button onClick={handleCreateMentor} disabled={isSubmitting}>
               {isSubmitting ? (
                 <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  <Loader2 className="mr-2 w-4 h-4 animate-spin" />
                   Menyimpan...
                 </>
               ) : (
@@ -647,7 +647,7 @@ export default function MentorPage() {
               {formData.photo && (
                 <div className="mt-2">
                   <p className="mb-1 text-sm font-medium">Foto saat ini:</p>
-                  <div className="relative w-20 h-20 overflow-hidden rounded-md">
+                  <div className="overflow-hidden relative w-20 h-20 rounded-md">
                     <img
                       src={photoFile ? formData.photo : MentorService.getImageUrl(formData.photo)}
                       alt="Foto mentor"
@@ -672,7 +672,7 @@ export default function MentorPage() {
             <Button onClick={handleUpdateMentor} disabled={isSubmitting}>
               {isSubmitting ? (
                 <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  <Loader2 className="mr-2 w-4 h-4 animate-spin" />
                   Menyimpan...
                 </>
               ) : (
@@ -694,8 +694,8 @@ export default function MentorPage() {
           </DialogHeader>
           <div className="py-4">
             {selectedMentor && (
-              <div className="flex items-center gap-4 p-4 border rounded-md bg-muted/50">
-                <div className="relative w-16 h-16 overflow-hidden rounded-full">
+              <div className="flex gap-4 items-center p-4 rounded-md border bg-muted/50">
+                <div className="overflow-hidden relative w-16 h-16 rounded-full">
                   <img
                     src={MentorService.getImageUrl(selectedMentor.photo_url || selectedMentor.photo)}
                     alt={selectedMentor.name}
@@ -723,7 +723,7 @@ export default function MentorPage() {
             <Button variant="destructive" onClick={handleDeleteMentor} disabled={isSubmitting}>
               {isSubmitting ? (
                 <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  <Loader2 className="mr-2 w-4 h-4 animate-spin" />
                   Menghapus...
                 </>
               ) : (

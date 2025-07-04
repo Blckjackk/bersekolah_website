@@ -316,8 +316,8 @@ export default function TestimoniPage() {
   // Simple loading state
   if (isLoading && !isRefreshing) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="flex flex-col items-center gap-2">
+      <div className="flex justify-center items-center h-64">
+        <div className="flex flex-col gap-2 items-center">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
           <p className="text-sm text-muted-foreground">Memuat data testimoni...</p>
         </div>
@@ -328,8 +328,8 @@ export default function TestimoniPage() {
   // Error state
   if (error && !isRefreshing) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="flex flex-col items-center gap-2 text-destructive">
+      <div className="flex justify-center items-center h-64">
+        <div className="flex flex-col gap-2 items-center text-destructive">
           <XCircle className="w-8 h-8" />
           <p>{error}</p>
           <Button onClick={() => fetchTestimoni()} variant="outline" size="sm">
@@ -347,7 +347,7 @@ export default function TestimoniPage() {
         <div className={`fixed top-4 right-4 p-4 rounded-md shadow-md z-50 ${
           toast.type === "success" ? "bg-green-100 border border-green-200" : "bg-red-100 border border-red-200"
         }`}>
-          <div className="flex items-center gap-2">
+          <div className="flex gap-2 items-center">
             {toast.type === "success" ? (
               <CheckCircle2 className="w-4 h-4 text-green-500" />
             ) : (
@@ -360,9 +360,9 @@ export default function TestimoniPage() {
         </div>
       )}
 
-      <div className="flex items-center justify-between">
+      <div className="flex justify-between items-center">
         <h2 className="text-3xl font-bold tracking-tight">Data Testimoni</h2>
-        <div className="flex items-center gap-2">
+        <div className="flex gap-2 items-center">
           <Button 
             variant="outline" 
             size="icon" 
@@ -372,7 +372,7 @@ export default function TestimoniPage() {
             <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
           </Button>
           <Button onClick={handleOpenCreateDialog}>
-            <PlusCircle className="w-4 h-4 mr-2" />
+            <PlusCircle className="mr-2 w-4 h-4" />
             Tambah Testimoni
           </Button>
         </div>
@@ -381,7 +381,7 @@ export default function TestimoniPage() {
       {/* Stats cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+          <CardHeader className="flex flex-row justify-between items-center pb-2 space-y-0">
             <CardTitle className="text-sm font-medium">Total Testimoni</CardTitle>
             <MessageSquare className="w-4 h-4 text-muted-foreground" />
           </CardHeader>
@@ -390,7 +390,7 @@ export default function TestimoniPage() {
           </CardContent>
         </Card>
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+          <CardHeader className="flex flex-row justify-between items-center pb-2 space-y-0">
             <CardTitle className="text-sm font-medium">Testimoni Aktif</CardTitle>
             <CheckCircle2 className="w-4 h-4 text-muted-foreground" />
           </CardHeader>
@@ -399,7 +399,7 @@ export default function TestimoniPage() {
           </CardContent>
         </Card>
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+          <CardHeader className="flex flex-row justify-between items-center pb-2 space-y-0">
             <CardTitle className="text-sm font-medium">Testimoni Non-aktif</CardTitle>
             <XCircle className="w-4 h-4 text-muted-foreground" />
           </CardHeader>
@@ -412,7 +412,7 @@ export default function TestimoniPage() {
       {/* Testimoni table */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex justify-between items-center">
             <CardTitle>Daftar Testimoni</CardTitle>
             <div className="relative w-64">
               <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -447,9 +447,9 @@ export default function TestimoniPage() {
               ) : (
                 filteredTestimoni.map((item) => (
                   <TableRow key={item.id}>
-                    <TableCell>                      <div className="relative w-10 h-10 overflow-hidden rounded-full">
+                    <TableCell>                      <div className="overflow-hidden relative w-10 h-10 rounded-full">
                         <img 
-                          src={item.foto_testimoni ? `/storage/testimoni/${item.foto_testimoni}` : '/storage/testimoni/default.jpg'} 
+                          src={item.foto_testimoni_url || '/storage/testimoni/default.jpg'}
                           alt={item.nama}
                           className="object-cover w-full h-full"
                           onError={(e) => {
@@ -463,7 +463,7 @@ export default function TestimoniPage() {
                     <TableCell>{item.angkatan_beswan}</TableCell>
                     <TableCell>{item.sekarang_dimana || '-'}</TableCell>
                     <TableCell className="text-center">
-                      <div className="flex items-center justify-center">
+                      <div className="flex justify-center items-center">
                         <Switch 
                           checked={item.status === 'active'}
                           onCheckedChange={() => handleToggleStatus(item)}
@@ -476,18 +476,18 @@ export default function TestimoniPage() {
                     <TableCell className="text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="w-8 h-8 p-0">
+                          <Button variant="ghost" className="p-0 w-8 h-8">
                             <span className="sr-only">Open menu</span>
                             <MoreHorizontal className="w-4 h-4" />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onClick={() => handleEditClick(item)}>
-                            <FileEdit className="w-4 h-4 mr-2" />
+                            <FileEdit className="mr-2 w-4 h-4" />
                             Edit
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => handleDeleteClick(item)}>
-                            <Trash2 className="w-4 h-4 mr-2" />
+                            <Trash2 className="mr-2 w-4 h-4" />
                             Hapus
                           </DropdownMenuItem>
                         </DropdownMenuContent>
@@ -585,7 +585,7 @@ export default function TestimoniPage() {
             <Button onClick={handleCreateTestimoni} disabled={isSubmitting}>
               {isSubmitting ? (
                 <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  <Loader2 className="mr-2 w-4 h-4 animate-spin" />
                   Menyimpan...
                 </>
               ) : (
@@ -663,8 +663,9 @@ export default function TestimoniPage() {
               {formData.foto_testimoni && (
                 <div className="mt-2">
                   <p className="mb-1 text-sm font-medium">Foto saat ini:</p>
-                  <div className="relative w-20 h-20 overflow-hidden rounded-md">                    <img
-                      src={`/storage/testimoni/${formData.foto_testimoni}`}
+                  <div className="overflow-hidden relative w-20 h-20 rounded-md">
+                    <img
+                      src={selectedTestimoni?.foto_testimoni_url || '/storage/testimoni/default.jpg'}
                       alt="Foto testimoni"
                       className="object-cover w-full h-full"
                       onError={(e) => {
@@ -692,7 +693,7 @@ export default function TestimoniPage() {
             <Button onClick={handleUpdateTestimoni} disabled={isSubmitting}>
               {isSubmitting ? (
                 <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  <Loader2 className="mr-2 w-4 h-4 animate-spin" />
                   Menyimpan...
                 </>
               ) : (
@@ -714,11 +715,11 @@ export default function TestimoniPage() {
           </DialogHeader>
           <div className="py-4">
             {selectedTestimoni && (
-              <div className="flex items-center gap-4 p-4 border rounded-md bg-muted/50">
-                <div className="relative w-16 h-16 overflow-hidden rounded-full">
+              <div className="flex gap-4 items-center p-4 rounded-md border bg-muted/50">
+                <div className="overflow-hidden relative w-16 h-16 rounded-full">
                   <img
-                    src={selectedTestimoni.foto_testimoni ? `/storage/testimoni/${selectedTestimoni.foto_testimoni}` : '/storage/testimoni/default.jpg'}
-                    alt={selectedTestimoni.nama}
+                    src={selectedTestimoni?.foto_testimoni_url || '/storage/testimoni/default.jpg'}
+                    alt={selectedTestimoni?.nama}
                     className="object-cover w-full h-full"
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
@@ -740,7 +741,7 @@ export default function TestimoniPage() {
             <Button variant="destructive" onClick={handleDeleteTestimoni} disabled={isSubmitting}>
               {isSubmitting ? (
                 <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  <Loader2 className="mr-2 w-4 h-4 animate-spin" />
                   Menghapus...
                 </>
               ) : (

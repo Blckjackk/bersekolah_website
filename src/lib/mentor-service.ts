@@ -136,11 +136,6 @@ export const MentorService = {
       formData.append('name', mentorData.name);
       formData.append('email', mentorData.email);
       
-      // Specify upload directory
-      if (mentorData.upload_to) {
-        formData.append('upload_to', mentorData.upload_to);
-      }
-      
       // Add photo if provided
       if (photoFile) {
         formData.append('photo', photoFile);
@@ -161,7 +156,7 @@ export const MentorService = {
       }
       
       const data = await response.json();
-      return data.data;
+      return data;
     } catch (error) {
       console.error('Error in createMentor:', error);
       throw error;
@@ -180,16 +175,6 @@ export const MentorService = {
       formData.append('name', mentorData.name);
       formData.append('email', mentorData.email);
       formData.append('_method', 'PUT'); // Laravel form method spoofing
-      
-      // Specify upload directory
-      if (mentorData.upload_to) {
-        formData.append('upload_to', mentorData.upload_to);
-      }
-      
-      // Include existing photo path if not uploading new one
-      if (mentorData.photo && !photoFile) {
-        formData.append('existing_photo', mentorData.photo);
-      }
       
       // Add photo if provided
       if (photoFile) {
@@ -211,7 +196,7 @@ export const MentorService = {
       }
       
       const data = await response.json();
-      return data.data;
+      return data;
     } catch (error) {
       console.error(`Error in updateMentor (${id}):`, error);
       throw error;
