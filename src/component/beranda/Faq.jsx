@@ -64,7 +64,7 @@ const Faq = () => {
   const displayFaqs = faqs.length > 0 ? faqs : defaultFaqs
 
   return (
-    <section className='max-w-screen-xl px-4 py-12 mx-auto md:py-16 sm:px-6 lg:px-8'>
+    <section className='px-4 py-12 mx-auto max-w-screen-xl md:py-16 sm:px-6 lg:px-8'>
       {/* Judul section untuk mobile - hanya tampil di mobile */}
       <div className='mb-8 md:hidden'>
         <h2 className='text-3xl font-semibold text-center md:text-4xl'>Punya Pertanyaan? Kita Punya Jawaban</h2>
@@ -73,24 +73,11 @@ const Faq = () => {
       {/* Konten utama dengan flex layout yang berubah di breakpoint berbeda */}
       <div className='flex flex-col-reverse gap-8 md:flex-row md:gap-12'>
         {/* Bagian accordion/FAQ */}
-        <div className='flex flex-col justify-center w-full gap-6 md:w-1/2 md:gap-8'>
+        <div className='flex flex-col gap-6 justify-center w-full md:w-1/2 md:gap-8'>
           {/* Judul section untuk tablet ke atas - tersembunyi di mobile */}
           <h2 className='hidden text-3xl font-semibold md:block lg:text-4xl'>Punya Pertanyaan? Kita Punya Jawaban</h2>
           
-          {/* ✅ Loading State */}
-          {isLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <div className="flex items-center gap-3">
-                <Loader2 className="w-5 h-5 text-[#406386] animate-spin" />
-                <span className="text-sm text-gray-600">Memuat FAQ...</span>
-              </div>
-            </div>
-          ) : error ? (
-            <div className="py-8 text-center">
-              <p className="text-sm text-red-600">{error}</p>
-              <p className="mt-2 text-xs text-gray-500">Menampilkan FAQ default</p>
-            </div>
-          ) : null}
+         
           
           {/* ✅ Dynamic Accordion items */}
           <Accordion variant="splitted" className="w-full">
@@ -105,23 +92,16 @@ const Faq = () => {
             ))}
           </Accordion>
           
-          {/* ✅ Show data source indicator */}
-          {!isLoading && (
-            <div className="text-center">
-              <p className="text-xs text-gray-400">
-                {faqs.length > 0 ? `${faqs.length} FAQ dari database` : 'FAQ default ditampilkan'}
-              </p>
-            </div>
-          )}
+         
         </div>
 
         {/* Bagian gambar */}
-        <div className='w-full mb-6 md:w-1/2 md:mb-0'>
+        <div className='mb-6 w-full md:w-1/2 md:mb-0'>
           <div className="relative w-full aspect-video md:aspect-auto md:h-full">
             <img 
               src="/storage/FAQ.png" 
               alt="Siswa sedang belajar bersama" 
-              className='object-cover w-full h-full shadow-md rounded-xl' 
+              className='object-cover w-full h-full rounded-xl shadow-md' 
               loading="lazy"
             />
           </div>
