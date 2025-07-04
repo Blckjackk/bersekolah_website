@@ -45,6 +45,7 @@ export default function StatusKelulusanPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [showAcceptDialog, setShowAcceptDialog] = useState(false)
   const [acceptanceStatus, setAcceptanceStatus] = useState<string | null>(null)
+  const [hasJoinedGroup, setHasJoinedGroup] = useState(false)
   const { toast } = useToast()
 
   const fetchApplicationStatus = async () => {
@@ -165,13 +166,24 @@ export default function StatusKelulusanPage() {
     }
   }
 
+  // ✅ Handler untuk join grup WhatsApp
+  const handleJoinWhatsAppGroup = (link: string) => {
+    window.open(link, '_blank')
+    setHasJoinedGroup(true)
+    
+    toast({
+      title: "Berhasil",
+      description: "Anda telah bergabung ke grup WhatsApp penerima beasiswa.",
+    })
+  }
+
   // ✅ Dynamic status message
   const getStatusMessage = () => {
     if (!applicationStatus) return ""
 
     switch (applicationStatus.status) {
       case "diterima":
-        return "Selamat! Anda telah diterima sebagai penerima Beasiswa Bersekolah 2025. Tim kami akan menghubungi Anda segera untuk proses selanjutnya."
+        return "Selamat! Anda telah diterima sebagai penerima Beasiswa Bersekolah 2025. Silahkan bergabung dengan WhatsApp grup beasiswa bersekolah."
       case "ditolak":
         return "Mohon maaf, aplikasi Anda belum berhasil pada periode ini. Jangan berkecil hati, tetap semangat untuk kesempatan berikutnya."
       case "lolos_wawancara":
@@ -189,17 +201,17 @@ export default function StatusKelulusanPage() {
       {
         title: "Konfirmasi Penerimaan Beasiswa",
         description: "Konfirmasikan penerimaan beasiswa Anda dengan mengklik tombol 'Terima Beasiswa'",
-        status: acceptanceStatus === "accepted" ? "completed" : "pending"
+        status: acceptanceStatus === "accepted" ? "completed" : "pending",
+        action: null
       },
       {
-        title: "Unggah Dokumen Tambahan",
-        description: "Siapkan dokumen tambahan seperti rekening bank dan dokumen lainnya",
-        status: "pending"
-      },
-      {
-        title: "Ikuti Orientasi Beswan",
-        description: "Hadir dalam orientasi beswan yang akan diinformasikan kemudian",
-        status: "pending"
+        title: "Bergabung ke Grup Penerima Beasiswa Bersekolah",
+        description: "Bergabunglah dengan grup WhatsApp penerima beasiswa untuk mendapatkan informasi terbaru dan berkomunikasi dengan sesama penerima beasiswa",
+        status: hasJoinedGroup ? "completed" : "pending",
+        action: {
+          label: "Gabung Grup WhatsApp",
+          link: "https://chat.whatsapp.com/DBWgEhlvkz3E0SqpdvIL1q"
+        }
       }
     ]
 
@@ -393,7 +405,23 @@ export default function StatusKelulusanPage() {
                       </div>
                     </div>
                     <div className="p-4">
-                      <p className="text-sm">{step.description}</p>
+                      <p className="text-sm mb-3">{step.description}</p>
+                      {step.action && step.status !== 'completed' && (
+                        <Button 
+                          onClick={() => handleJoinWhatsAppGroup(step.action.link)}
+                          className="bg-green-600 hover:bg-green-700"
+                          size="sm"
+                        >
+                          <ExternalLink className="w-4 h-4 mr-2" />
+                          {step.action.label}
+                        </Button>
+                      )}
+                      {step.action && step.status === 'completed' && (
+                        <div className="flex items-center gap-2 text-sm text-green-700">
+                          <CheckCircle2 className="w-4 h-4" />
+                          <span>Anda telah bergabung ke grup WhatsApp</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -407,6 +435,40 @@ export default function StatusKelulusanPage() {
             </CardFooter>
           </Card>
         )}
+
+        {/* Contact Support Card - Untuk semua status */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Mail className="w-5 h-5 mr-2" />
+              Butuh Bantuan?
+            </CardTitle>
+            <CardDescription>
+              Hubungi tim beasiswa bersekolah jika ada kendala atau pertanyaan
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="p-4 rounded-lg border border-blue-200 bg-blue-50">
+              <div className="flex items-start gap-3">
+                <Info className="w-5 h-5 text-blue-600 mt-0.5" />
+                <div className="flex-1">
+                  <p className="text-sm text-blue-800 mb-3">
+                    Jika Anda mengalami kendala atau masalah, 
+                    jangan ragu untuk menghubungi tim beasiswa bersekolah. Kami siap membantu Anda! 
+                  </p>
+                  <Button 
+                    onClick={() => window.open('https://wa.me/6281906698736', '_blank')}
+                    className="bg-green-600 hover:bg-green-700"
+                    size="sm"
+                  >
+                    <ExternalLink className="w-4 h-4 mr-2" />
+                    Hubungi Tim Beasiswa
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Dialog Konfirmasi Penerimaan Beasiswa */}

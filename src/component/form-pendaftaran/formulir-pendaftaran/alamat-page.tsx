@@ -208,7 +208,7 @@ export default function AlamatPage() {
       console.log('Submit response data:', result)
 
       if (response.ok) {
-        showAlert("success", "Berhasil Disimpan", "Data alamat berhasil disimpan ke database.")
+        showAlert("success", "Berhasil Disimpan", "Data alamat berhasil disimpan.")
       } else {
         // Handle different error types
         if (response.status === 422) {

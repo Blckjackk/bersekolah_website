@@ -44,6 +44,7 @@ const formSchema = z.object({
 
 // Daftar opsi penghasilan
 const opsiPenghasilan = [
+  "Tidak berpenghasilan",
   "Kurang dari Rp 1.000.000",
   "Rp 1.000.000 - Rp 3.000.000",
   "Rp 3.000.000 - Rp 5.000.000", 
@@ -207,7 +208,7 @@ export default function DataKeluargaPage() {
       console.log('Response:', result)
 
       if (response.ok) {
-        showAlert("success", "Berhasil Disimpan", "Data keluarga berhasil disimpan ke database.")
+        showAlert("success", "Berhasil Disimpan", "Data keluarga berhasil disimpan.")
       } else {
         // Debug: Log validation errors
         if (result.errors) {

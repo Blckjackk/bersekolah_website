@@ -247,7 +247,7 @@ export default function DataPribadiPage() {
       console.log('Submit response data:', result)
 
       if (response.ok) {
-        showAlert("success", "Berhasil Disimpan", "Data pribadi berhasil disimpan ke database.")
+        showAlert("success", "Berhasil Disimpan", "Data pribadi berhasil disimpan.")
       } else {
         // Handle different error types
         if (response.status === 422) {

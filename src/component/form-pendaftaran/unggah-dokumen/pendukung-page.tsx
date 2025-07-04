@@ -384,6 +384,28 @@ export default function DokumenPendukungPage() {
     }
   }
 
+  // Drag & Drop handlers
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    e.stopPropagation()
+  }
+
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    e.stopPropagation()
+  }
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    e.stopPropagation()
+
+    const files = e.dataTransfer.files
+    if (files.length > 0) {
+      const file = files[0]
+      setSelectedFile(file)
+    }
+  }
+
   const handleUpload = async () => {
     if (!selectedFile || !selectedDocType) {
       toast({
@@ -846,14 +868,42 @@ export default function DokumenPendukungPage() {
               
               <div>
                 <Label htmlFor="file">Pilih File</Label>
-                <Input
-                  id="file"
-                  type="file"
-                  ref={fileInputRef}
-                  accept={selectedDocTypeData?.allowed_formats?.map(f => `.${f}`).join(',') || ''}
-                  onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
-                  className="mt-1"
-                />
+                <div className="mt-1 relative">
+                  <input
+                    id="file"
+                    type="file"
+                    ref={fileInputRef}
+                    accept={selectedDocTypeData?.allowed_formats?.map(f => `.${f}`).join(',') || ''}
+                    onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  />
+                  <div 
+                    className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
+                      selectedFile 
+                        ? 'border-green-300 bg-green-50' 
+                        : 'border-gray-300 bg-gray-50 hover:border-blue-400 hover:bg-blue-50'
+                    }`}
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop}
+                  >
+                    {selectedFile ? (
+                      <div className="flex items-center justify-center gap-2">
+                        <CheckCircle2 className="w-5 h-5 text-green-600" />
+                        <span className="text-sm font-medium text-green-800">
+                          {selectedFile.name}
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center gap-2">
+                        <Upload className="w-8 h-8 text-gray-400" />
+                        <div className="text-sm text-gray-600">
+                          <span className="font-medium text-blue-600">Klik untuk pilih file</span> atau drag & drop
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
                 {selectedDocTypeData && (
                   <p className="mt-1 text-xs text-gray-500">
                     Format: {selectedDocTypeData.allowed_formats?.join(', ').toUpperCase() || 'Semua format'} | 
