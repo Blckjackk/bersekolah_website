@@ -67,6 +67,36 @@ export const HalamanService = {
     }
   },
 
+  // --- Tambahkan fungsi baru untuk fetch all tanpa paginasi ---
+  getAllHalamanNoPaginate: async () => {
+    const token = localStorage.getItem('bersekolah_auth_token');
+    try {
+      const response = await fetch(`${API_URL}/admin-konten-all`, {
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        return data.data || [];
+      } else if (response.status === 401 || response.status === 403) {
+        // Fallback ke endpoint public jika tidak authorized
+        const publicRes = await fetch(`${API_URL}/konten`, {
+          headers: { 'Accept': 'application/json' }
+        });
+        if (!publicRes.ok) throw new Error('Failed to fetch halaman (public)');
+        const data = await publicRes.json();
+        return data.data || [];
+      } else {
+        throw new Error('Failed to fetch halaman (all)');
+      }
+    } catch (error) {
+      console.error('Error fetching halaman (all):', error);
+      throw error;
+    }
+  },
+
   getHalamanById: async (id: number) => {
     try {
       const response = await fetch(`${API_URL}/admin-konten/${id}`, {

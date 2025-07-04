@@ -118,11 +118,9 @@ export default function KelolaArtikelPage({ defaultCategory = "news" }: { defaul
       } else {
         setIsLoading(true);
       }
-      
       setError(null);
-      const data = await HalamanService.getAllHalaman();
+      const data = await HalamanService.getAllHalamanNoPaginate();
       setHalaman(data);
-      
       if (isRefresh) {
         showToast("Data berhasil diperbarui", "success");
       }
@@ -220,8 +218,25 @@ export default function KelolaArtikelPage({ defaultCategory = "news" }: { defaul
       setCreateDialog(false);
       fetchHalaman(true);
     } catch (err) {
+      let errorMsg = "Gagal membuat halaman";
+      const axiosErr = err as any;
+      if (axiosErr && typeof axiosErr === "object") {
+        if ("response" in axiosErr && axiosErr.response && axiosErr.response.data) {
+          if (axiosErr.response.data.message) {
+            errorMsg = axiosErr.response.data.message;
+          } else if (typeof axiosErr.response.data === "string") {
+            errorMsg = axiosErr.response.data;
+          } else if (axiosErr.response.data.errors) {
+            errorMsg = Object.values(axiosErr.response.data.errors).flat().join(", ");
+          } else {
+            errorMsg = JSON.stringify(axiosErr.response.data);
+          }
+        } else if ("message" in axiosErr) {
+          errorMsg = axiosErr.message;
+        }
+      }
       console.error("Error creating halaman:", err);
-      showToast("Gagal membuat halaman", "error");
+      showToast(errorMsg, "error");
     } finally {
       setIsSubmitting(false);
     }
@@ -249,8 +264,25 @@ export default function KelolaArtikelPage({ defaultCategory = "news" }: { defaul
       setEditDialog(false);
       fetchHalaman(true);
     } catch (err) {
+      let errorMsg = "Gagal memperbarui halaman";
+      const axiosErr = err as any;
+      if (axiosErr && typeof axiosErr === "object") {
+        if ("response" in axiosErr && axiosErr.response && axiosErr.response.data) {
+          if (axiosErr.response.data.message) {
+            errorMsg = axiosErr.response.data.message;
+          } else if (typeof axiosErr.response.data === "string") {
+            errorMsg = axiosErr.response.data;
+          } else if (axiosErr.response.data.errors) {
+            errorMsg = Object.values(axiosErr.response.data.errors).flat().join(", ");
+          } else {
+            errorMsg = JSON.stringify(axiosErr.response.data);
+          }
+        } else if ("message" in axiosErr) {
+          errorMsg = axiosErr.message;
+        }
+      }
       console.error("Error updating halaman:", err);
-      showToast("Gagal memperbarui halaman", "error");
+      showToast(errorMsg, "error");
     } finally {
       setIsSubmitting(false);
     }
@@ -473,13 +505,12 @@ export default function KelolaArtikelPage({ defaultCategory = "news" }: { defaul
                       {page.gambar ? (
                         <div className="overflow-hidden w-8 h-8 bg-gray-100 rounded">
                           <img 
-                            src={`/assets/image/artikel/${page.gambar}`}
+                            src={page.gambar || "/storage/artikel/default.jpg"}
                             alt={page.judul_halaman}
                             className="object-cover w-full h-full"
                             onError={(e) => {
-                              // Fallback jika gambar tidak ditemukan
                               e.currentTarget.onerror = null;
-                              e.currentTarget.src = "/assets/image/artikel/default.jpg";
+                              e.currentTarget.src = "/storage/artikel/default.jpg";
                             }}
                           />
                           {/* Debug: tampilkan nama file gambar */}
@@ -487,7 +518,11 @@ export default function KelolaArtikelPage({ defaultCategory = "news" }: { defaul
                         </div>
                       ) : (
                         <div className="flex justify-center items-center w-8 h-8 bg-gray-100 rounded">
-                          <Image className="w-4 h-4 text-gray-400" />
+                          <img
+                            src="/assets/image/artikel/default.jpg"
+                            alt="default"
+                            className="object-cover w-full h-full"
+                          />
                         </div>
                       )}
                       <div>
@@ -777,9 +812,13 @@ export default function KelolaArtikelPage({ defaultCategory = "news" }: { defaul
                 <div className="mt-2">
                   <p className="mb-1 text-xs text-gray-500">Gambar Saat Ini:</p>
                   <img
-                    src={`/assets/image/artikel/${selectedPage.gambar}`}
+                    src={selectedPage.gambar || "/storage/artikel/default.jpg"}
                     alt={selectedPage.judul_halaman}
                     className="object-cover w-32 h-32 rounded border"
+                    onError={(e) => {
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src = "/storage/artikel/default.jpg";
+                    }}
                   />
                   <p className="mt-1 text-xs text-gray-500">
                     Kosongkan jika tidak ingin mengganti gambar
