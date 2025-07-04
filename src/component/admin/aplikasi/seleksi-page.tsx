@@ -684,8 +684,8 @@ export default function SeleksiBeasiswaPage() {
       {/* Filters */}
       <Card>
         <CardContent className="p-4">
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-5">
-            <div className="space-y-2">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-5">
+            <div>
               <Label htmlFor="search">Cari Aplikasi</Label>
               <div className="relative">
                 <Search className="absolute w-4 h-4 text-gray-500 transform -translate-y-1/2 left-3 top-1/2" />
@@ -699,7 +699,7 @@ export default function SeleksiBeasiswaPage() {
               </div>
             </div>
 
-            <div className="space-y-2">
+            <div>
               <Label htmlFor="status-filter">Status</Label>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger>
@@ -716,7 +716,7 @@ export default function SeleksiBeasiswaPage() {
               </Select>
             </div>
 
-            <div className="space-y-2">
+            <div>
               <Label htmlFor="period-filter">Periode</Label>
               <Select value={periodFilter} onValueChange={setPeriodFilter}>
                 <SelectTrigger>
@@ -733,7 +733,7 @@ export default function SeleksiBeasiswaPage() {
               </Select>
             </div>
 
-            <div className="space-y-2">
+            <div>
               <Label htmlFor="finalized-filter">Status Finalisasi</Label>
               <Select value={finalizedFilter} onValueChange={setFinalizedFilter}>
                 <SelectTrigger>
@@ -747,7 +747,7 @@ export default function SeleksiBeasiswaPage() {
               </Select>
             </div>
 
-            <div className="space-y-2">
+            <div>
               <Label htmlFor="per-page">Items per halaman</Label>
               <Select value={perPage.toString()} onValueChange={(value) => setPerPage(parseInt(value))}>
                 <SelectTrigger>
