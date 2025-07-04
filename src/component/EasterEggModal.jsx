@@ -54,7 +54,7 @@ const EasterEggModal = ({ isOpen, onClose }) => {
       socials: [
         { type: 'instagram', url: 'https://instagram.com/juliandwii', icon: Instagram, color: 'text-pink-400 bg-pink-500/10 hover:bg-pink-500/20 border-pink-500/20' },
         { type: 'linkedin', url: 'https://linkedin.com/in/juliandwi', icon: Linkedin, color: 'text-blue-400 bg-blue-500/10 hover:bg-blue-500/20 border-blue-500/20' },
-        { type: 'github', url: 'https://github.com/juliandwi', icon: Github, color: 'text-gray-300 bg-gray-500/10 hover:bg-gray-500/20 border-gray-500/20' },
+        { type: 'github', url: 'https://github.com/jouleee', icon: Github, color: 'text-gray-300 bg-gray-500/10 hover:bg-gray-500/20 border-gray-500/20' },
         { type: 'website', url: 'https://juliandwi.dev', icon: Globe, color: 'text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 border-emerald-500/20' }
       ],
       gradient: "from-blue-500/20 via-purple-500/20 to-blue-600/20",
