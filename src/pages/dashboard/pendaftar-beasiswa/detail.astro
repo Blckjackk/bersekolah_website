@@ -5,63 +5,35 @@ import { Button } from "../../../components/ui/button";
 import { Badge } from "../../../components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../../components/ui/tabs";
 
-// Single static data
-const beswan = {
-  id: "BSW001",
-  nama: "Ahmad Izzuddin",
-  email: "ahmad@email.com",
-  telepon: "08123456789",
-  status: "Pending",
-  program: "Beasiswa Penuh",
-  tanggal_daftar: "2025-05-27",
-  data_pribadi: {
-    tempat_lahir: "Jakarta",
-    tanggal_lahir: "2000-01-01",
-    jenis_kelamin: "Laki-laki",
-    alamat: "Jl. Contoh No. 123",
-    kota: "Jakarta Selatan",
-    provinsi: "DKI Jakarta",
-    kodepos: "12345"
-  },
-  data_pendidikan: {
-    universitas: "Universitas Indonesia",
-    fakultas: "Fakultas Teknik",
-    jurusan: "Teknik Informatika",
-    semester: "6",
-    ipk: "3.85"
-  },
-  data_orangtua: {
-    nama_ayah: "Budi Santoso",
-    pekerjaan_ayah: "Wiraswasta",
-    nama_ibu: "Siti Aminah",
-    pekerjaan_ibu: "Ibu Rumah Tangga",
-    penghasilan_total: "Rp 5.000.000"
-  },
-  berkas: {
-    cv: "/dokumen/cv.pdf",
-    ktp: "/dokumen/ktp.pdf",
-    transkrip: "/dokumen/transkrip.pdf",
-    surat_rekomendasi: "/dokumen/surat_rekomendasi.pdf",
-    sertifikat: ["/dokumen/sertifikat1.pdf", "/dokumen/sertifikat2.pdf"]
-  }
-} as const;
+// Get ID from URL parameter
+const urlParams = new URLSearchParams(window.location.search);
+const beswanId = urlParams.get('id');
 
-const statusColor = {
-  "Pending": "bg-yellow-500",
-  "Diterima": "bg-green-500",
-  "Ditolak": "bg-red-500"
-}[beswan.status];
+// Initial empty data structure
+let beswan = {
+  id: null,
+  nama_lengkap: '',
+  nama_panggilan: '',
+  tempat_lahir: '',
+  tanggal_lahir: '',
+  jenis_kelamin: '',
+  agama: '',
+  created_at: '',
+  keluarga: null,
+  sekolah: null,
+  alamat: null
+};
 ---
 
 <DashboardAdmin>
   <div class="container p-6 mx-auto">
-    <div class="flex items-center justify-between mb-6">
+    <div class="flex justify-between items-center mb-6">
       <div>
         <h1 class="text-2xl font-bold">Detail Pendaftar Beasiswa</h1>
-        <p class="text-gray-500">ID Pendaftar: {beswan.id}</p>
+        <p class="text-gray-500">ID Pendaftar: <span id="beswan-id">Loading...</span></p>
       </div>
-      <Badge className={statusColor}>
-        {beswan.status}
+      <Badge id="status-badge" className="bg-gray-500">
+        Loading...
       </Badge>
     </div>
 
@@ -74,20 +46,21 @@ const statusColor = {
       <TabsList className="mb-4">
         <TabsTrigger value="data-pribadi">Data Pribadi</TabsTrigger>
         <TabsTrigger value="data-pendidikan">Pendidikan</TabsTrigger>
-        <TabsTrigger value="data-orangtua">Orangtua</TabsTrigger>
-        <TabsTrigger value="berkas">Berkas</TabsTrigger>
+        <TabsTrigger value="data-keluarga">Keluarga</TabsTrigger>
+        <TabsTrigger value="data-alamat">Alamat</TabsTrigger>
       </TabsList>
 
       <TabsContent value="data-pribadi">
         <Card>
           <CardHeader><CardTitle>Data Pribadi</CardTitle></CardHeader>
           <CardContent className="space-y-2">
-            <p><strong>Nama:</strong> {beswan.nama}</p>
-            <p><strong>Email:</strong> {beswan.email}</p>
-            <p><strong>Telepon:</strong> {beswan.telepon}</p>
-            <p><strong>Tempat & Tanggal Lahir:</strong> {beswan.data_pribadi.tempat_lahir}, {beswan.data_pribadi.tanggal_lahir}</p>
-            <p><strong>Alamat:</strong> {beswan.data_pribadi.alamat}, {beswan.data_pribadi.kota}, {beswan.data_pribadi.provinsi}, {beswan.data_pribadi.kodepos}</p>
-            <p><strong>Jenis Kelamin:</strong> {beswan.data_pribadi.jenis_kelamin}</p>
+            <p><strong>Nama Lengkap:</strong> <span id="nama-lengkap">Loading...</span></p>
+            <p><strong>Nama Panggilan:</strong> <span id="nama-panggilan">Loading...</span></p>
+            <p><strong>Tempat Lahir:</strong> <span id="tempat-lahir">Loading...</span></p>
+            <p><strong>Tanggal Lahir:</strong> <span id="tanggal-lahir">Loading...</span></p>
+            <p><strong>Jenis Kelamin:</strong> <span id="jenis-kelamin">Loading...</span></p>
+            <p><strong>Agama:</strong> <span id="agama">Loading...</span></p>
+            <p><strong>Tanggal Registrasi:</strong> <span id="tanggal-registrasi">Loading...</span></p>
           </CardContent>
         </Card>
       </TabsContent>
@@ -96,47 +69,170 @@ const statusColor = {
         <Card>
           <CardHeader><CardTitle>Data Pendidikan</CardTitle></CardHeader>
           <CardContent className="space-y-2">
-            <p><strong>Universitas:</strong> {beswan.data_pendidikan.universitas}</p>
-            <p><strong>Fakultas:</strong> {beswan.data_pendidikan.fakultas}</p>
-            <p><strong>Jurusan:</strong> {beswan.data_pendidikan.jurusan}</p>
-            <p><strong>Semester:</strong> {beswan.data_pendidikan.semester}</p>
-            <p><strong>IPK:</strong> {beswan.data_pendidikan.ipk}</p>
+            <p><strong>Nama Sekolah:</strong> <span id="nama-sekolah">Loading...</span></p>
+            <p><strong>Jenjang:</strong> <span id="jenjang">Loading...</span></p>
+            <p><strong>Jurusan:</strong> <span id="jurusan">Loading...</span></p>
+            <p><strong>Semester:</strong> <span id="semester">Loading...</span></p>
+            <p><strong>IPK:</strong> <span id="ipk">Loading...</span></p>
           </CardContent>
         </Card>
       </TabsContent>
 
-      <TabsContent value="data-orangtua">
+      <TabsContent value="data-keluarga">
         <Card>
-          <CardHeader><CardTitle>Data Orangtua</CardTitle></CardHeader>
+          <CardHeader><CardTitle>Data Keluarga</CardTitle></CardHeader>
           <CardContent className="space-y-2">
-            <p><strong>Nama Ayah:</strong> {beswan.data_orangtua.nama_ayah}</p>
-            <p><strong>Pekerjaan Ayah:</strong> {beswan.data_orangtua.pekerjaan_ayah}</p>
-            <p><strong>Nama Ibu:</strong> {beswan.data_orangtua.nama_ibu}</p>
-            <p><strong>Pekerjaan Ibu:</strong> {beswan.data_orangtua.pekerjaan_ibu}</p>
-            <p><strong>Penghasilan Total:</strong> {beswan.data_orangtua.penghasilan_total}</p>
+            <p><strong>Nama Ayah:</strong> <span id="nama-ayah">Loading...</span></p>
+            <p><strong>Pekerjaan Ayah:</strong> <span id="pekerjaan-ayah">Loading...</span></p>
+            <p><strong>Nama Ibu:</strong> <span id="nama-ibu">Loading...</span></p>
+            <p><strong>Pekerjaan Ibu:</strong> <span id="pekerjaan-ibu">Loading...</span></p>
+            <p><strong>Penghasilan:</strong> <span id="penghasilan">Loading...</span></p>
           </CardContent>
         </Card>
       </TabsContent>
 
-      <TabsContent value="berkas">
+      <TabsContent value="data-alamat">
         <Card>
-          <CardHeader><CardTitle>Berkas</CardTitle></CardHeader>
+          <CardHeader><CardTitle>Data Alamat</CardTitle></CardHeader>
           <CardContent className="space-y-2">
-            <p><strong>CV:</strong> <a href={beswan.berkas.cv} class="text-blue-500 underline" target="_blank">Lihat</a></p>
-            <p><strong>KTP:</strong> <a href={beswan.berkas.ktp} class="text-blue-500 underline" target="_blank">Lihat</a></p>
-            <p><strong>Transkrip:</strong> <a href={beswan.berkas.transkrip} class="text-blue-500 underline" target="_blank">Lihat</a></p>
-            <p><strong>Surat Rekomendasi:</strong> <a href={beswan.berkas.surat_rekomendasi} class="text-blue-500 underline" target="_blank">Lihat</a></p>
-            <div>
-              <strong>Sertifikat:</strong>
-              <ul class="list-disc list-inside">
-                {beswan.berkas.sertifikat.map((sertifikat, index) => (
-                  <li><a href={sertifikat} class="text-blue-500 underline" target="_blank">Sertifikat {index + 1}</a></li>
-                ))}
-              </ul>
-            </div>
+            <p><strong>Alamat Lengkap:</strong> <span id="alamat-lengkap">Loading...</span></p>
+            <p><strong>RT/RW:</strong> <span id="rt-rw">Loading...</span></p>
+            <p><strong>Kelurahan:</strong> <span id="kelurahan">Loading...</span></p>
+            <p><strong>Kecamatan:</strong> <span id="kecamatan">Loading...</span></p>
+            <p><strong>Kota/Kabupaten:</strong> <span id="kota">Loading...</span></p>
+            <p><strong>Provinsi:</strong> <span id="provinsi">Loading...</span></p>
+            <p><strong>Kode Pos:</strong> <span id="kode-pos">Loading...</span></p>
           </CardContent>
         </Card>
       </TabsContent>
     </Tabs>
   </div>
 </DashboardAdmin>
+
+<script>
+  // Function to format date
+  const formatDate = (dateString: string | null | undefined): string => {
+    if (!dateString) return '-';
+    try {
+      return new Date(dateString).toLocaleDateString('id-ID', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+    } catch {
+      return dateString;
+    }
+  };
+
+  // Function to get status color
+  const getStatusColor = (status: string): string => {
+    const colors: Record<string, string> = {
+      "pending": "bg-yellow-500",
+      "diterima": "bg-green-500", 
+      "ditolak": "bg-red-500"
+    };
+    return colors[status] || "bg-gray-500";
+  };
+
+  // Function to get auth token
+  const getAuthToken = (): string | null => {
+    return localStorage.getItem('bersekolah_auth_token');
+  };
+
+  // Function to update element text safely
+  const updateElementText = (id: string, value: string | number | null | undefined): void => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.textContent = value?.toString() || '-';
+    }
+  };
+
+  // Function to fetch beswan detail
+  async function fetchBeswanDetail(): Promise<void> {
+    const urlParams = new URLSearchParams(window.location.search);
+    const beswanId = urlParams.get('id');
+    
+    if (!beswanId) {
+      console.error('No beswan ID provided');
+      return;
+    }
+
+    const token = getAuthToken();
+    if (!token) {
+      console.error('No authentication token found');
+      window.location.href = '/masuk';
+      return;
+    }
+
+    try {
+      const response = await fetch(`${import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:8000/api'}/beswan/${beswanId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      
+      if (result.status === 'success' && result.data) {
+        const beswan = result.data;
+        
+        // Update basic info
+        updateElementText('beswan-id', beswan.id);
+        updateElementText('nama-lengkap', beswan.nama_lengkap);
+        updateElementText('nama-panggilan', beswan.nama_panggilan);
+        updateElementText('tempat-lahir', beswan.tempat_lahir);
+        updateElementText('tanggal-lahir', formatDate(beswan.tanggal_lahir));
+        updateElementText('jenis-kelamin', beswan.jenis_kelamin);
+        updateElementText('agama', beswan.agama);
+        updateElementText('tanggal-registrasi', formatDate(beswan.created_at));
+
+        // Update keluarga data
+        if (beswan.keluarga) {
+          updateElementText('nama-ayah', beswan.keluarga.nama_ayah);
+          updateElementText('pekerjaan-ayah', beswan.keluarga.pekerjaan_ayah);
+          updateElementText('nama-ibu', beswan.keluarga.nama_ibu);
+          updateElementText('pekerjaan-ibu', beswan.keluarga.pekerjaan_ibu);
+          updateElementText('penghasilan', beswan.keluarga.penghasilan);
+        }
+
+        // Update sekolah data
+        if (beswan.sekolah) {
+          updateElementText('nama-sekolah', beswan.sekolah.nama_sekolah);
+          updateElementText('jenjang', beswan.sekolah.jenjang);
+          updateElementText('jurusan', beswan.sekolah.jurusan);
+          updateElementText('semester', beswan.sekolah.semester);
+          updateElementText('ipk', beswan.sekolah.ipk);
+        }
+
+        // Update alamat data
+        if (beswan.alamat) {
+          updateElementText('alamat-lengkap', beswan.alamat.alamat_lengkap);
+          updateElementText('rt-rw', beswan.alamat.rt_rw);
+          updateElementText('kelurahan', beswan.alamat.kelurahan);
+          updateElementText('kecamatan', beswan.alamat.kecamatan);
+          updateElementText('kota', beswan.alamat.kota_kabupaten);
+          updateElementText('provinsi', beswan.alamat.provinsi);
+          updateElementText('kode-pos', beswan.alamat.kode_pos);
+        }
+
+        console.log('Beswan data loaded successfully:', beswan);
+      } else {
+        console.error('Failed to load beswan data:', result.message);
+      }
+    } catch (error) {
+      console.error('Error fetching beswan detail:', error);
+    }
+  }
+
+  // Load data when page is ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', fetchBeswanDetail);
+  } else {
+    fetchBeswanDetail();
+  }
+</script>

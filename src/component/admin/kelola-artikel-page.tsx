@@ -118,11 +118,9 @@ export default function KelolaArtikelPage({ defaultCategory = "news" }: { defaul
       } else {
         setIsLoading(true);
       }
-      
       setError(null);
-      const data = await HalamanService.getAllHalaman();
+      const data = await HalamanService.getAllHalamanNoPaginate();
       setHalaman(data);
-      
       if (isRefresh) {
         showToast("Data berhasil diperbarui", "success");
       }
@@ -220,8 +218,25 @@ export default function KelolaArtikelPage({ defaultCategory = "news" }: { defaul
       setCreateDialog(false);
       fetchHalaman(true);
     } catch (err) {
+      let errorMsg = "Gagal membuat halaman";
+      const axiosErr = err as any;
+      if (axiosErr && typeof axiosErr === "object") {
+        if ("response" in axiosErr && axiosErr.response && axiosErr.response.data) {
+          if (axiosErr.response.data.message) {
+            errorMsg = axiosErr.response.data.message;
+          } else if (typeof axiosErr.response.data === "string") {
+            errorMsg = axiosErr.response.data;
+          } else if (axiosErr.response.data.errors) {
+            errorMsg = Object.values(axiosErr.response.data.errors).flat().join(", ");
+          } else {
+            errorMsg = JSON.stringify(axiosErr.response.data);
+          }
+        } else if ("message" in axiosErr) {
+          errorMsg = axiosErr.message;
+        }
+      }
       console.error("Error creating halaman:", err);
-      showToast("Gagal membuat halaman", "error");
+      showToast(errorMsg, "error");
     } finally {
       setIsSubmitting(false);
     }
@@ -249,8 +264,25 @@ export default function KelolaArtikelPage({ defaultCategory = "news" }: { defaul
       setEditDialog(false);
       fetchHalaman(true);
     } catch (err) {
+      let errorMsg = "Gagal memperbarui halaman";
+      const axiosErr = err as any;
+      if (axiosErr && typeof axiosErr === "object") {
+        if ("response" in axiosErr && axiosErr.response && axiosErr.response.data) {
+          if (axiosErr.response.data.message) {
+            errorMsg = axiosErr.response.data.message;
+          } else if (typeof axiosErr.response.data === "string") {
+            errorMsg = axiosErr.response.data;
+          } else if (axiosErr.response.data.errors) {
+            errorMsg = Object.values(axiosErr.response.data.errors).flat().join(", ");
+          } else {
+            errorMsg = JSON.stringify(axiosErr.response.data);
+          }
+        } else if ("message" in axiosErr) {
+          errorMsg = axiosErr.message;
+        }
+      }
       console.error("Error updating halaman:", err);
-      showToast("Gagal memperbarui halaman", "error");
+      showToast(errorMsg, "error");
     } finally {
       setIsSubmitting(false);
     }
@@ -309,21 +341,21 @@ export default function KelolaArtikelPage({ defaultCategory = "news" }: { defaul
       case "published":
         return (
           <Badge variant="outline" className="text-green-700 bg-green-100 border-green-200">
-            <CheckCircle className="w-3 h-3 mr-1" />
+            <CheckCircle className="mr-1 w-3 h-3" />
             Published
           </Badge>
         );
       case "draft":
         return (
           <Badge variant="outline" className="text-yellow-700 bg-yellow-100 border-yellow-200">
-            <Clock className="w-3 h-3 mr-1" />
+            <Clock className="mr-1 w-3 h-3" />
             Draft
           </Badge>
         );
       case "archived":
         return (
           <Badge variant="outline" className="text-gray-700 bg-gray-100 border-gray-200">
-            <AlertCircle className="w-3 h-3 mr-1" />
+            <AlertCircle className="mr-1 w-3 h-3" />
             Archived
           </Badge>
         );
@@ -344,7 +376,7 @@ export default function KelolaArtikelPage({ defaultCategory = "news" }: { defaul
   if (isLoading) {
     return (
       <div className="container p-6 mx-auto">
-        <div className="flex items-center justify-center h-64">
+        <div className="flex justify-center items-center h-64">
           <div className="flex flex-col items-center">
             <RefreshCw className="w-10 h-10 text-blue-500 animate-spin" />
             <p className="mt-4 text-gray-600">Memuat data halaman...</p>
@@ -361,7 +393,7 @@ export default function KelolaArtikelPage({ defaultCategory = "news" }: { defaul
         <Card className="border-red-200">
           <CardHeader className="bg-red-50">
             <CardTitle className="flex items-center text-red-800">
-              <AlertCircle className="w-5 h-5 mr-2" />
+              <AlertCircle className="mr-2 w-5 h-5" />
               Error
             </CardTitle>
           </CardHeader>
@@ -374,7 +406,7 @@ export default function KelolaArtikelPage({ defaultCategory = "news" }: { defaul
               variant="outline"
               className="border-red-300 hover:bg-red-50"
             >
-              <RefreshCw className="w-4 h-4 mr-2" />
+              <RefreshCw className="mr-2 w-4 h-4" />
               Coba lagi
             </Button>
           </CardFooter>
@@ -395,7 +427,7 @@ export default function KelolaArtikelPage({ defaultCategory = "news" }: { defaul
       )}
       
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-2xl font-bold">Kelola Artikel</h1>
           <p className="text-gray-600">Kelola artikel terbaru</p>
@@ -411,7 +443,7 @@ export default function KelolaArtikelPage({ defaultCategory = "news" }: { defaul
             Refresh
           </Button>
           <Button onClick={openCreateDialog} className="bg-[#406386] hover:bg-[#355475]">
-            <PlusCircle className="w-4 h-4 mr-2" />
+            <PlusCircle className="mr-2 w-4 h-4" />
             Tambah Artikel
           </Button>
         </div>
@@ -460,7 +492,7 @@ export default function KelolaArtikelPage({ defaultCategory = "news" }: { defaul
                       onClick={openCreateDialog}
                       className="mt-2"
                     >
-                      <PlusCircle className="w-4 h-4 mr-2" />
+                      <PlusCircle className="mr-2 w-4 h-4" />
                       Tambah Halaman Baru
                     </Button>
                   </TableCell>
@@ -471,23 +503,26 @@ export default function KelolaArtikelPage({ defaultCategory = "news" }: { defaul
                   <TableCell>
                     <div className="flex items-center space-x-3">
                       {page.gambar ? (
-                        <div className="w-8 h-8 overflow-hidden bg-gray-100 rounded">
+                        <div className="overflow-hidden w-8 h-8 bg-gray-100 rounded">
                           <img 
-                            src={`/assets/image/artikel/${page.gambar}`}
+                            src={page.gambar || "/storage/artikel/default.jpg"}
                             alt={page.judul_halaman}
                             className="object-cover w-full h-full"
                             onError={(e) => {
-                              // Fallback jika gambar tidak ditemukan
                               e.currentTarget.onerror = null;
-                              e.currentTarget.src = "/assets/image/artikel/default.jpg";
+                              e.currentTarget.src = "/storage/artikel/default.jpg";
                             }}
                           />
                           {/* Debug: tampilkan nama file gambar */}
                           <span style={{fontSize: '10px', color: '#888'}}>{page.gambar}</span>
                         </div>
                       ) : (
-                        <div className="flex items-center justify-center w-8 h-8 bg-gray-100 rounded">
-                          <Image className="w-4 h-4 text-gray-400" />
+                        <div className="flex justify-center items-center w-8 h-8 bg-gray-100 rounded">
+                          <img
+                            src="/assets/image/artikel/default.jpg"
+                            alt="default"
+                            className="object-cover w-full h-full"
+                          />
                         </div>
                       )}
                       <div>
@@ -523,14 +558,14 @@ export default function KelolaArtikelPage({ defaultCategory = "news" }: { defaul
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => openEditDialog(page)}>
-                          <FileEdit className="w-4 h-4 mr-2" />
+                          <FileEdit className="mr-2 w-4 h-4" />
                           Edit
                         </DropdownMenuItem>
                         <DropdownMenuItem 
                           onClick={() => openDeleteDialog(page)}
                           className="text-red-600"
                         >
-                          <Trash2 className="w-4 h-4 mr-2" />
+                          <Trash2 className="mr-2 w-4 h-4" />
                           Hapus
                         </DropdownMenuItem>
                       </DropdownMenuContent>
@@ -627,7 +662,7 @@ export default function KelolaArtikelPage({ defaultCategory = "news" }: { defaul
                 value={formData.deskripsi}
                 onChange={handleInputChange}
                 placeholder="Tulis konten atau deskripsi halaman"
-                className="h-40 mt-1"
+                className="mt-1 h-40"
               />
             </div>
             <div>
@@ -758,7 +793,7 @@ export default function KelolaArtikelPage({ defaultCategory = "news" }: { defaul
                 value={formData.deskripsi}
                 onChange={handleInputChange}
                 placeholder="Tulis konten atau deskripsi halaman"
-                className="h-40 mt-1"
+                className="mt-1 h-40"
               />
             </div>
 
@@ -777,9 +812,13 @@ export default function KelolaArtikelPage({ defaultCategory = "news" }: { defaul
                 <div className="mt-2">
                   <p className="mb-1 text-xs text-gray-500">Gambar Saat Ini:</p>
                   <img
-                    src={`/assets/image/artikel/${selectedPage.gambar}`}
+                    src={selectedPage.gambar || "/storage/artikel/default.jpg"}
                     alt={selectedPage.judul_halaman}
-                    className="object-cover w-32 h-32 border rounded"
+                    className="object-cover w-32 h-32 rounded border"
+                    onError={(e) => {
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src = "/storage/artikel/default.jpg";
+                    }}
                   />
                   <p className="mt-1 text-xs text-gray-500">
                     Kosongkan jika tidak ingin mengganti gambar
@@ -820,7 +859,7 @@ export default function KelolaArtikelPage({ defaultCategory = "news" }: { defaul
           </DialogHeader>
           <div className="py-4">
             {selectedPage && (
-              <div className="p-4 border rounded-md bg-red-50">
+              <div className="p-4 bg-red-50 rounded-md border">
                 <p className="font-medium">{selectedPage.judul_halaman}</p>
                 <p className="text-sm text-gray-500">{selectedPage.slug}</p>
               </div>

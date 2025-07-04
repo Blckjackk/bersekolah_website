@@ -7,8 +7,9 @@ export interface Testimoni {
   sekarang_dimana?: string;
   isi_testimoni: string;
   foto_testimoni?: string;
+  foto_testimoni_url?: string;
   status: 'active' | 'inactive';
-  tanggal_input: string;
+  tanggal_input?: string;
 }
 
 export const TestimoniService = {

@@ -100,9 +100,10 @@ export function LoginForm({
         }
         
         // ✅ FIXED: Simpan data user dengan role ke localStorage
+        let userDataWithRole;
         if (result.user) {
           // Pastikan role tersimpan dengan benar
-          const userDataWithRole = {
+          userDataWithRole = {
             ...result.user,
             role: result.user.role || 'user' // Default role jika tidak ada
           };

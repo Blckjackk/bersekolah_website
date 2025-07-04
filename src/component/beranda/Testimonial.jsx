@@ -13,15 +13,16 @@ const Testimonial = () => {
       try {
         const response = await fetch('http://localhost:8000/api/testimoni') // sesuaikan dengan API Laravel
         const data = await response.json()
+        const arr = Array.isArray(data.data) ? data.data : [];
 
         // Filter dan map ke format frontend
-        const filtered = data.filter(item => item.status === 'active').map(item => ({
+        const filtered = arr.filter(item => item.status === 'active').map(item => ({
           id: item.id,
           name: item.nama,
           role: item.angkatan_beswan,
           company: item.sekarang_dimana,
           quote: item.isi_testimoni,
-          image: `/storage/testimoni/${item.foto_testimoni}`, // pastikan Laravel storage:link sudah dibuat
+          image: item.foto_testimoni_url || '/storage/testimoni/default.jpg',
           rating: '⭐⭐⭐⭐⭐' // tambahkan rating statis atau ambil dari backend kalau ada
         }))
 
@@ -55,21 +56,21 @@ const Testimonial = () => {
   const currentTestimonial = testimonials[currentIndex]
 
   return (
-    <section className="px-4 py-12 md:py-16 sm:px-6 lg:px-8 bg-gradient-to-br from-slate-50 to-blue-50">
-      <div className="max-w-screen-xl mx-auto">
+    <section className="px-4 py-12 bg-gradient-to-br to-blue-50 md:py-16 sm:px-6 lg:px-8 from-slate-50">
+      <div className="mx-auto max-w-screen-xl">
         <div className="mb-12 text-center">
           <h2 className="mb-4 text-3xl font-bold text-gray-900 md:text-4xl">
             Testimoni Penerima Beasiswa
           </h2>
-          <p className="max-w-2xl mx-auto text-gray-600">
+          <p className="mx-auto max-w-2xl text-gray-600">
             Dengarkan cerita inspiratif dari para penerima beasiswa yang telah merasakan dampak nyata program kami
           </p>
         </div>
 
-        <div className="relative max-w-6xl mx-auto">
-          <div className="grid items-center grid-cols-1 gap-8 md:grid-cols-2 lg:gap-12">
-            <div className="relative order-2 hidden lg:order-1 md:block">
-              <div className="relative w-full max-w-md mx-auto lg:mx-0">
+        <div className="relative mx-auto max-w-6xl">
+          <div className="grid grid-cols-1 gap-8 items-center md:grid-cols-2 lg:gap-12">
+            <div className="hidden relative order-2 lg:order-1 md:block">
+              <div className="relative mx-auto w-full max-w-md lg:mx-0">
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={currentTestimonial.id}
@@ -79,22 +80,23 @@ const Testimonial = () => {
                     transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
                     className="relative"
                   >
-                    <div className="relative z-10 overflow-hidden bg-white rounded-2xl">
+                    <div className="overflow-hidden relative z-10 bg-white rounded-2xl">
                       <img 
                         src={currentTestimonial.image}
                         alt={currentTestimonial.name}
                         className="object-cover w-full h-96"
+                        onError={e => { e.target.src = '/storage/testimoni/default.jpg'; }}
                       />
                     </div>
 
                     {/* Dekorasi */}
                     <motion.div 
-                      className="absolute w-24 h-24 bg-blue-100 -top-6 -left-6 rounded-2xl"
+                      className="absolute -top-6 -left-6 w-24 h-24 bg-blue-100 rounded-2xl"
                       animate={{ rotate: [0, 5, -5, 0], scale: [1, 1.05, 0.95, 1] }}
                       transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
                     />
                     <motion.div 
-                      className="absolute w-32 h-32 bg-indigo-100 -bottom-6 -right-6 rounded-2xl"
+                      className="absolute -right-6 -bottom-6 w-32 h-32 bg-indigo-100 rounded-2xl"
                       animate={{ rotate: [0, -5, 5, 0], scale: [1, 0.95, 1.05, 1] }}
                       transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
                     />
@@ -112,22 +114,23 @@ const Testimonial = () => {
                   exit={{ opacity: 0, x: -50 }}
                   transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
                 >
-                  <Card className="border-0 bg-white/80 backdrop-blur-sm">
+                  <Card className="border-0 backdrop-blur-sm bg-white/80">
                     <CardBody className="p-8">
-                      <Quote className="w-12 h-12 mb-6 text-blue-500 opacity-20" />
+                      <Quote className="mb-6 w-12 h-12 text-blue-500 opacity-20" />
                       <blockquote className="mb-8 text-xl font-medium leading-relaxed text-gray-800 md:text-2xl">
                         "{currentTestimonial.quote}"
                       </blockquote>
                       <div className="mb-6">
-                        <span className="px-3 py-1 text-sm font-medium text-blue-600 rounded-full bg-blue-50">
+                        <span className="px-3 py-1 text-sm font-medium text-blue-600 bg-blue-50 rounded-full">
                           {currentTestimonial.rating}
                         </span>
                       </div>
-                      <div className="flex items-center gap-4">
+                      <div className="flex gap-4 items-center">
                         <Avatar
                           src={currentTestimonial.image}
                           alt={currentTestimonial.name}
                           className="w-12 h-12"
+                          onError={e => { e.target.src = '/storage/testimoni/default.jpg'; }}
                         />
                         <div>
                           <h4 className="text-lg font-bold text-gray-900">{currentTestimonial.name}</h4>
@@ -142,8 +145,8 @@ const Testimonial = () => {
             </div>
           </div>
 
-          <div className="flex items-center justify-center gap-4 mt-8">
-            <Button isIconOnly variant="flat" className="bg-white/80 backdrop-blur-sm hover:bg-white" onPress={prevTestimonial}>
+          <div className="flex gap-4 justify-center items-center mt-8">
+            <Button isIconOnly variant="flat" className="backdrop-blur-sm bg-white/80 hover:bg-white" onPress={prevTestimonial}>
               <ChevronLeft className="w-5 h-5" />
             </Button>
             <div className="flex gap-2">
@@ -155,7 +158,7 @@ const Testimonial = () => {
                 />
               ))}
             </div>
-            <Button isIconOnly variant="flat" className="bg-white/80 backdrop-blur-sm hover:bg-white" onPress={nextTestimonial}>
+            <Button isIconOnly variant="flat" className="backdrop-blur-sm bg-white/80 hover:bg-white" onPress={nextTestimonial}>
               <ChevronRight className="w-5 h-5" />
             </Button>
           </div>
