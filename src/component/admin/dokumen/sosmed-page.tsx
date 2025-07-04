@@ -461,8 +461,8 @@ export default function AdminDokumenSosmedPage() {
           <CardTitle className="text-lg">Filter & Pencarian</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-            <div>
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-4">
+            <div className="space-y-2">
               <Label htmlFor="search">Cari Pendaftar/File</Label>
               <div className="relative">
                 <Search className="absolute w-4 h-4 text-gray-400 left-3 top-3" />
@@ -476,7 +476,7 @@ export default function AdminDokumenSosmedPage() {
               </div>
             </div>
             
-            <div>
+            <div className="space-y-2">
               <Label htmlFor="status">Status</Label>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger>
@@ -491,7 +491,7 @@ export default function AdminDokumenSosmedPage() {
               </Select>
             </div>
             
-            <div>
+            <div className="space-y-2">
               <Label htmlFor="type">Jenis Dokumen</Label>
               <Select value={documentTypeFilter} onValueChange={setDocumentTypeFilter}>
                 <SelectTrigger>
