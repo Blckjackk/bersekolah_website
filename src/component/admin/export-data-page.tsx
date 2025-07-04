@@ -165,51 +165,21 @@ export default function ExportDataPage() {
       const selectedFormat = exportFormats.find(format => format.id === exportFormat);
       const fileExtension = selectedFormat?.extension || '.xlsx';
       const fileName = `bersekolah_export_${new Date().toISOString().slice(0, 10)}${fileExtension}`;      // Handle different response types
-      let blob;
-      const contentType = response.headers.get('Content-Type');
-      
-      // Set correct MIME type for blob based on format
-      const mimeTypes = {
-        'excel': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        'csv': 'text/csv',
-        'json': 'application/json'
-      };
-      
-      if (exportFormat === 'json' && contentType?.includes('application/json')) {
-        // For JSON format, get JSON response and create blob with proper formatting
-        const jsonData = await response.json();
-        blob = new Blob([JSON.stringify(jsonData, null, 2)], { type: mimeTypes.json });
-      } else {
-        // For Excel and CSV, get binary blob response directly
-        blob = await response.blob();
-      }
-      
-      // Check if blob is valid
+      const blob = await response.blob();
       if (!blob) {
         throw new Error("Gagal mendapatkan data ekspor");
       }
-      
-      // Download file with appropriate MIME type
-      const url = window.URL.createObjectURL(
-        new Blob([blob], { type: mimeTypes[exportFormat as keyof typeof mimeTypes] || 'application/octet-stream' })
-      );
-      
-      // Create hidden anchor and trigger download
+      const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.style.display = 'none';
       a.href = url;
       a.download = fileName;
-      
-      // Append to body, click, then clean up
       document.body.appendChild(a);
       a.click();
-      
-      // Cleanup
       setTimeout(() => {
         document.body.removeChild(a);
         window.URL.revokeObjectURL(url);
       }, 100);
-      window.URL.revokeObjectURL(url);
       
       // Notifikasi sukses
       toast({
@@ -331,7 +301,7 @@ export default function ExportDataPage() {
 
   return (
     <div className="container py-6 mx-auto space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold">Ekspor Data</h1>
           <p className="text-muted-foreground">
@@ -345,7 +315,7 @@ export default function ExportDataPage() {
         <div className="lg:col-span-2">
           <Card>
             <CardHeader>
-              <div className="flex items-center gap-2">
+              <div className="flex gap-2 items-center">
                 <DatabaseIcon className="w-5 h-5 text-primary" />
                 <CardTitle>Pilih Tabel untuk Diekspor</CardTitle>
               </div>
@@ -367,14 +337,14 @@ export default function ExportDataPage() {
               
               <div className="grid gap-4 md:grid-cols-2">
                 {exportableTables.map((table) => (
-                  <div key={table.id} className="flex items-start p-3 space-x-3 border rounded-md">
+                  <div key={table.id} className="flex items-start p-3 space-x-3 rounded-md border">
                     <Checkbox 
                       id={`table-${table.id}`} 
                       checked={selectedTables.includes(table.id)}
                       onCheckedChange={() => handleTableSelect(table.id)}
                     />
                     <div className="grid gap-1.5">
-                      <div className="flex items-center gap-2">
+                      <div className="flex gap-2 items-center">
                         {table.icon && <table.icon className="w-4 h-4 text-muted-foreground" />}
                         <Label htmlFor={`table-${table.id}`} className="font-medium">{table.name}</Label>
                       </div>
@@ -390,7 +360,7 @@ export default function ExportDataPage() {
         {/* Panel opsi ekspor */}
         <Card>
           <CardHeader>
-            <div className="flex items-center gap-2">
+            <div className="flex gap-2 items-center">
               <FileSpreadsheet className="w-5 h-5 text-primary" />
               <CardTitle>Opsi Ekspor</CardTitle>
             </div>
@@ -439,12 +409,12 @@ export default function ExportDataPage() {
             >
               {isLoading ? (
                 <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  <Loader2 className="mr-2 w-4 h-4 animate-spin" />
                   Memproses...
                 </>
               ) : (
                 <>
-                  <Download className="w-4 h-4 mr-2" />
+                  <Download className="mr-2 w-4 h-4" />
                   Ekspor Data
                 </>
               )}
