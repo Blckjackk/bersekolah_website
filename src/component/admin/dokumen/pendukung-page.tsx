@@ -270,21 +270,21 @@ export default function AdminDokumenPendukungPage() {
       case 'verified':
         return (
           <Badge className="text-green-800 bg-green-100 hover:bg-green-100">
-            <CheckCircle2 className="w-3 h-3 mr-1" />
+            <CheckCircle2 className="mr-1 w-3 h-3" />
             Terverifikasi
           </Badge>
         )
       case 'rejected':
         return (
           <Badge variant="destructive">
-            <XCircle className="w-3 h-3 mr-1" />
+            <XCircle className="mr-1 w-3 h-3" />
             Ditolak
           </Badge>
         )
       default:
         return (
           <Badge variant="secondary">
-            <Clock className="w-3 h-3 mr-1" />
+            <Clock className="mr-1 w-3 h-3" />
             Menunggu
           </Badge>
         )
@@ -404,17 +404,15 @@ export default function AdminDokumenPendukungPage() {
     verified: documents.filter(d => d.status === 'verified').length,
     rejected: documents.filter(d => d.status === 'rejected').length,
     achievement: documents.filter(d => d.document_type === 'achievement_certificate').length,
-    recommendation: documents.filter(d => d.document_type === 'recommendation_letter').length,
     essay: documents.filter(d => d.document_type === 'essay_motivation').length,
-    cv: documents.filter(d => d.document_type === 'cv_resume').length,
     others: documents.filter(d => d.document_type === 'other_document').length
   }
 
   if (isLoading) {
     return (
       <div className="container py-6 mx-auto">
-        <div className="flex items-center justify-center h-64">
-          <div className="flex items-center gap-2">
+        <div className="flex justify-center items-center h-64">
+          <div className="flex gap-2 items-center">
             <Loader2 className="w-6 h-6 animate-spin" />
             <span>Memuat data dokumen pendukung...</span>
           </div>
@@ -453,10 +451,10 @@ export default function AdminDokumenPendukungPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 gap-4 mb-6 md:grid-cols-6">
+      <div className="grid grid-cols-1 gap-4 mb-6 md:grid-cols-4">
         <Card>
           <CardContent className="p-4">
-            <div className="flex items-center justify-between">
+            <div className="flex justify-between items-center">
               <FileText className="w-8 h-8 text-blue-500" />
               <div className="text-right">
                 <p className="text-sm text-gray-500">Total Dokumen</p>
@@ -468,7 +466,7 @@ export default function AdminDokumenPendukungPage() {
         
         <Card>
           <CardContent className="p-4">
-            <div className="flex items-center justify-between">
+            <div className="flex justify-between items-center">
               <Clock className="w-8 h-8 text-yellow-500" />
               <div className="text-right">
                 <p className="text-sm text-gray-500">Menunggu</p>
@@ -480,19 +478,7 @@ export default function AdminDokumenPendukungPage() {
         
         <Card>
           <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <CheckCircle2 className="w-8 h-8 text-green-500" />
-              <div className="text-right">
-                <p className="text-sm text-gray-500">Terverifikasi</p>
-                <p className="text-2xl font-bold">{stats.verified}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
+            <div className="flex justify-between items-center">
               <Award className="w-8 h-8 text-amber-500" />
               <div className="text-right">
                 <p className="text-sm text-gray-500">Prestasi</p>
@@ -504,23 +490,11 @@ export default function AdminDokumenPendukungPage() {
         
         <Card>
           <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <Mail className="w-8 h-8 text-blue-500" />
+            <div className="flex justify-between items-center">
+              <BookOpen className="w-8 h-8 text-purple-500" />
               <div className="text-right">
-                <p className="text-sm text-gray-500">Rekomendasi</p>
-                <p className="text-2xl font-bold">{stats.recommendation}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <FileUser className="w-8 h-8 text-green-500" />
-              <div className="text-right">
-                <p className="text-sm text-gray-500">CV/Resume</p>
-                <p className="text-2xl font-bold">{stats.cv}</p>
+                <p className="text-sm text-gray-500">Essay</p>
+                <p className="text-2xl font-bold">{stats.essay}</p>
               </div>
             </div>
           </CardContent>
@@ -537,7 +511,7 @@ export default function AdminDokumenPendukungPage() {
             <div className="space-y-2">
               <Label htmlFor="search">Cari Pendaftar/File</Label>
               <div className="relative">
-                <Search className="absolute w-4 h-4 text-gray-400 left-3 top-3" />
+                <Search className="absolute top-3 left-3 w-4 h-4 text-gray-400" />
                 <Input
                   id="search"
                   placeholder="Nama, email, atau nama file..."
@@ -577,7 +551,7 @@ export default function AdminDokumenPendukungPage() {
               </Select>
             </div>
             
-            <div className="flex items-end gap-2">
+            <div className="flex gap-2 items-end">
               <Button 
                 variant="outline" 
                 onClick={() => {
@@ -593,7 +567,7 @@ export default function AdminDokumenPendukungPage() {
                 variant="outline"
                 onClick={() => fetchDocuments(true)}
                 disabled={isRefreshing}
-                className="w-10 p-0"
+                className="p-0 w-10"
               >
                 <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
               </Button>
@@ -605,7 +579,7 @@ export default function AdminDokumenPendukungPage() {
       {/* Documents Table */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex justify-between items-center">
             <CardTitle>Daftar Dokumen Pendukung</CardTitle>
             <Badge variant="outline">
               {filteredDocuments.length} dokumen
@@ -628,7 +602,7 @@ export default function AdminDokumenPendukungPage() {
               {filteredDocuments.map((doc) => (
                 <TableRow key={doc.id}>
                   <TableCell>
-                    <div className="flex items-center gap-2">
+                    <div className="flex gap-2 items-center">
                       <User className="w-4 h-4 text-gray-400" />
                       <div>
                         <div className="font-medium">{doc.user.name}</div>
@@ -637,13 +611,13 @@ export default function AdminDokumenPendukungPage() {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-2">
+                    <div className="flex gap-2 items-center">
                       {getDocumentTypeIcon(doc.document_type)}
                       <span className="font-medium">{getDocumentTypeName(doc.document_type)}</span>
                     </div>
                   </TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-2">
+                    <div className="flex gap-2 items-center">
                       {isFilePDF(doc.file_name) ? 
                         <FileText className="w-4 h-4 text-red-400" /> : 
                         <FileText className="w-4 h-4 text-blue-400" />
@@ -664,7 +638,7 @@ export default function AdminDokumenPendukungPage() {
                     {getStatusBadge(doc.status)}
                   </TableCell>
                   <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
+                    <div className="flex gap-2 justify-end">
                       <Button 
                         variant="outline" 
                         size="sm" 
@@ -712,7 +686,7 @@ export default function AdminDokumenPendukungPage() {
           
           {filteredDocuments.length === 0 && (
             <div className="py-8 text-center">
-              <FileText className="w-12 h-12 mx-auto mb-4 text-gray-400 opacity-50" />
+              <FileText className="mx-auto mb-4 w-12 h-12 text-gray-400 opacity-50" />
               <p className="text-gray-500">Tidak ada dokumen pendukung yang ditemukan</p>
             </div>
           )}
@@ -735,7 +709,7 @@ export default function AdminDokumenPendukungPage() {
             </DialogDescription>
           </DialogHeader>
           
-          <div className="flex-1 min-h-0 overflow-hidden border rounded-lg">
+          <div className="overflow-hidden flex-1 min-h-0 rounded-lg border">
             {selectedDoc && (
               isFilePDF(selectedDoc.file_name) ? (
                 <iframe 
@@ -745,7 +719,7 @@ export default function AdminDokumenPendukungPage() {
                   sandbox="allow-scripts allow-same-origin allow-forms"
                 />
               ) : (
-                <div className="flex items-center justify-center w-full h-full bg-gray-50">
+                <div className="flex justify-center items-center w-full h-full bg-gray-50">
                   <img 
                     src={selectedDoc.file_path} 
                     alt="Document Preview" 
@@ -770,7 +744,7 @@ export default function AdminDokumenPendukungPage() {
                 onClick={() => window.open(selectedDoc.file_path, '_blank')}
                 className="bg-blue-600 hover:bg-blue-700"
               >
-                <Download className="w-4 h-4 mr-1" />
+                <Download className="mr-1 w-4 h-4" />
                 Download / Buka di Tab Baru
               </Button>
             )}
@@ -825,15 +799,15 @@ export default function AdminDokumenPendukungPage() {
             >
               {isUpdating ? (
                 <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  <Loader2 className="mr-2 w-4 h-4 animate-spin" />
                   Memproses...
                 </>
               ) : (
                 <>
                   {verifyStatus === 'verified' ? (
-                    <CheckCircle2 className="w-4 h-4 mr-2" />
+                    <CheckCircle2 className="mr-2 w-4 h-4" />
                   ) : (
-                    <XCircle className="w-4 h-4 mr-2" />
+                    <XCircle className="mr-2 w-4 h-4" />
                   )}
                   {verifyStatus === 'verified' ? 'Verifikasi' : 'Tolak'} Dokumen
                 </>
