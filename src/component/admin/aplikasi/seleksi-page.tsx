@@ -177,6 +177,13 @@ interface ApplicationDetail {
   };
 }
 
+interface MediaSosial {
+  id: number;
+  link_grup_beasiswa: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export default function SeleksiBeasiswaPage() {
   const [applications, setApplications] = useState<BeasiswaApplication[]>([])
   const [statistics, setStatistics] = useState<Statistics | null>(null)
@@ -199,6 +206,7 @@ export default function SeleksiBeasiswaPage() {
   const [statusDialog, setStatusDialog] = useState(false)
   const [bulkDialog, setBulkDialog] = useState(false)
   const [interviewDialog, setInterviewDialog] = useState(false)
+  const [mediaSosialDialog, setMediaSosialDialog] = useState(false)
 
   // Form states
   const [selectedApplications, setSelectedApplications] = useState<number[]>([])
@@ -214,8 +222,15 @@ export default function SeleksiBeasiswaPage() {
     catatan_admin: ''
   })
   
+  // Media Sosial states
+  const [mediaSosial, setMediaSosial] = useState<MediaSosial | null>(null)
+  const [mediaSosialForm, setMediaSosialForm] = useState({
+    link_grup_beasiswa: ''
+  })
+  
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false)
   const [isBulkUpdating, setIsBulkUpdating] = useState(false)
+  const [isUpdatingMediaSosial, setIsUpdatingMediaSosial] = useState(false)
 
   const { toast } = useToast()
 
@@ -317,6 +332,78 @@ export default function SeleksiBeasiswaPage() {
     } catch (error) {
       console.error('Error fetching statistics:', error)
       setStatisticsError(error instanceof Error ? error.message : "Gagal mengambil data statistik");
+    }
+  }
+
+  // Fetch media sosial settings
+  const fetchMediaSosial = async () => {
+    try {
+      const token = localStorage.getItem('bersekolah_auth_token')
+      if (!token) return
+
+      const baseURL = import.meta.env.PUBLIC_API_BASE_URL
+      const response = await fetch(`${baseURL}/admin/media-sosial`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json'
+        }
+      })
+
+      if (response.ok) {
+        const result = await response.json()
+        if (result.success) {
+          setMediaSosial(result.data)
+          setMediaSosialForm({
+            link_grup_beasiswa: result.data.link_grup_beasiswa || ''
+          })
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching media sosial:', error)
+    }
+  }
+
+  // Update media sosial settings
+  const updateMediaSosial = async () => {
+    setIsUpdatingMediaSosial(true)
+    try {
+      const token = localStorage.getItem('bersekolah_auth_token')
+      if (!token) throw new Error('No token')
+
+      const baseURL = import.meta.env.PUBLIC_API_BASE_URL
+      const response = await fetch(`${baseURL}/admin/media-sosial`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(mediaSosialForm)
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.message || 'Failed to update media sosial')
+      }
+
+      toast({
+        title: "Berhasil",
+        description: "Pengaturan media sosial berhasil diperbarui.",
+      })
+
+      setMediaSosialDialog(false)
+      fetchMediaSosial() // Refresh data
+
+    } catch (error) {
+      console.error('Error updating media sosial:', error)
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Gagal memperbarui pengaturan media sosial.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsUpdatingMediaSosial(false)
     }
   }
 
@@ -513,6 +600,7 @@ export default function SeleksiBeasiswaPage() {
   useEffect(() => {
     fetchApplications()
     fetchStatistics()
+    fetchMediaSosial() // Add this line to fetch media sosial on load
   }, [currentPage, perPage, searchTerm, statusFilter, periodFilter, finalizedFilter])
 
   useEffect(() => {
@@ -559,6 +647,16 @@ export default function SeleksiBeasiswaPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <Button 
+            variant="outline" 
+            onClick={() => {
+              fetchMediaSosial()
+              setMediaSosialDialog(true)
+            }}
+          >
+            <LinkIcon className="w-4 h-4 mr-2" />
+            Atur Link Grup WA
+          </Button>
           <Button 
             variant="outline" 
             onClick={() => fetchApplications(true)}
@@ -685,7 +783,7 @@ export default function SeleksiBeasiswaPage() {
       <Card>
         <CardContent className="p-4">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-5">
-            <div>
+            <div className="space-y-2">
               <Label htmlFor="search">Cari Aplikasi</Label>
               <div className="relative">
                 <Search className="absolute w-4 h-4 text-gray-500 transform -translate-y-1/2 left-3 top-1/2" />
@@ -699,7 +797,7 @@ export default function SeleksiBeasiswaPage() {
               </div>
             </div>
 
-            <div>
+            <div className="space-y-2">
               <Label htmlFor="status-filter">Status</Label>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger>
@@ -716,7 +814,7 @@ export default function SeleksiBeasiswaPage() {
               </Select>
             </div>
 
-            <div>
+            <div className="space-y-2">
               <Label htmlFor="period-filter">Periode</Label>
               <Select value={periodFilter} onValueChange={setPeriodFilter}>
                 <SelectTrigger>
@@ -733,7 +831,7 @@ export default function SeleksiBeasiswaPage() {
               </Select>
             </div>
 
-            <div>
+            <div className="space-y-2">
               <Label htmlFor="finalized-filter">Status Finalisasi</Label>
               <Select value={finalizedFilter} onValueChange={setFinalizedFilter}>
                 <SelectTrigger>
@@ -747,7 +845,7 @@ export default function SeleksiBeasiswaPage() {
               </Select>
             </div>
 
-            <div>
+            <div className="space-y-2">
               <Label htmlFor="per-page">Items per halaman</Label>
               <Select value={perPage.toString()} onValueChange={(value) => setPerPage(parseInt(value))}>
                 <SelectTrigger>
@@ -1287,6 +1385,53 @@ export default function SeleksiBeasiswaPage() {
                 </>
               ) : (
                 `Perbarui ${selectedApplications.length} Aplikasi`
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Media Sosial Dialog */}
+      <Dialog open={mediaSosialDialog} onOpenChange={setMediaSosialDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Pengaturan Link Grup WhatsApp</DialogTitle>
+            <DialogDescription>
+              Atur link grup WhatsApp untuk peserta beasiswa yang diterima
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="link_grup_beasiswa">Link Grup WhatsApp Beasiswa</Label>
+              <Input
+                id="link_grup_beasiswa"
+                type="url"
+                placeholder="https://chat.whatsapp.com/..."
+                value={mediaSosialForm.link_grup_beasiswa}
+                onChange={(e) => setMediaSosialForm(prev => ({ ...prev, link_grup_beasiswa: e.target.value }))}
+              />
+              <p className="text-sm text-muted-foreground mt-1">
+                Link ini akan digunakan untuk mengundang peserta yang diterima ke grup WhatsApp beasiswa
+              </p>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setMediaSosialDialog(false)}>
+              Batal
+            </Button>
+            <Button 
+              onClick={updateMediaSosial} 
+              disabled={isUpdatingMediaSosial}
+            >
+              {isUpdatingMediaSosial ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Memperbarui...
+                </>
+              ) : (
+                'Perbarui Pengaturan'
               )}
             </Button>
           </DialogFooter>
