@@ -681,7 +681,7 @@ export default function SeleksiBerkasPage() {
                 <CardDescription>
                   {selectionStatus.finalized_at ? (
                     <>
-                      Aplikasi dikirimkan pada: {" "}
+                      Berkas dikirimkan pada: {" "}
                       <span className="font-medium">
                         {new Date(selectionStatus.finalized_at).toLocaleDateString('id-ID', { 
                           day: 'numeric', 
@@ -692,19 +692,10 @@ export default function SeleksiBerkasPage() {
                         })}
                       </span>
                     </>
-                  ) : selectionStatus.submitted_at ? (
-                    <>
-                      Berkas dikirimkan pada: {" "}
-                      <span className="font-medium">
-                        {new Date(selectionStatus.submitted_at).toLocaleDateString('id-ID', { 
-                          day: 'numeric', 
-                          month: 'long', 
-                          year: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}
-                      </span>
-                    </>
+                  ) : selectionStatus.can_finalize ? (
+                    "Berkas lengkap dan siap untuk dikirimkan"
+                  ) : selectionStatus.completed_required === selectionStatus.required_documents ? (
+                    "Berkas lengkap, menunggu verifikasi admin"
                   ) : (
                     "Berkas belum lengkap untuk dikirimkan"
                   )}
