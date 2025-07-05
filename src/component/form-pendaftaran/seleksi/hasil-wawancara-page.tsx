@@ -258,105 +258,27 @@ export default function HasilSeleksiPage() {
       case "diterima":
         return (
           <div className="space-y-4">
-            {/* Step 1: Terima Beasiswa */}
+            {/* Step 1: Konfirmasi Penerimaan Beasiswa */}
             <div className="overflow-hidden border rounded-lg">
               <div className="flex items-center justify-between p-4 bg-gray-50">
                 <div className="flex items-center gap-3">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                    acceptanceStatus === 'accepted' 
-                      ? 'bg-green-100 text-green-600' 
-                      : 'bg-emerald-100 text-emerald-600'
-                  }`}>
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium bg-emerald-100 text-emerald-600">
                     1
                   </div>
-                  <h4 className="font-medium">Terima Beasiswa</h4>
-                </div>
-                <div>
-                  {acceptanceStatus === 'accepted' ? (
-                    <Badge className="text-green-800 bg-green-100 hover:bg-green-100">
-                      <CheckCircle2 className="w-3 h-3 mr-1" />
-                      Selesai
-                    </Badge>
-                  ) : (
-                    <Badge className="text-yellow-800 bg-yellow-100 hover:bg-yellow-100">
-                      <Clock className="w-3 h-3 mr-1" />
-                      Belum Selesai
-                    </Badge>
-                  )}
+                  <h4 className="font-medium">Konfirmasi Penerimaan Beasiswa</h4>
                 </div>
               </div>
               <div className="p-4">
                 <p className="text-sm mb-3">
-                  Klik tombol "Terima Beasiswa" untuk menyatakan kesediaan Anda menerima beasiswa ini.
+                  Lanjutkan ke halaman kelulusan untuk mengkonfirmasi penerimaan beasiswa dan melengkapi proses selanjutnya.
                 </p>
-                {acceptanceStatus !== 'accepted' && (
-                  <Button 
-                    className="bg-emerald-600 hover:bg-emerald-700"
-                    onClick={() => setShowAcceptDialog(true)}
-                  >
-                    <Trophy className="w-4 h-4 mr-2" />
-                    Terima Beasiswa
-                  </Button>
-                )}
-              </div>
-            </div>
-
-            {/* Step 2: Join Grup WhatsApp */}
-            <div className="overflow-hidden border rounded-lg">
-              <div className="flex items-center justify-between p-4 bg-gray-50">
-                <div className="flex items-center gap-3">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                    hasJoinedGroup 
-                      ? 'bg-green-100 text-green-600' 
-                      : acceptanceStatus === 'accepted'
-                        ? 'bg-emerald-100 text-emerald-600'
-                        : 'bg-gray-100 text-gray-400'
-                  }`}>
-                    2
-                  </div>
-                  <h4 className={`font-medium ${
-                    acceptanceStatus !== 'accepted' ? 'text-gray-400' : ''
-                  }`}>
-                    Bergabung dengan Grup WhatsApp
-                  </h4>
-                </div>
-                <div>
-                  {hasJoinedGroup ? (
-                    <Badge className="text-green-800 bg-green-100 hover:bg-green-100">
-                      <CheckCircle2 className="w-3 h-3 mr-1" />
-                      Selesai
-                    </Badge>
-                  ) : acceptanceStatus !== 'accepted' ? (
-                    <Badge variant="outline" className="text-gray-500 bg-gray-100 hover:bg-gray-100">
-                      <Clock className="w-3 h-3 mr-1" />
-                      Menunggu
-                    </Badge>
-                  ) : (
-                    <Badge className="text-yellow-800 bg-yellow-100 hover:bg-yellow-100">
-                      <Clock className="w-3 h-3 mr-1" />
-                      Belum Selesai
-                    </Badge>
-                  )}
-                </div>
-              </div>
-              <div className="p-4">
-                <p className="text-sm mb-3">
-                  Bergabunglah dengan grup WhatsApp beasiswa untuk mendapatkan informasi dan update terbaru.
-                </p>
-                {acceptanceStatus === 'accepted' && !hasJoinedGroup && mediaSosial?.link_grup_beasiswa && (
-                  <Button 
-                    className="bg-emerald-600 hover:bg-emerald-700"
-                    onClick={() => handleJoinWhatsAppGroup(mediaSosial.link_grup_beasiswa)}
-                  >
-                    <MessageSquare className="w-4 h-4 mr-2" />
-                    Join Grup WhatsApp
-                  </Button>
-                )}
-                {acceptanceStatus !== 'accepted' && (
-                  <p className="text-sm text-gray-500 italic">
-                    Selesaikan langkah 1 terlebih dahulu untuk melanjutkan.
-                  </p>
-                )}
+                <Button 
+                  className="bg-emerald-600 hover:bg-emerald-700"
+                  onClick={() => window.location.href = '/form-pendaftaran/status/kelulusan'}
+                >
+                  <Trophy className="w-4 h-4 mr-2" />
+                  Lanjutkan ke Halaman Kelulusan
+                </Button>
               </div>
             </div>
           </div>
