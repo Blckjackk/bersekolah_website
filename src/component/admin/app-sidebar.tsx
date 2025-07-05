@@ -95,11 +95,6 @@ const data = {
     {      title: "Konten & Halaman",
       url: "#",
       icon: BookOpen,      items: [        {
-          title: "Kelola Konten",
-          url: "/dashboard/content",
-          icon: BookOpen,
-        },
-        {
           title: "Kelola Artikel",
           url: "/dashboard/kelola-artikel",
           icon: FileText,

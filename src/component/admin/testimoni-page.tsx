@@ -49,7 +49,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Switch } from "@/components/ui/switch";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 import { TestimoniService } from "@/lib/testimoni-service";
 import type { Testimoni } from "@/lib/testimoni-service";
@@ -78,6 +84,7 @@ export default function TestimoniPage() {
     foto_testimoni: ""
   });
   const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   // Toast notification state for simple implementation
@@ -141,19 +148,29 @@ export default function TestimoniPage() {
       [name]: value
     });
   };
-  
-  // Handle switch for status changes
-  const handleSwitchChange = (checked: boolean) => {
+
+  // Handle status change
+  const handleStatusChange = (value: string) => {
     setFormData({
       ...formData,
-      status: checked ? 'active' : 'inactive'
+      status: value as 'active' | 'inactive'
     });
   };
   
-  // Handle photo file upload
+  // Handle photo file upload with preview
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setPhotoFile(e.target.files[0]);
+      const file = e.target.files[0];
+      setPhotoFile(file);
+      
+      // Create preview URL
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        if (event.target?.result) {
+          setPhotoPreview(event.target.result as string);
+        }
+      };
+      reader.readAsDataURL(file);
     }
   };
   
@@ -168,6 +185,7 @@ export default function TestimoniPage() {
       foto_testimoni: ""
     });
     setPhotoFile(null);
+    setPhotoPreview("");
     setCreateDialog(true);
   };
   
@@ -182,6 +200,7 @@ export default function TestimoniPage() {
       foto_testimoni: ""
     });
     setPhotoFile(null);
+    setPhotoPreview("");
   };
   
   // Handle edit button click
@@ -196,6 +215,7 @@ export default function TestimoniPage() {
       foto_testimoni: item.foto_testimoni || ""
     });
     setPhotoFile(null);
+    setPhotoPreview("");
     setEditDialog(true);
   };
   
@@ -204,32 +224,12 @@ export default function TestimoniPage() {
     setSelectedTestimoni(item);
     setDeleteDialog(true);
   };
-    // Handle toggle status
-  const handleToggleStatus = async (item: Testimoni) => {
-    try {
-      const newStatus = item.status === 'active' ? 'inactive' : 'active';
-      
-      // @ts-ignore - TypeScript can't properly recognize the imported service
-      await TestimoniService.updateTestimoniStatus(item.id, newStatus);
-      
-      showToast(`Status testimoni berhasil ${newStatus === 'active' ? 'diaktifkan' : 'dinonaktifkan'}`, "success");
-      
-      // Update local data
-      setTestimoni(testimoni.map(t => 
-        t.id === item.id ? { ...t, status: newStatus } : t
-      ));
-    } catch (err) {
-      console.error("Error toggling testimoni status:", err);
-      const errorMessage = err instanceof Error ? err.message : "Gagal mengubah status testimoni";
-      showToast(errorMessage, "error");
-    }
-  };
   
   // Handle create testimoni
   const handleCreateTestimoni = async () => {
     try {
       setIsSubmitting(true);
-        // Validation
+      // Validation
       if (!formData.nama || !formData.angkatan_beswan || !formData.isi_testimoni) {
         showToast("Mohon lengkapi data yang diperlukan", "error");
         return;
@@ -259,7 +259,7 @@ export default function TestimoniPage() {
     
     try {
       setIsSubmitting(true);
-        // Validation
+      // Validation
       if (!formData.nama || !formData.angkatan_beswan || !formData.isi_testimoni) {
         showToast("Mohon lengkapi data yang diperlukan", "error");
         return;
@@ -286,7 +286,7 @@ export default function TestimoniPage() {
   // Handle delete testimoni
   const handleDeleteTestimoni = async () => {
     if (!selectedTestimoni) return;
-      try {
+    try {
       setIsSubmitting(true);
       
       // @ts-ignore - TypeScript can't properly recognize the imported service
@@ -433,21 +433,21 @@ export default function TestimoniPage() {
                 <TableHead>Nama</TableHead>
                 <TableHead>Angkatan</TableHead>
                 <TableHead>Aktifitas Saat Ini</TableHead>
-                <TableHead className="text-center">Status</TableHead>
                 <TableHead className="text-right">Aksi</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredTestimoni.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="h-24 text-center">
+                  <TableCell colSpan={5} className="h-24 text-center">
                     Tidak ada data testimoni
                   </TableCell>
                 </TableRow>
               ) : (
                 filteredTestimoni.map((item) => (
                   <TableRow key={item.id}>
-                    <TableCell>                      <div className="overflow-hidden relative w-10 h-10 rounded-full">
+                    <TableCell>
+                      <div className="overflow-hidden relative w-10 h-10 rounded-full">
                         <img 
                           src={item.foto_testimoni_url || '/storage/testimoni/default.jpg'}
                           alt={item.nama}
@@ -462,17 +462,6 @@ export default function TestimoniPage() {
                     <TableCell className="font-medium">{item.nama}</TableCell>
                     <TableCell>{item.angkatan_beswan}</TableCell>
                     <TableCell>{item.sekarang_dimana || '-'}</TableCell>
-                    <TableCell className="text-center">
-                      <div className="flex justify-center items-center">
-                        <Switch 
-                          checked={item.status === 'active'}
-                          onCheckedChange={() => handleToggleStatus(item)}
-                        />
-                        <span className="ml-2 text-sm">
-                          {item.status === 'active' ? 'Aktif' : 'Non-aktif'}
-                        </span>
-                      </div>
-                    </TableCell>
                     <TableCell className="text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -565,17 +554,33 @@ export default function TestimoniPage() {
                 onChange={handlePhotoChange}
                 accept="image/*"
               />
+              {photoPreview && (
+                <div className="mt-2">
+                  <p className="mb-1 text-sm font-medium">Preview foto baru:</p>
+                  <div className="overflow-hidden relative w-20 h-20 rounded-md">
+                    <img
+                      src={photoPreview}
+                      alt="Preview foto"
+                      className="object-cover w-full h-full"
+                    />
+                  </div>
+                </div>
+              )}
               <p className="text-sm text-muted-foreground">
                 Format: JPG, PNG. Maks 2MB.
               </p>
             </div>
-            <div className="flex items-center space-x-2">
-              <Switch 
-                id="status" 
-                checked={formData.status === 'active'} 
-                onCheckedChange={handleSwitchChange}
-              />
-              <Label htmlFor="status">Status Aktif</Label>
+            <div className="space-y-2">
+              <Label htmlFor="status">Status</Label>
+              <Select value={formData.status} onValueChange={handleStatusChange}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Pilih status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="active">Aktif</SelectItem>
+                  <SelectItem value="inactive">Non-aktif</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
           <DialogFooter>
@@ -660,30 +665,51 @@ export default function TestimoniPage() {
                 onChange={handlePhotoChange}
                 accept="image/*"
               />
-              {formData.foto_testimoni && (
-                <div className="mt-2">
-                  <p className="mb-1 text-sm font-medium">Foto saat ini:</p>
-                  <div className="overflow-hidden relative w-20 h-20 rounded-md">
-                    <img
-                      src={selectedTestimoni?.foto_testimoni_url || '/storage/testimoni/default.jpg'}
-                      alt="Foto testimoni"
-                      className="object-cover w-full h-full"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.src = '/storage/testimoni/default.jpg';
-                      }}
-                    />
+              <div className="flex gap-4 mt-2">
+                {selectedTestimoni?.foto_testimoni_url && (
+                  <div>
+                    <p className="mb-1 text-sm font-medium">Foto saat ini:</p>
+                    <div className="overflow-hidden relative w-20 h-20 rounded-md">
+                      <img
+                        src={selectedTestimoni.foto_testimoni_url || '/storage/testimoni/default.jpg'}
+                        alt="Foto testimoni saat ini"
+                        className="object-cover w-full h-full"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = '/storage/testimoni/default.jpg';
+                        }}
+                      />
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
+                {photoPreview && (
+                  <div>
+                    <p className="mb-1 text-sm font-medium">Preview foto baru:</p>
+                    <div className="overflow-hidden relative w-20 h-20 rounded-md">
+                      <img
+                        src={photoPreview}
+                        alt="Preview foto baru"
+                        className="object-cover w-full h-full"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Format: JPG, PNG. Maks 2MB. Kosongkan jika tidak ingin mengubah foto.
+              </p>
             </div>
-            <div className="flex items-center space-x-2">
-              <Switch 
-                id="edit-status" 
-                checked={formData.status === 'active'} 
-                onCheckedChange={handleSwitchChange}
-              />
-              <Label htmlFor="edit-status">Status Aktif</Label>
+            <div className="space-y-2">
+              <Label htmlFor="edit-status">Status</Label>
+              <Select value={formData.status} onValueChange={handleStatusChange}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Pilih status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="active">Aktif</SelectItem>
+                  <SelectItem value="inactive">Non-aktif</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
           <DialogFooter>
