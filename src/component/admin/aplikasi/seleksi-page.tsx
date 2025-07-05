@@ -34,10 +34,17 @@ import {
   AlertTriangle,
   Star,
   Target,
-  Phone
+  Phone,
+  Save,
+  Link as LinkIcon2,
+  Instagram,
+  Share2,
+  ExternalLink,
+  Copy,
+  MessageCircle
 } from "lucide-react"
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -68,9 +75,10 @@ import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { useToast } from "@/hooks/use-toast"
-import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Progress } from "@/components/ui/progress"
 import { Separator } from "@/components/ui/separator"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 // Types
 interface BeasiswaApplication {
@@ -224,11 +232,15 @@ export default function SeleksiBeasiswaPage() {
   })
   
   // Media Sosial states
-  const [mediaSosial, setMediaSosial] = useState<MediaSosial | null>(null)
-  const [mediaSosialForm, setMediaSosialForm] = useState({
-    link_grup_beasiswa: ''
-  })
-  
+  const [isMediaLoading, setIsMediaLoading] = useState(true)
+  const [isMediaSaving, setIsMediaSaving] = useState(false)
+  const [mediaError, setMediaError] = useState<string | null>(null)
+  const [mediaLinks, setMediaLinks] = useState<any>(null)
+  const [twibbonLink, setTwibbonLink] = useState("")
+  const [instagramLink, setInstagramLink] = useState("")
+  const [whatsappGroupLink, setWhatsappGroupLink] = useState("")
+  const [whatsappNumber, setWhatsappNumber] = useState("")
+
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false)
   const [isBulkUpdating, setIsBulkUpdating] = useState(false)
   const [isUpdatingMediaSosial, setIsUpdatingMediaSosial] = useState(false)
@@ -327,74 +339,91 @@ export default function SeleksiBeasiswaPage() {
   }
 
   // Fetch media sosial settings
-  const fetchMediaSosial = async () => {
+  const fetchMediaLinks = async () => {
+    setIsMediaLoading(true)
+    setMediaError(null)
     try {
       const token = localStorage.getItem('bersekolah_auth_token')
-      if (!token) return
-
-      const baseURL = import.meta.env.PUBLIC_API_BASE_URL
-      const response = await fetch(`${baseURL}/admin/media-sosial`, {
+      if (!token) throw new Error('Token autentikasi tidak ditemukan')
+      const response = await fetch(`${import.meta.env.PUBLIC_API_BASE_URL}/media-sosial/latest`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Accept': 'application/json'
         }
       })
-
-      if (response.ok) {
-        const result = await response.json()
-        if (result.success) {
-          setMediaSosial(result.data)
-          setMediaSosialForm({
-            link_grup_beasiswa: result.data.link_grup_beasiswa || ''
-          })
-        }
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: response.statusText }))
+        throw new Error(errorData.message || `Failed to fetch media links: ${response.status}`)
+      }
+      const data = await response.json()
+      if (data.data && data.data.id) {
+        const latestEntry = data.data
+        setMediaLinks(latestEntry)
+        setTwibbonLink(latestEntry.twibbon_link || "")
+        setInstagramLink(latestEntry.instagram_link || "")
+        setWhatsappGroupLink(latestEntry.link_grup_beasiswa || "")
+        setWhatsappNumber(latestEntry.whatsapp_number || "")
+      } else {
+        setMediaLinks(null)
+        setTwibbonLink("")
+        setInstagramLink("")
+        setWhatsappGroupLink("")
+        setWhatsappNumber("")
       }
     } catch (error) {
-      console.error('Error fetching media sosial:', error)
+      setMediaError(error instanceof Error ? error.message : "Gagal memuat data media sosial")
+    } finally {
+      setIsMediaLoading(false)
     }
   }
 
   // Update media sosial settings
-  const updateMediaSosial = async () => {
-    setIsUpdatingMediaSosial(true)
+  const handleMediaSave = async () => {
+    setIsMediaSaving(true)
     try {
       const token = localStorage.getItem('bersekolah_auth_token')
-      if (!token) throw new Error('No token')
-
-      const baseURL = import.meta.env.PUBLIC_API_BASE_URL
-      const response = await fetch(`${baseURL}/admin/media-sosial`, {
-        method: 'PUT',
+      if (!token) throw new Error('Token autentikasi tidak ditemukan')
+      if (twibbonLink && !isValidUrl(twibbonLink)) {
+        toast({ title: "Format URL tidak valid", description: "URL Twibbon tidak valid. Pastikan diawali dengan http:// atau https://", variant: "destructive" })
+        return
+      }
+      if (instagramLink && !isValidUrl(instagramLink)) {
+        toast({ title: "Format URL tidak valid", description: "URL Instagram tidak valid. Pastikan diawali dengan http:// atau https://", variant: "destructive" })
+        return
+      }
+      if (whatsappGroupLink && !isValidUrl(whatsappGroupLink)) {
+        toast({ title: "Format URL tidak valid", description: "URL Grup WhatsApp tidak valid. Pastikan diawali dengan http:// atau https://", variant: "destructive" })
+        return
+      }
+      const isUpdate = mediaLinks && mediaLinks.id;
+      const method = isUpdate ? 'PUT' : 'POST';
+      const endpoint = isUpdate
+        ? `${import.meta.env.PUBLIC_API_BASE_URL}/admin/media-sosial/${mediaLinks.id}`
+        : `${import.meta.env.PUBLIC_API_BASE_URL}/admin/media-sosial`;
+      const response = await fetch(endpoint, {
+        method: method,
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         },
-        body: JSON.stringify(mediaSosialForm)
-      })
-
-      const result = await response.json()
-
+        body: JSON.stringify({
+          twibbon_link: twibbonLink.trim() || null,
+          instagram_link: instagramLink.trim() || null,
+          link_grup_beasiswa: whatsappGroupLink.trim() || null,
+          whatsapp_number: whatsappNumber.trim() || null
+        })
+      });
       if (!response.ok) {
-        throw new Error(result.message || 'Failed to update media sosial')
+        const errorData = await response.json().catch(() => ({ message: response.statusText }))
+        throw new Error(errorData.message || `Failed to save: ${response.status}`)
       }
-
-      toast({
-        title: "Berhasil",
-        description: "Pengaturan media sosial berhasil diperbarui.",
-      })
-
-      setMediaSosialDialog(false)
-      fetchMediaSosial() // Refresh data
-
+      await fetchMediaLinks();
+      toast({ title: "Berhasil disimpan", description: "Link media sosial berhasil diperbarui" })
     } catch (error) {
-      console.error('Error updating media sosial:', error)
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Gagal memperbarui pengaturan media sosial.",
-        variant: "destructive",
-      })
+      toast({ title: "Gagal menyimpan", description: error instanceof Error ? error.message : "Gagal menyimpan data media sosial", variant: "destructive" })
     } finally {
-      setIsUpdatingMediaSosial(false)
+      setIsMediaSaving(false)
     }
   }
 
@@ -652,7 +681,7 @@ export default function SeleksiBeasiswaPage() {
   useEffect(() => {
     fetchAllApplications()
     fetchStatistics()
-    fetchMediaSosial()
+    fetchMediaLinks()
   }, [])
 
   useEffect(() => {
@@ -692,6 +721,11 @@ export default function SeleksiBeasiswaPage() {
     )
   }
 
+  const copyToClipboard = (text: string, description: string) => {
+    navigator.clipboard.writeText(text)
+    toast({ title: "Berhasil disalin", description: `${description} berhasil disalin ke clipboard` })
+  }
+
   return (
     <div className="container py-6 mx-auto space-y-6">
       {/* Header */}
@@ -706,7 +740,7 @@ export default function SeleksiBeasiswaPage() {
           <Button 
             variant="outline" 
             onClick={() => {
-              fetchMediaSosial()
+              fetchMediaLinks()
               setMediaSosialDialog(true)
             }}
           >
@@ -759,81 +793,257 @@ export default function SeleksiBeasiswaPage() {
 
         {/* Only show statistics cards if no error and data exists */}
         {!statisticsError && statistics && (
-          <>
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center space-x-2">
-                  <Users className="w-4 h-4 text-blue-600" />
-                  <div>
-                    <p className="text-sm font-medium">Total</p>
-                    <p className="text-2xl font-bold">{statistics.overview.total}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center space-x-2">
-                  <Clock className="w-4 h-4 text-yellow-600" />
-                  <div>
-                    <p className="text-sm font-medium">Pending</p>
-                    <p className="text-2xl font-bold">{statistics.overview.pending}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+          <div className="grid grid-cols-1 col-span-full gap-6 mb-8 w-full sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
 
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center space-x-2">
-                  <FileCheck className="w-4 h-4 text-blue-600" />
-                  <div>
-                    <p className="text-sm font-medium">Lolos Berkas</p>
-                    <p className="text-2xl font-bold">{statistics.overview.lolos_berkas}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
 
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center space-x-2">
-                  <Video className="w-4 h-4 text-green-600" />
-                  <div>
-                    <p className="text-sm font-medium">Lolos Wawancara</p>
-                    <p className="text-2xl font-bold">{statistics.overview.lolos_wawancara}</p>
-                  </div>
-                </div>
+            <Card className="rounded-xl shadow-md">
+              <CardContent className="flex flex-col justify-center items-center py-6 text-center">
+                <Users className="mb-2 w-8 h-8 text-blue-600" />
+                <p className="text-base font-medium text-muted-foreground">Total</p>
+                <p className="mt-1 text-3xl font-bold">{statistics.overview.total}</p>
               </CardContent>
             </Card>
-
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center space-x-2">
-                  <Award className="w-4 h-4 text-emerald-600" />
-                  <div>
-                    <p className="text-sm font-medium">Diterima</p>
-                    <p className="text-2xl font-bold">{statistics.overview.diterima}</p>
-                  </div>
-                </div>
+            <Card className="rounded-xl shadow-md">
+              <CardContent className="flex flex-col justify-center items-center py-6 text-center">
+                <Clock className="mb-2 w-8 h-8 text-yellow-600" />
+                <p className="text-base font-medium text-muted-foreground">Pending</p>
+                <p className="mt-1 text-3xl font-bold">{statistics.overview.pending}</p>
               </CardContent>
             </Card>
-
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center space-x-2">
-                  <X className="w-4 h-4 text-red-600" />
-                  <div>
-                    <p className="text-sm font-medium">Ditolak</p>
-                    <p className="text-2xl font-bold">{statistics.overview.ditolak}</p>
-                  </div>
-                </div>
+            <Card className="rounded-xl shadow-md">
+              <CardContent className="flex flex-col justify-center items-center py-6 text-center">
+                <FileCheck className="mb-2 w-8 h-8 text-blue-600" />
+                <p className="text-base font-medium text-muted-foreground">Lolos Berkas</p>
+                <p className="mt-1 text-3xl font-bold">{statistics.overview.lolos_berkas}</p>
               </CardContent>
             </Card>
-          </>
+            <Card className="rounded-xl shadow-md">
+              <CardContent className="flex flex-col justify-center items-center py-6 text-center">
+                <Video className="mb-2 w-8 h-8 text-green-600" />
+                <p className="text-base font-medium text-muted-foreground">Lolos Wawancara</p>
+                <p className="mt-1 text-3xl font-bold">{statistics.overview.lolos_wawancara}</p>
+              </CardContent>
+            </Card>
+            <Card className="rounded-xl shadow-md">
+              <CardContent className="flex flex-col justify-center items-center py-6 text-center">
+                <Award className="mb-2 w-8 h-8 text-emerald-600" />
+                <p className="text-base font-medium text-muted-foreground">Diterima</p>
+                <p className="mt-1 text-3xl font-bold">{statistics.overview.diterima}</p>
+              </CardContent>
+            </Card>
+            <Card className="rounded-xl shadow-md">
+              <CardContent className="flex flex-col justify-center items-center py-6 text-center">
+                <X className="mb-2 w-8 h-8 text-red-600" />
+                <p className="text-base font-medium text-muted-foreground">Ditolak</p>
+                <p className="mt-1 text-3xl font-bold">{statistics.overview.ditolak}</p>
+              </CardContent>
+            </Card>
+          </div>
         )}
       </div>
+
+      {/* Media Sosial Bersekolah */}
+      {!isMediaLoading && !mediaError && (
+        <Card className="mb-6 w-full">
+          <CardHeader>
+            <CardTitle className="flex gap-2 items-center">
+              <Share2 className="w-5 h-5" /> 
+              Media Sosial & Kontak Bersekolah
+            </CardTitle>
+            <CardDescription>
+              Kelola link media sosial dan kontak untuk disebarkan ke peserta
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              {/* Twibbon */}
+              <div className="space-y-2">
+                <Label htmlFor="twibbon">
+                  <div className="flex gap-2 items-center">
+                    <Share2 className="w-4 h-4" /> Link Twibbon
+                  </div>
+                </Label>
+                <div className="flex flex-wrap gap-2">
+                  <div className="flex-1">
+                    <Input id="twibbon" placeholder="https://example.com/twibbon" value={twibbonLink} onChange={(e) => setTwibbonLink(e.target.value)} />
+                  </div>
+                  {twibbonLink && (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button variant="outline" size="icon" onClick={() => copyToClipboard(twibbonLink, "Link Twibbon")}>
+                            <Copy className="w-4 h-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent><p>Salin ke clipboard</p></TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
+                  {twibbonLink && (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button variant="outline" size="icon" onClick={() => window.open(twibbonLink, '_blank')}>
+                            <ExternalLink className="w-4 h-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent><p>Buka di tab baru</p></TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
+                </div>
+                <p className="text-sm text-gray-500">Link Twibbon yang akan dibagikan kepada peserta</p>
+              </div>
+              {/* Instagram */}
+              <div className="space-y-2">
+                <Label htmlFor="instagram">
+                  <div className="flex gap-2 items-center">
+                    <Instagram className="w-4 h-4" /> Link Instagram
+                  </div>
+                </Label>
+                <div className="flex flex-wrap gap-2">
+                  <div className="flex-1">
+                    <Input id="instagram" placeholder="https://instagram.com/bersekolah" value={instagramLink} onChange={(e) => setInstagramLink(e.target.value)} />
+                  </div>
+                  {instagramLink && (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button variant="outline" size="icon" onClick={() => copyToClipboard(instagramLink, "Link Instagram")}>
+                            <Copy className="w-4 h-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent><p>Salin ke clipboard</p></TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
+                  {instagramLink && (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button variant="outline" size="icon" onClick={() => window.open(instagramLink, '_blank')}>
+                            <ExternalLink className="w-4 h-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent><p>Buka di tab baru</p></TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
+                </div>
+                <p className="text-sm text-gray-500">Link Instagram Bersekolah yang akan dibagikan kepada peserta</p>
+              </div>
+              {/* WhatsApp Group */}
+              <div className="space-y-2">
+                <Label htmlFor="whatsapp-group">
+                  <div className="flex gap-2 items-center">
+                    <MessageCircle className="w-4 h-4" /> Link Grup WhatsApp
+                  </div>
+                </Label>
+                <div className="flex flex-wrap gap-2">
+                  <div className="flex-1">
+                    <Input id="whatsapp-group" placeholder="https://chat.whatsapp.com/..." value={whatsappGroupLink} onChange={(e) => setWhatsappGroupLink(e.target.value)} />
+                  </div>
+                  {whatsappGroupLink && (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button variant="outline" size="icon" onClick={() => copyToClipboard(whatsappGroupLink, "Link Grup WhatsApp")}>
+                            <Copy className="w-4 h-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent><p>Salin ke clipboard</p></TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
+                  {whatsappGroupLink && (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button variant="outline" size="icon" onClick={() => window.open(whatsappGroupLink, '_blank')}>
+                            <ExternalLink className="w-4 h-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent><p>Buka di tab baru</p></TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
+                </div>
+                <p className="text-sm text-gray-500">Link grup WhatsApp Bersekolah untuk peserta</p>
+              </div>
+              {/* WhatsApp Number */}
+              <div className="space-y-2">
+                <Label htmlFor="whatsapp-number">
+                  <div className="flex gap-2 items-center">
+                    <Phone className="w-4 h-4" /> Nomor WhatsApp HUMAS
+                  </div>
+                </Label>
+                <div className="flex flex-wrap gap-2">
+                  <div className="flex-1">
+                    <Input id="whatsapp-number" placeholder="+6281234567890" value={whatsappNumber} onChange={(e) => setWhatsappNumber(e.target.value)} />
+                  </div>
+                  {whatsappNumber && (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button variant="outline" size="icon" onClick={() => copyToClipboard(whatsappNumber, "Nomor WhatsApp")}> <Copy className="w-4 h-4" /> </Button>
+                        </TooltipTrigger>
+                        <TooltipContent><p>Salin ke clipboard</p></TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
+                  {whatsappNumber && (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button variant="outline" size="icon" onClick={() => window.open(`https://wa.me/${whatsappNumber.replace(/[^0-9]/g, '')}`, '_blank')}>
+                            <MessageCircle className="w-4 h-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent><p>Buka WhatsApp</p></TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
+                </div>
+                <p className="text-sm text-gray-500">Nomor WhatsApp HUMAS Bersekolah untuk konsultasi</p>
+              </div>
+            </div>
+          </CardContent>
+          <CardFooter className="flex justify-end">
+            <Button onClick={handleMediaSave} disabled={isMediaSaving}>
+              {isMediaSaving ? (<><Loader2 className="mr-2 w-4 h-4 animate-spin" />Menyimpan...</>) : (<><Save className="mr-2 w-4 h-4" />Simpan</>)}
+            </Button>
+          </CardFooter>
+        </Card>
+      )}
+      {isMediaLoading && (
+        <Card className="mb-6 w-full">
+          <CardHeader>
+            <CardTitle>Media Sosial Bersekolah</CardTitle>
+            <CardDescription>Kelola link Twibbon dan Instagram untuk disebarkan ke peserta</CardDescription>
+          </CardHeader>
+          <CardContent className="flex justify-center items-center py-8">
+            <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
+          </CardContent>
+        </Card>
+      )}
+      {mediaError && (
+        <Card className="mb-6 w-full">
+          <CardHeader>
+            <CardTitle>Media Sosial Bersekolah</CardTitle>
+            <CardDescription>Kelola link Twibbon dan Instagram untuk disebarkan ke peserta</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Alert variant="destructive">
+              <AlertCircle className="w-4 h-4" />
+              <AlertTitle>Error</AlertTitle>
+              <AlertDescription>{mediaError}</AlertDescription>
+            </Alert>
+          </CardContent>
+          <CardFooter>
+            <Button onClick={fetchMediaLinks}>Coba Lagi</Button>
+          </CardFooter>
+        </Card>
+      )}
 
       {/* Filters */}
       <Card>
@@ -1477,8 +1687,8 @@ export default function SeleksiBeasiswaPage() {
                 id="link_grup_beasiswa"
                 type="url"
                 placeholder="https://chat.whatsapp.com/..."
-                value={mediaSosialForm.link_grup_beasiswa}
-                onChange={(e) => setMediaSosialForm(prev => ({ ...prev, link_grup_beasiswa: e.target.value }))}
+                value={whatsappGroupLink}
+                onChange={(e) => setWhatsappGroupLink(e.target.value)}
               />
               <p className="mt-1 text-sm text-muted-foreground">
                 Link ini akan digunakan untuk mengundang peserta yang diterima ke grup WhatsApp beasiswa
@@ -1491,10 +1701,10 @@ export default function SeleksiBeasiswaPage() {
               Batal
             </Button>
             <Button 
-              onClick={updateMediaSosial} 
-              disabled={isUpdatingMediaSosial}
+              onClick={handleMediaSave} 
+              disabled={isMediaSaving}
             >
-              {isUpdatingMediaSosial ? (
+              {isMediaSaving ? (
                 <>
                   <Loader2 className="mr-2 w-4 h-4 animate-spin" />
                   Memperbarui...
@@ -1506,6 +1716,8 @@ export default function SeleksiBeasiswaPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      
     </div>
   )
 }
