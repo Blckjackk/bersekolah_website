@@ -56,20 +56,20 @@ const Testimonial = () => {
 
   return (
     <section className="px-4 py-12 bg-gradient-to-br to-blue-50 md:py-16 sm:px-6 lg:px-8 from-slate-50">
-      <div className="mx-auto max-w-screen-xl">
+      <div className="max-w-screen-xl mx-auto">
         <div className="mb-12 text-center">
           <h2 className="mb-4 text-3xl font-bold text-gray-900 md:text-4xl">
             Testimoni Penerima Beasiswa
           </h2>
-          <p className="mx-auto max-w-2xl text-gray-600">
+          <p className="max-w-2xl mx-auto text-gray-600">
             Dengarkan cerita inspiratif dari para penerima beasiswa yang telah merasakan dampak nyata program kami
           </p>
         </div>
 
-        <div className="relative mx-auto max-w-6xl">
-          <div className="grid grid-cols-1 gap-8 items-center md:grid-cols-2 lg:gap-12">
-            <div className="hidden relative order-2 lg:order-1 md:block">
-              <div className="relative mx-auto w-full max-w-md lg:mx-0">
+        <div className="relative max-w-6xl mx-auto">
+          <div className="grid items-center grid-cols-1 gap-8 md:grid-cols-2 lg:gap-12">
+            <div className="relative order-2 hidden lg:order-1 md:block">
+              <div className="relative w-full max-w-md mx-auto lg:mx-0">
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={currentTestimonial.id}
@@ -79,7 +79,7 @@ const Testimonial = () => {
                     transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
                     className="relative"
                   >
-                    <div className="overflow-hidden relative z-10 bg-white rounded-2xl">
+                    <div className="relative z-10 overflow-hidden bg-white rounded-2xl">
                       <img 
                         src={currentTestimonial.image}
                         alt={currentTestimonial.name}
@@ -90,12 +90,12 @@ const Testimonial = () => {
 
                     {/* Dekorasi */}
                     <motion.div 
-                      className="absolute -top-6 -left-6 w-24 h-24 bg-blue-100 rounded-2xl"
+                      className="absolute w-24 h-24 bg-blue-100 -top-6 -left-6 rounded-2xl"
                       animate={{ rotate: [0, 5, -5, 0], scale: [1, 1.05, 0.95, 1] }}
                       transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
                     />
                     <motion.div 
-                      className="absolute -right-6 -bottom-6 w-32 h-32 bg-indigo-100 rounded-2xl"
+                      className="absolute w-32 h-32 bg-indigo-100 -right-6 -bottom-6 rounded-2xl"
                       animate={{ rotate: [0, -5, 5, 0], scale: [1, 0.95, 1.05, 1] }}
                       transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
                     />
@@ -115,16 +115,12 @@ const Testimonial = () => {
                 >
                   <Card className="border-0 backdrop-blur-sm bg-white/80">
                     <CardBody className="p-8">
-                      <Quote className="mb-6 w-12 h-12 text-blue-500 opacity-20" />
+                      <Quote className="w-12 h-12 mb-6 text-blue-500 opacity-20" />
                       <blockquote className="mb-8 text-xl font-medium leading-relaxed text-gray-800 md:text-2xl">
                         "{currentTestimonial.quote}"
                       </blockquote>
-                      <div className="mb-6">
-                        <span className="px-3 py-1 text-sm font-medium text-blue-600 bg-blue-50 rounded-full">
-                          {currentTestimonial.rating}
-                        </span>
-                      </div>
-                      <div className="flex gap-4 items-center">
+                      
+                      <div className="flex items-center gap-4">
                         <Avatar
                           src={currentTestimonial.image}
                           alt={currentTestimonial.name}
@@ -144,7 +140,7 @@ const Testimonial = () => {
             </div>
           </div>
 
-          <div className="flex gap-4 justify-center items-center mt-8">
+          <div className="flex items-center justify-center gap-4 mt-8">
             <Button isIconOnly variant="flat" className="backdrop-blur-sm bg-white/80 hover:bg-white" onPress={prevTestimonial}>
               <ChevronLeft className="w-5 h-5" />
             </Button>
