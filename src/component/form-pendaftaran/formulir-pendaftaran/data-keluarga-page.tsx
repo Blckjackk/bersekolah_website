@@ -152,7 +152,7 @@ export default function DataKeluargaPage() {
             tanggungan_keluarga: keluarga_beswan.tanggungan_keluarga || "",
           })
           
-          showAlert("success", "Data Dimuat", "Data keluarga berhasil dimuat dari server.")
+          showAlert("success", "Data Dimuat", "Data keluarga berhasil dimuat.")
         } else {
           console.log('No keluarga_beswan data found')
           // Jika belum ada data, tidak perlu error

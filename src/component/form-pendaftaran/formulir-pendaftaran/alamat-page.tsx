@@ -150,7 +150,7 @@ export default function AlamatPage() {
             telepon_darurat: alamat_beswan.telepon_darurat || "",
           })
           
-          showAlert("success", "Data Dimuat", "Data alamat berhasil dimuat dari server.")
+          showAlert("success", "Data Dimuat", "Data alamat berhasil dimuat.")
         } else {
           console.log('No alamat_beswan data found')
           showAlert("info", "Belum Ada Data", "Silakan isi form data alamat.")
