@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 interface Article {
   id: number;
   gambar: string;
+  gambar_url?: string;
   judul_halaman: string;
   category: string;
   created_at: string;
@@ -14,6 +15,36 @@ interface Article {
 const ArtikelDetail = ({ articleId }: { articleId: string | null }) => {
   const [article, setArticle] = useState<Article | null>(null);
   const [loading, setLoading] = useState(true);
+  const [debug, setDebug] = useState<any>(null);
+
+  // Helper function to get correct image URL
+  const getImageUrl = (article: Article | null) => {
+    if (!article) return "/storage/artikel/default.jpg";
+
+    // Check for gambar_url first (if API provides full URL)
+    if (article.gambar_url) {
+      return article.gambar_url;
+    }
+
+    // Check for gambar and handle all cases
+    if (article.gambar) {
+      // If it's a full URL already, return it
+      if (article.gambar.startsWith("http")) {
+        return article.gambar;
+      }
+
+      // Check if it already has /storage/ prefix
+      if (article.gambar.startsWith("/storage/")) {
+        return article.gambar;
+      }
+
+      // Otherwise, add the correct storage path
+      return `/storage/artikel/${article.gambar}`;
+    }
+
+    // Default fallback
+    return "/storage/artikel/default.jpg";
+  };
 
   useEffect(() => {
     if (!articleId) {
@@ -24,8 +55,13 @@ const ArtikelDetail = ({ articleId }: { articleId: string | null }) => {
     fetch(`http://localhost:8000/api/konten/${articleId}`)
       .then((res) => res.json())
       .then((data) => {
+        console.log("Article detail API response:", data);
+        setDebug(data);
+
         if (data.data) {
           setArticle(data.data);
+          console.log("Article image path:", data.data.gambar);
+          console.log("Resolved image URL:", getImageUrl(data.data));
         }
         setLoading(false);
       })
@@ -47,7 +83,10 @@ const ArtikelDetail = ({ articleId }: { articleId: string | null }) => {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
         <p className="text-xl text-gray-600">Artikel tidak ditemukan</p>
-        <a href="/company-profile/artikel" className="text-[#406386] hover:underline">
+        <a
+          href="/company-profile/artikel"
+          className="text-[#406386] hover:underline"
+        >
           Kembali ke Daftar Artikel
         </a>
       </div>
@@ -59,9 +98,14 @@ const ArtikelDetail = ({ articleId }: { articleId: string | null }) => {
       {/* Gambar Utama */}
       <section className="relative w-full min-h-[320px] md:min-h-[420px] flex items-end justify-center overflow-hidden">
         <img
-          src={article.gambar ? `/assets/image/artikel/${article.gambar}` : "/assets/image/default-thumbnail.jpg"}
+          src={getImageUrl(article)}
           alt={article.judul_halaman}
           className="absolute inset-0 w-full h-full object-cover object-center z-0 opacity-90"
+          onError={(e) => {
+            const target = e.target as HTMLImageElement;
+            target.src = "/storage/artikel/default.jpg";
+            console.log("Image error in detail view, fallback to default");
+          }}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent z-10" />
         <div className="relative z-20 w-full max-w-4xl px-4 pb-10 mx-auto text-white">
@@ -74,9 +118,13 @@ const ArtikelDetail = ({ articleId }: { articleId: string | null }) => {
           <div className="flex flex-wrap items-center gap-3 text-sm md:text-base text-gray-200/90">
             <span className="font-medium">{article.author}</span>
             <span>•</span>
-            <time>{new Date(article.created_at).toLocaleDateString('id-ID', {
-              day: 'numeric', month: 'long', year: 'numeric'
-            })}</time>
+            <time>
+              {new Date(article.created_at).toLocaleDateString("id-ID", {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+              })}
+            </time>
           </div>
         </div>
       </section>

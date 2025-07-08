@@ -7,7 +7,8 @@ export const MentorSchema = z.object({
   id: z.number(),
   name: z.string(),
   email: z.string().email(),
-  photo: z.string().nullable(),
+  photo: z.string().nullable().optional(),
+  photo_url: z.string().optional(),
   created_at: z.string().optional(),
   updated_at: z.string().optional(),
   // Fields tambahan untuk frontend
@@ -19,6 +20,18 @@ export const MentorSchema = z.object({
 export type Mentor = z.infer<typeof MentorSchema>;
 
 export const MentorService = {
+  // Helper function to ensure photo URLs are formatted correctly
+  formatPhotoUrl: (mentor: any): Mentor => {
+    if (!mentor) return mentor;
+    
+    // Make sure photo_url is available and in the correct format
+    if (!mentor.photo_url && mentor.photo) {
+      mentor.photo_url = `/storage/mentor/${mentor.photo}`;
+    }
+    
+    return mentor;
+  },
+  
   // Mendapatkan semua mentor dari API
   getAllMentors: async () => {
     try {
@@ -32,7 +45,12 @@ export const MentorService = {
       if (!response.ok) throw new Error('Failed to fetch mentors');
 
       const data = await response.json();
-      return data.data || [];
+      console.log('Raw mentor data from API:', data);
+      
+      // Format photo URLs for all mentors
+      const mentors = (data.data || []).map((mentor: any) => MentorService.formatPhotoUrl(mentor));
+      
+      return mentors;
     } catch (error) {
       console.error('Error fetching mentors:', error);
       throw error;

@@ -51,7 +51,7 @@ export function NavMain({
           ? 'opacity-100 max-h-8 mb-2' 
           : 'opacity-0 max-h-0 mb-0'
       }`}>
-        <div className="px-2 py-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+        <div className="px-2 py-1 text-xs font-semibold tracking-wider uppercase text-muted-foreground">
           Menu Utama
         </div>
       </div>
@@ -126,7 +126,7 @@ export function NavMain({
                       item.isActive ? 'bg-accent/20 border-l-2 border-primary' : ''
                     }`}
                   >
-                    {item.icon && <item.icon className="w-4 h-4 flex-shrink-0 mr-3" />}
+                    {item.icon && <item.icon className="flex-shrink-0 w-4 h-4 mr-3" />}
                     <span className="flex-1 text-left whitespace-nowrap">
                       {item.title}
                       {item.isActive && (
@@ -146,13 +146,13 @@ export function NavMain({
                           item.isActive ? 'bg-accent/20' : ''
                         }`}
                       >
-                        {item.icon && <item.icon className="w-4 h-4 flex-shrink-0 mr-3" />}
+                        {item.icon && <item.icon className="flex-shrink-0 w-4 h-4 mr-3" />}
                         <span className="flex-1 text-left whitespace-nowrap">{item.title}</span>
                         <ChevronRight className="w-4 h-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
                       </button>
                     </CollapsibleTrigger>
                     <CollapsibleContent>
-                      <div className="mt-1 space-y-1 pl-6">
+                      <div className="pl-6 mt-1 space-y-1">
                         {item.items?.map((subItem) => (
                           <div key={subItem.title}>
                             <TooltipProvider>

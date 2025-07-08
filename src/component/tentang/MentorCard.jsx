@@ -3,6 +3,29 @@ import { Linkedin, Twitter, Instagram, Mail, MapPin, Calendar, GraduationCap, Ey
 import '../../styles/mentor.css';
 
 const MentorCard = ({ mentor }) => {
+  // Helper function to determine the correct image source
+  const getImageSrc = () => {
+    if (!mentor) return '/storage/mentor/default.jpg';
+    
+    // If image property is set, use it directly 
+    if (mentor.image) {
+      return mentor.image;
+    }
+    
+    // If photo_url is available (from API), use it
+    if (mentor.photo_url) {
+      return mentor.photo_url;
+    }
+    
+    // Fallback to photo property if available
+    if (mentor.photo) {
+      return `/storage/mentor/${mentor.photo}`;
+    }
+    
+    // Final fallback
+    return '/storage/mentor/default.jpg';
+  };
+  
   return (
     <div className="w-full flip-card-container h-96">
       <div className="flip-card-inner">
@@ -11,9 +34,10 @@ const MentorCard = ({ mentor }) => {
           <div className="relative h-full overflow-hidden bg-white shadow-lg rounded-2xl">
             <div className="relative h-full">
               <img 
-                src={`/storage/mentor/${mentor.photo}`}
+                src={getImageSrc()}
                 alt={mentor.name} 
                 className="object-cover w-full h-full"
+                onError={e => { e.target.src = '/storage/mentor/default.jpg'; }}
               />
               
               {/* Gradient Overlay */}
@@ -52,9 +76,10 @@ const MentorCard = ({ mentor }) => {
               {/* Header dengan foto mini */}
               <div className="flex items-center flex-shrink-0 pb-2 mb-3 border-b border-white/20">
                 <img 
-                  src={`/storage/mentor/${mentor.photo}`}
+                  src={getImageSrc()}
                   alt={mentor.name} 
                   className="flex-shrink-0 object-cover w-10 h-10 mr-3 border-2 rounded-full border-white/30"
+                  onError={e => { e.target.src = '/storage/mentor/default.jpg'; }}
                 />
                 <div className="flex-1 min-w-0">
                   <h3 className="text-sm font-bold truncate">{mentor.name}</h3>

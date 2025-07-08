@@ -18,24 +18,44 @@ const MentorSection = () => {
           throw new Error("No mentor data available");
         }
         
+        // Debug log of the API response
+        console.log("Mentor API response:", data);
+        
         // Transform API data to match component requirements
-        const formattedMentors = data.map(mentor => ({
-          id: mentor.id,
-          name: mentor.name,
-          position: mentor.position || "Mentor Bersekolah",
-          description: mentor.description || "Mentor Bersekolah yang berdedikasi untuk membantu para beswan.",
-          image: mentor.photo ? `/storage/mentor/${mentor.photo}` : "/storage/mentor/default-mentor.png",
-          location: mentor.location || "Indonesia",
-          joinYear: mentor.created_at ? new Date(mentor.created_at).getFullYear().toString() : "2025",
-          email: mentor.email || "mentor@bersekolah.org",
-          phone: mentor.phone || "+62 812 3456 7890",
-          skills: mentor.skills ? mentor.skills.split(',') : ["Mentoring", "Leadership", "Education"],
-          status: mentor.status || "active",
-          socialLinks: [
-            { platform: "linkedin", url: mentor.linkedin || "https://linkedin.com/" },
-            { platform: "instagram", url: mentor.instagram || "https://instagram.com/" }
-          ]
-        }));
+        const formattedMentors = data.map(mentor => {
+          console.log(`Processing mentor ${mentor.name}:`, mentor);
+          
+          // Create formatted mentor object
+          const formattedMentor = {
+            id: mentor.id,
+            name: mentor.name,
+            position: mentor.position || "Mentor Bersekolah",
+            description: mentor.description || "Mentor Bersekolah yang berdedikasi untuk membantu para beswan.",
+            image: mentor.photo_url || (mentor.photo ? `/storage/mentor/${mentor.photo}` : "/storage/mentor/default.jpg"),
+            photo: mentor.photo,
+            photo_url: mentor.photo_url,
+            location: mentor.location || "Indonesia",
+            joinYear: mentor.created_at ? new Date(mentor.created_at).getFullYear().toString() : "2025",
+            email: mentor.email || "mentor@bersekolah.org",
+            phone: mentor.phone || "+62 812 3456 7890",
+            skills: mentor.skills ? mentor.skills.split(',') : ["Mentoring", "Leadership", "Education"],
+            status: mentor.status || "active",
+            socialLinks: [
+              { platform: "linkedin", url: mentor.linkedin || "https://linkedin.com/" },
+              { platform: "instagram", url: mentor.instagram || "https://instagram.com/" }
+            ]
+          };
+          
+          console.log(`Formatted mentor ${mentor.name}:`, {
+            id: formattedMentor.id,
+            name: formattedMentor.name,
+            photo: formattedMentor.photo,
+            photo_url: formattedMentor.photo_url,
+            image: formattedMentor.image
+          });
+          
+          return formattedMentor;
+        });
         
         setMentors(formattedMentors);
       } catch (err) {
@@ -91,7 +111,8 @@ const fallbackMentorData = [
     name: "Ahmad Izuddin Azzam",
     position: "Co-Mentor Bersekolah",
     description: "Mahasiswa Jurusan Ilmu Komputer UPI. Wakil Ketua BEM Kemakom dengan passion dalam teknologi dan pengembangan leadership untuk generasi muda.",
-    image: "assets/image/Ahmad Izzuddin Azzam_Non Formal.JPG",
+    image: "/storage/mentor/Ahmad Izzuddin Azzam_Non Formal.JPG",
+    photo_url: "/storage/mentor/Ahmad Izzuddin Azzam_Non Formal.JPG",
     location: "Bandung, Jawa Barat",
     joinYear: "2022",
     email: "ahmad.azzam@bersekolah.org",

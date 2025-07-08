@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 interface Article {
   id: number;
   gambar: string;
+  gambar_url?: string; // Add this field to handle API responses that might include full URLs
   judul_halaman: string;
   category: string;
   created_at: string;
@@ -16,7 +17,7 @@ interface Article {
   deskripsi: string;
 }
 
-const CATEGORIES = ["Semua", "Pendidikan", "Beasiswa", "Inspirasi", "Tips & Trik"];
+const CATEGORIES = ["Semua", "Berita", "Kegiatan"];
 
 const ArtikelPage = () => {
   // Artikel Terbaru
@@ -27,15 +28,54 @@ const ArtikelPage = () => {
   const [catPage, setCatPage] = useState(1);
   const [catHasMore, setCatHasMore] = useState(true);
   const [catLoading, setCatLoading] = useState(false);
+  const [debug, setDebug] = useState<any>(null);
+
+  // Helper function to get correct image URL
+  const getImageUrl = (article: Article) => {
+    // Check for gambar_url first (if API provides full URL)
+    if (article.gambar_url) {
+      return article.gambar_url;
+    }
+    
+    // Check for gambar and handle all cases
+    if (article.gambar) {
+      // If it's a full URL already, return it directly
+      if (article.gambar.startsWith('http')) {
+        return article.gambar;
+      }
+      
+      // Check if it already has /storage/ prefix
+      if (article.gambar.startsWith('/storage/')) {
+        return article.gambar;
+      }
+      
+      // Otherwise, add the correct storage path
+      return `/storage/artikel/${article.gambar}`;
+    }
+    
+    // Default fallback
+    return "/storage/artikel/default.jpg";
+  };
 
   // Fetch 6 artikel terbaru (tanpa filter)
   useEffect(() => {
     fetch("http://localhost:8000/api/konten?per_page=6")
       .then((res) => res.json())
       .then((data) => {
+        console.log("API Response:", data);
+        setDebug(data);
+        
         if (Array.isArray(data.data)) {
+          // Log the first article to inspect its structure
+          if (data.data.length > 0) {
+            console.log("First article structure:", data.data[0]);
+          }
+          
           setLatestArticles(data.data);
         }
+      })
+      .catch(error => {
+        console.error("Error fetching articles:", error);
       });
   }, []);
 
@@ -46,19 +86,27 @@ const ArtikelPage = () => {
     if (cat && cat !== "Semua") {
       url += `&category=${encodeURIComponent(cat)}`;
     }
-    const res = await fetch(url);
-    const data = await res.json();
-    if (Array.isArray(data.data)) {
-      if (pageNum === 1) {
-        setCategoryArticles(data.data);
+    
+    try {
+      const res = await fetch(url);
+      const data = await res.json();
+      console.log("Category API Response:", data);
+      
+      if (Array.isArray(data.data)) {
+        if (pageNum === 1) {
+          setCategoryArticles(data.data);
+        } else {
+          setCategoryArticles(prev => [...prev, ...data.data]);
+        }
+        setCatHasMore(data.meta && data.meta.current_page < data.meta.last_page);
       } else {
-        setCategoryArticles(prev => [...prev, ...data.data]);
+        setCatHasMore(false);
       }
-      setCatHasMore(data.meta && data.meta.current_page < data.meta.last_page);
-    } else {
-      setCatHasMore(false);
+    } catch (error) {
+      console.error("Error fetching category articles:", error);
+    } finally {
+      setCatLoading(false);
     }
-    setCatLoading(false);
   };
 
   // Fetch kategori artikel saat kategori berubah
@@ -85,6 +133,23 @@ const ArtikelPage = () => {
     };
     return date.toLocaleDateString("id-ID", options);
   };
+
+  const filteredCategoryArticles = categoryArticles.filter(article => {
+    if (category === "Semua") return true;
+    if (category === "Berita") return article.category && article.category.toLowerCase() === "news";
+    if (category === "Kegiatan") return article.category && article.category.toLowerCase() !== "news";
+    return true;
+  });
+
+  // Log some debug info for troubleshooting
+  useEffect(() => {
+    if (latestArticles.length > 0) {
+      console.log("Article image paths:");
+      latestArticles.forEach(article => {
+        console.log(`- ${article.judul_halaman}: gambar=${article.gambar}, url=${getImageUrl(article)}`);
+      });
+    }
+  }, [latestArticles]);
 
   return (
     <>
@@ -131,7 +196,7 @@ const ArtikelPage = () => {
               >
                 <div className="relative aspect-[16/9] overflow-hidden">
                   <Image
-                    src={article.gambar ? `/assets/image/artikel/${article.gambar}` : "/assets/image/default-thumbnail.jpg"}
+                    src={getImageUrl(article)}
                     alt={article.judul_halaman}
                     width={400}
                     height={225}
@@ -199,14 +264,14 @@ const ArtikelPage = () => {
           </div>
 
           <div className="grid gap-8 mx-auto max-w-7xl md:grid-cols-2 lg:grid-cols-3">
-            {categoryArticles.map((article, index) => (
+            {filteredCategoryArticles.map((article, index) => (
               <Card
                 key={index}
                 className="overflow-hidden bg-white rounded-2xl border border-gray-100 shadow-md transition-all duration-300 group hover:shadow-xl"
               >
                 <div className="relative aspect-[16/9] overflow-hidden">
                   <Image
-                    src={article.gambar ? `/assets/image/artikel/${article.gambar}` : "/assets/image/default-thumbnail.jpg"}
+                    src={getImageUrl(article)}
                     alt={article.judul_halaman}
                     width={400}
                     height={225}
