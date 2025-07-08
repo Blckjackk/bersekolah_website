@@ -328,23 +328,17 @@ export function AppSidebar() {
           data-testid="sidebar-header"
         >
           <div 
-            className="w-16 h-full flex items-center justify-center"
+            className={`w-16 h-full flex items-center justify-center transition-all duration-200`}
             onClick={(e) => {
-              if (isOpen) {
-                e.stopPropagation();
-                toggle();
-              }
+              e.stopPropagation();
+              toggle(); // Always toggle regardless of state
             }}
           >
             <div 
-              className="flex items-center justify-center rounded-lg aspect-square size-8 bg-primary text-primary-foreground transition-colors"
-              onClick={(e) => {
-                e.stopPropagation();
-                toggle(); // Always toggle regardless of state
-              }}
+              className="flex items-center justify-center rounded-lg w-8 h-8 bg-primary text-primary-foreground transition-colors cursor-pointer hover:bg-primary/90"
               title={isOpen ? "Klik untuk menutup sidebar" : "Klik untuk membuka sidebar"}
             >
-              <Command className="size-4 sidebar-icon" />
+              <Command className="w-4 h-4" />
             </div>
           </div>
           
@@ -380,7 +374,7 @@ export function AppSidebar() {
 
         {/* Footer NavUser - Fixed di bottom */}
         <footer className="flex-shrink-0 bg-background border-t border-border">
-          <div className="p-4">
+          <div className={`transition-all duration-200 ${isOpen ? 'p-4' : 'p-2'}`}>
             <NavUser />
           </div>
         </footer>

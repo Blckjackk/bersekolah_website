@@ -5,12 +5,8 @@ import React, { useState, useEffect } from "react"
 import { 
   CheckCircle2, 
   XCircle, 
-  AlertCircle, 
   Clock, 
   Trophy, 
-  Calendar,
-  Download,
-  FileText,
   Info,
   ExternalLink,
   Mail,
@@ -22,14 +18,6 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
 import { useToast } from "@/hooks/use-toast"
 
 interface ApplicationStatus {
@@ -51,9 +39,6 @@ export default function StatusKelulusanPage() {
   const [applicationStatus, setApplicationStatus] = useState<ApplicationStatus | null>(null)
   const [mediaSosial, setMediaSosial] = useState<MediaSosial | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [showAcceptDialog, setShowAcceptDialog] = useState(false)
-  const [acceptanceStatus, setAcceptanceStatus] = useState<string | null>(null)
-  const [hasJoinedGroup, setHasJoinedGroup] = useState(false)
   const { toast } = useToast()
 
   const fetchApplicationStatus = async () => {
@@ -184,34 +169,13 @@ export default function StatusKelulusanPage() {
     })
   }
 
-  // ✅ Handler untuk menerima beasiswa
-  const handleAcceptScholarship = async () => {
-    try {
-      // TODO: Implement API call untuk konfirmasi penerimaan
-      setAcceptanceStatus("accepted")
-      setShowAcceptDialog(false)
-      
-      toast({
-        title: "Berhasil",
-        description: "Penerimaan beasiswa berhasil dikonfirmasi.",
-      })
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Gagal mengkonfirmasi penerimaan beasiswa.",
-        variant: "destructive",
-      })
-    }
-  }
-
-  // ✅ Handler untuk join grup WhatsApp
+  // ✅ Handler untuk join grup WhatsApp (selalu dapat diakses)
   const handleJoinWhatsAppGroup = (link: string) => {
     window.open(link, '_blank')
-    setHasJoinedGroup(true)
     
     toast({
       title: "Berhasil",
-      description: "Anda telah bergabung ke grup WhatsApp penerima beasiswa.",
+      description: "Anda telah mengakses grup WhatsApp penerima beasiswa.",
     })
   }
 
@@ -221,7 +185,7 @@ export default function StatusKelulusanPage() {
 
     switch (applicationStatus.status) {
       case "diterima":
-        return "Selamat! Anda telah diterima sebagai penerima Beasiswa Bersekolah 2025. Silahkan bergabung dengan WhatsApp grup beasiswa bersekolah."
+        return "Selamat! Anda telah diterima sebagai penerima Beasiswa Bersekolah 2025. Bergabunglah dengan grup WhatsApp penerima beasiswa untuk mendapatkan informasi terbaru dan berkomunikasi dengan sesama penerima beasiswa."
       case "ditolak":
         return "Mohon maaf, aplikasi Anda belum berhasil pada periode ini. Jangan berkecil hati, tetap semangat untuk kesempatan berikutnya."
       case "lolos_wawancara":
@@ -231,36 +195,10 @@ export default function StatusKelulusanPage() {
     }
   }
 
-  // ✅ Dynamic next steps based on status
-  const getNextSteps = () => {
+  // ✅ Get WhatsApp group link for accepted students
+  const getWhatsAppGroupLink = () => {
     if (!applicationStatus || applicationStatus.status !== 'diterima') return null
-
-    const grupLink = mediaSosial?.link_grup_beasiswa || 'https://chat.whatsapp.com/DBWgEhlvkz3E0SqpdvIL1q'
-
-    const steps = [
-      {
-        title: "Konfirmasi Penerimaan Beasiswa",
-        description: "Konfirmasikan penerimaan beasiswa Anda dengan mengklik tombol 'Terima Beasiswa' untuk melanjutkan ke tahap selanjutnya",
-        status: acceptanceStatus === "accepted" ? "completed" : "pending",
-        action: acceptanceStatus !== "accepted" ? {
-          label: "Terima Beasiswa",
-          type: "accept"
-        } : null
-      },
-      {
-        title: "Bergabung ke Grup Penerima Beasiswa Bersekolah",
-        description: "Bergabunglah dengan grup WhatsApp penerima beasiswa untuk mendapatkan informasi terbaru dan berkomunikasi dengan sesama penerima beasiswa",
-        status: hasJoinedGroup ? "completed" : "pending",
-        disabled: acceptanceStatus !== "accepted", // Disabled until beasiswa diterima
-        action: acceptanceStatus === "accepted" && !hasJoinedGroup ? {
-          label: "Gabung Grup WhatsApp",
-          type: "join_group",
-          link: grupLink
-        } : null
-      }
-    ]
-
-    return steps
+    return mediaSosial?.link_grup_beasiswa || 'https://chat.whatsapp.com/DBWgEhlvkz3E0SqpdvIL1q'
   }
 
   if (isLoading) {
@@ -365,15 +303,6 @@ export default function StatusKelulusanPage() {
                     }`}>
                       {getStatusMessage()}
                     </p>
-                    
-                    {acceptanceStatus === "accepted" && (
-                      <div className="mt-3">
-                        <Badge className="text-green-800 bg-green-100 hover:bg-green-100">
-                          <CheckCircle2 className="w-3 h-3 mr-1" />
-                          Beasiswa Dikonfirmasi
-                        </Badge>
-                      </div>
-                    )}
                   </div>
                 </div>
               </div>
@@ -394,101 +323,45 @@ export default function StatusKelulusanPage() {
           </CardContent>
         </Card>
 
-        {/* Next Steps Card - Hanya untuk yang diterima */}
-        {applicationStatus.status === 'diterima' && getNextSteps() && (
+        {/* Join WhatsApp Group Card - Hanya untuk yang diterima */}
+        {applicationStatus.status === 'diterima' && getWhatsAppGroupLink() && (
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center">
-                <Calendar className="w-5 h-5 mr-2" />
-                Langkah Selanjutnya
+                <ExternalLink className="w-5 h-5 mr-2 text-green-600" />
+                Bergabung ke Grup Penerima Beasiswa
               </CardTitle>
               <CardDescription>
-                Tahapan yang perlu Anda selesaikan setelah diterima sebagai penerima beasiswa
+                Bergabunglah dengan grup WhatsApp penerima beasiswa untuk mendapatkan informasi terbaru
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {getNextSteps()!.map((step, index) => (
-                  <div key={index} className="overflow-hidden border rounded-lg">
-                    <div className="flex items-center justify-between p-4 bg-gray-50">
-                      <div className="flex items-center gap-3">
-                        <div 
-                          className={`flex items-center justify-center rounded-full p-1 h-6 w-6 text-white ${
-                            step.status === 'completed' 
-                              ? 'bg-green-600' 
-                              : step.disabled 
-                                ? 'bg-gray-400' 
-                                : 'bg-blue-600'
-                          }`}
-                        >
-                          {index + 1}
-                        </div>
-                        <h3 className={`font-medium ${step.disabled ? 'text-gray-500' : ''}`}>
-                          {step.title}
-                        </h3>
-                      </div>
-                      <div>
-                        {step.status === 'completed' ? (
-                          <Badge className="text-green-800 bg-green-100 hover:bg-green-100">
-                            <CheckCircle2 className="w-3 h-3 mr-1" />
-                            Selesai
-                          </Badge>
-                        ) : step.disabled ? (
-                          <Badge variant="outline" className="text-gray-500 bg-gray-100 hover:bg-gray-100">
-                            <Clock className="w-3 h-3 mr-1" />
-                            Menunggu
-                          </Badge>
-                        ) : (
-                          <Badge className="text-yellow-800 bg-yellow-100 hover:bg-yellow-100">
-                            <Clock className="w-3 h-3 mr-1" />
-                            Belum Selesai
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
-                    <div className="p-4">
-                      <p className="text-sm mb-3">{step.description}</p>
-                      {step.action && step.status !== 'completed' && !step.disabled && (
-                        <Button 
-                          onClick={() => {
-                            if (step.action?.type === 'accept') {
-                              setShowAcceptDialog(true)
-                            } else if (step.action?.type === 'join_group' && step.action.link) {
-                              handleJoinWhatsAppGroup(step.action.link)
-                            }
-                          }}
-                          className="bg-green-600 hover:bg-green-700"
-                          size="sm"
-                        >
-                          <ExternalLink className="w-4 h-4 mr-2" />
-                          {step.action.label}
-                        </Button>
-                      )}
-                      {step.disabled && step.status !== 'completed' && (
-                        <div className="flex items-center gap-2 text-sm text-gray-500">
-                          <AlertCircle className="w-4 h-4" />
-                          <span>Selesaikan langkah sebelumnya terlebih dahulu</span>
-                        </div>
-                      )}
-                      {step.action && step.status === 'completed' && (
-                        <div className="flex items-center gap-2 text-sm text-green-700">
-                          <CheckCircle2 className="w-4 h-4" />
-                          <span>
-                            {step.action.type === 'accept' ? 'Beasiswa telah dikonfirmasi' : 'Anda telah bergabung ke grup WhatsApp'}
-                          </span>
-                        </div>
-                      )}
-                    </div>
+              <div className="p-6 rounded-lg border border-green-200 bg-green-50">
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0 p-3 bg-green-100 rounded-full">
+                    <ExternalLink className="w-8 h-8 text-green-600" />
                   </div>
-                ))}
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-green-800 mb-2">
+                      Grup WhatsApp Penerima Beasiswa Bersekolah
+                    </h3>
+                    <p className="text-sm text-green-700 mb-4">
+                      Bergabunglah dengan sesama penerima beasiswa untuk mendapatkan informasi terbaru, 
+                      berbagi pengalaman, dan berkomunikasi dengan tim beasiswa bersekolah.
+                    </p>
+                    <Button 
+                      onClick={() => handleJoinWhatsAppGroup(getWhatsAppGroupLink()!)}
+                      className="bg-green-600 hover:bg-green-700"
+                      size="lg"
+                    >
+                      <ExternalLink className="w-4 h-4 mr-2" />
+                      Bergabung ke Grup WhatsApp
+                    </Button>
+                  </div>
+                </div>
               </div>
             </CardContent>
-            <CardFooter className="border-t bg-gray-50">
-              <div className="flex items-start gap-2 text-sm text-muted-foreground">
-                <Info className="h-4 w-4 mt-0.5" />
-                <p>Selesaikan semua langkah di atas untuk memproses beasiswa Anda.</p>
-              </div>
-            </CardFooter>
+            
           </Card>
         )}
 
@@ -526,43 +399,6 @@ export default function StatusKelulusanPage() {
           </CardContent>
         </Card>
       </div>
-
-      {/* Dialog Konfirmasi Penerimaan Beasiswa */}
-      <Dialog open={showAcceptDialog} onOpenChange={setShowAcceptDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Konfirmasi Penerimaan Beasiswa</DialogTitle>
-            <DialogDescription>
-              Dengan menerima beasiswa ini, Anda setuju untuk memenuhi semua persyaratan dan ketentuan yang berlaku.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="py-2 space-y-4">
-            <Alert className="border-blue-200 bg-blue-50">
-              <Info className="w-4 h-4 text-blue-500" />
-              <AlertDescription className="text-blue-700">
-                Penerimaan beasiswa tidak dapat dibatalkan setelah dikonfirmasi. Pastikan Anda telah mempertimbangkan dengan baik.
-              </AlertDescription>
-            </Alert>
-            <div className="space-y-2">
-              <h4 className="font-medium">Dengan menerima beasiswa ini, Anda akan:</h4>
-              <ul className="pl-5 space-y-1 text-sm list-disc">
-                <li>Menerima bantuan biaya pendidikan sesuai ketentuan beasiswa</li>
-                <li>Berpartisipasi dalam program-program yang diadakan oleh pemberi beasiswa</li>
-                <li>Mempertahankan prestasi akademik sesuai dengan persyaratan beasiswa</li>
-                <li>Menyelesaikan semua kewajiban administrasi tepat waktu</li>
-              </ul>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowAcceptDialog(false)}>
-              Batalkan
-            </Button>
-            <Button onClick={handleAcceptScholarship} className="bg-green-600 hover:bg-green-700">
-              Saya Terima Beasiswa Ini
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }

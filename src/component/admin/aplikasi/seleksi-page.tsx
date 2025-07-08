@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, useCallback } from "react"
 import { 
   Users, 
   CheckCircle2, 
@@ -250,7 +250,7 @@ export default function SeleksiBeasiswaPage() {
   const [statisticsError, setStatisticsError] = useState<string | null>(null)
 
   // Fetch applications data
-  const fetchApplications = async (isRefresh = false) => {
+  const fetchApplications = useCallback(async (isRefresh = false) => {
     try {
       if (isRefresh) {
         setIsRefreshing(true)
@@ -311,7 +311,7 @@ export default function SeleksiBeasiswaPage() {
       setIsLoading(false)
       setIsRefreshing(false)
     }
-  }
+  }, [currentPage, perPage, searchTerm, statusFilter, periodFilter, finalizedFilter, toast])
 
   // Fetch statistics
   const fetchStatistics = async () => {
@@ -633,8 +633,8 @@ export default function SeleksiBeasiswaPage() {
   }, [])
 
   useEffect(() => {
-    filterApplications()
-  }, [allApplications, searchTerm, statusFilter, periodFilter, finalizedFilter, sortBy, sortOrder])
+    fetchApplications()
+  }, [fetchApplications])
 
   useEffect(() => {
     // Reset page when filters change
