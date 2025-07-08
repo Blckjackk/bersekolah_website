@@ -302,7 +302,7 @@ export function AppSidebar() {
         />
       )}
       
-      <div 
+      <aside 
         ref={sidebarRef}
         className={`fixed left-0 top-0 h-screen bg-background border-r border-border z-30 flex flex-col sidebar-smooth-transition ${
           isMobile 
@@ -317,30 +317,44 @@ export function AppSidebar() {
         onTouchEnd={handleTouchEnd}
       >
         {/* Header - Fixed di atas */}
-        <div className="h-16 flex items-center px-4 border-b border-border flex-shrink-0 bg-background">
-          <div className="flex items-center gap-3 flex-1">
+        <header 
+          className={`h-16 flex items-center border-b border-border flex-shrink-0 bg-background ${isOpen ? 'cursor-pointer hover:bg-accent/10' : ''}`}
+          onClick={() => {
+            if (isOpen) {
+              toggle(); // Close sidebar when clicked (if opened)
+            }
+          }}
+          title={isOpen ? "Klik untuk menutup sidebar" : ""}
+          data-testid="sidebar-header"
+        >
+          <div 
+            className="w-16 h-full flex items-center justify-center"
+            onClick={(e) => {
+              if (isOpen) {
+                e.stopPropagation();
+                toggle();
+              }
+            }}
+          >
             <div 
-              className={`flex items-center justify-center rounded-lg aspect-square size-8 bg-primary text-primary-foreground transition-colors ${
-                !isOpen && !isMobile ? 'sidebar-logo-clickable' : ''
-              }`}
+              className="flex items-center justify-center rounded-lg aspect-square size-8 bg-primary text-primary-foreground transition-colors"
               onClick={(e) => {
                 e.stopPropagation();
-                if (!isOpen && !isMobile) {
-                  toggle();
-                }
+                toggle(); // Always toggle regardless of state
               }}
-              title={!isOpen && !isMobile ? "Klik untuk membuka sidebar" : ""}
+              title={isOpen ? "Klik untuk menutup sidebar" : "Klik untuk membuka sidebar"}
             >
-              <Command className="size-4" />
+              <Command className="size-4 sidebar-icon" />
             </div>
-            <div className={`flex flex-col sidebar-text-transition ${
-              isOpen || isMobile 
-                ? 'sidebar-content-expanded' 
-                : 'sidebar-content-collapsed'
-            }`}>
-              <span className="font-semibold text-sm whitespace-nowrap">Yayasan Bersekolah</span>
-              <span className="text-xs text-muted-foreground whitespace-nowrap">Platform Pendaftaran</span>
-            </div>
+          </div>
+          
+          <div className={`flex flex-col sidebar-text-transition ${
+            isOpen || isMobile 
+              ? 'sidebar-content-expanded' 
+              : 'sidebar-content-collapsed'
+          }`}>
+            <span className="font-semibold text-sm whitespace-nowrap">Yayasan Bersekolah</span>
+            <span className="text-xs text-muted-foreground whitespace-nowrap">Platform Pendaftaran</span>
           </div>
           
           {/* Mobile close button */}
@@ -350,26 +364,26 @@ export function AppSidebar() {
                 e.stopPropagation();
                 toggle();
               }}
-              className="flex items-center justify-center w-8 h-8 rounded-md hover:bg-accent/10 transition-colors"
+              className="ml-auto mr-2 flex items-center justify-center w-8 h-8 rounded-md hover:bg-accent/10 transition-colors"
               aria-label="Tutup sidebar"
               title="Tutup sidebar"
             >
               <X className="w-4 h-4" />
             </button>
           )}
-        </div>
+        </header>
 
         {/* Content - Scrollable area */}
-        <div className="flex-1 overflow-y-auto">
+        <nav className="flex-1 overflow-y-auto">
           <NavMain items={data.navMain} />
-        </div>
+        </nav>
 
         {/* Footer NavUser - Fixed di bottom */}
-        <div className="flex-shrink-0 bg-background border-t border-border">
+        <footer className="flex-shrink-0 bg-background border-t border-border">
           <div className="p-4">
             <NavUser />
           </div>
-        </div>
+        </footer>
 
         {/* Hover trigger for collapsed state on desktop */}
         {!isOpen && !isMobile && (
@@ -382,7 +396,7 @@ export function AppSidebar() {
             title="Klik untuk membuka sidebar"
           />
         )}
-      </div>
+      </aside>
     </>
   )
 }

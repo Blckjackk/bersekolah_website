@@ -20,9 +20,9 @@ export const TestimoniService = {
         throw new Error('Unauthorized: No token found');
       }
       
-      console.log('Fetching all testimonials from:', `${API_URL}/testimoni`);
+      console.log('Fetching all testimonials from:', `${API_URL}/admin/testimoni`);
       
-      const response = await fetch(`${API_URL}/testimoni`, {
+      const response = await fetch(`${API_URL}/admin/testimoni`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Accept': 'application/json'

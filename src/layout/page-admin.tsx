@@ -226,18 +226,24 @@ export default function Page({ children }: { children: ReactNode }) {
 
   return (
     <SidebarProvider>
-      <AppSidebar />
-      <SidebarInset>
-        <header className="flex items-center h-16 gap-2 shrink-0">
-          <div className="flex items-center gap-2 px-4">
-            <SidebarTrigger className="-ml-1" />
-            <Separator orientation="vertical" className="h-4 mr-2" />
-            <Breadcrumb>
-              <BreadcrumbList>
-                {pathSegments.length === 0 ? (
-                  <BreadcrumbItem className="block">
-                    <BreadcrumbPage>Dashboard Admin</BreadcrumbPage>
-                  </BreadcrumbItem>
+      <div className="admin-layout">
+        <AppSidebar />
+        <SidebarInset>
+          <div 
+            className={`dashboard-content-wrapper transition-all duration-300 ease-in-out ${
+              false ? "ml-0" : ""
+            }`}
+          >
+          <header className="flex items-center h-16 gap-2 shrink-0 border-b bg-background px-4 sticky top-0 z-10">
+            <div className="flex items-center gap-2">
+              <SidebarTrigger className="-ml-1" />
+              <Separator orientation="vertical" className="h-4 mr-2" />
+              <Breadcrumb>
+                <BreadcrumbList>
+                  {pathSegments.length === 0 ? (
+                    <BreadcrumbItem className="block">
+                      <BreadcrumbPage>Dashboard Admin</BreadcrumbPage>
+                    </BreadcrumbItem>
                 ) : (
                   pathSegments.map((segment, index) => {
                     const isLast = index === pathSegments.length - 1;
@@ -264,7 +270,9 @@ export default function Page({ children }: { children: ReactNode }) {
           </div>
         </header>
         <div className="flex flex-col flex-1 gap-4 p-4 pt-0">{children}</div>
+        </div>
       </SidebarInset>
+      </div>
     </SidebarProvider>
   );
 }

@@ -263,21 +263,21 @@ export default function AdminDokumenWajibPage() {
       case 'verified':
         return (
           <Badge className="text-green-800 bg-green-100 hover:bg-green-100">
-            <CheckCircle2 className="w-3 h-3 mr-1" />
+            <CheckCircle2 className="mr-1 w-3 h-3" />
             Terverifikasi
           </Badge>
         )
       case 'rejected':
         return (
           <Badge variant="destructive">
-            <XCircle className="w-3 h-3 mr-1" />
+            <XCircle className="mr-1 w-3 h-3" />
             Ditolak
           </Badge>
         )
       default:
         return (
           <Badge variant="secondary">
-            <Clock className="w-3 h-3 mr-1" />
+            <Clock className="mr-1 w-3 h-3" />
             Menunggu
           </Badge>
         )
@@ -357,8 +357,8 @@ export default function AdminDokumenWajibPage() {
   if (isLoading) {
     return (
       <div className="container py-6 mx-auto">
-        <div className="flex items-center justify-center h-64">
-          <div className="flex items-center gap-2">
+        <div className="flex justify-center items-center h-64">
+          <div className="flex gap-2 items-center">
             <Loader2 className="w-6 h-6 animate-spin" />
             <span>Memuat data dokumen...</span>
           </div>
@@ -426,7 +426,7 @@ export default function AdminDokumenWajibPage() {
             <div className="space-y-2">
               <Label htmlFor="search">Cari Pendaftar/File</Label>
               <div className="relative">
-                <Search className="absolute w-4 h-4 text-gray-400 left-3 top-3" />
+                <Search className="absolute top-3 left-3 w-4 h-4 text-gray-400" />
                 <Input
                   id="search"
                   placeholder="Nama, email, atau nama file..."
@@ -467,7 +467,7 @@ export default function AdminDokumenWajibPage() {
               </Select>
             </div>
             
-            <div className="flex items-end gap-2">
+            <div className="flex gap-2 items-end">
               <Button 
                 variant="outline" 
                 onClick={() => {
@@ -483,7 +483,7 @@ export default function AdminDokumenWajibPage() {
                 variant="outline"
                 onClick={() => fetchDocuments(true)}
                 disabled={isRefreshing}
-                className="w-10 p-0"
+                className="p-0 w-10"
               >
                 <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
               </Button>
@@ -495,7 +495,7 @@ export default function AdminDokumenWajibPage() {
       {/* Documents Table */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex justify-between items-center">
             <CardTitle>Daftar Dokumen Wajib</CardTitle>
             <Badge variant="outline">
               {filteredDocuments.length} dokumen
@@ -518,7 +518,7 @@ export default function AdminDokumenWajibPage() {
               {filteredDocuments.map((doc) => (
                 <TableRow key={doc.id}>
                   <TableCell>
-                    <div className="flex items-center gap-2">
+                    <div className="flex gap-2 items-center">
                       <User className="w-4 h-4 text-gray-400" />
                       <div>
                         <div className="font-medium">{doc.user.name}</div>
@@ -527,13 +527,13 @@ export default function AdminDokumenWajibPage() {
                     </div>
                   </TableCell>
                   <TableCell className="font-medium">
-                    <div className="flex items-center gap-2">
+                    <div className="flex gap-2 items-center">
                       {getDocumentTypeIcon(doc.document_type)}
                       {getDocumentTypeName(doc.document_type)}
                     </div>
                   </TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-2">                      {isFilePDF(doc.file_name) ? 
+                    <div className="flex gap-2 items-center">                      {isFilePDF(doc.file_name) ? 
                         <FileText className="w-4 h-4 text-red-400" /> : 
                         <FileText className="w-4 h-4 text-blue-400" />
                       }
@@ -555,7 +555,7 @@ export default function AdminDokumenWajibPage() {
                     {getStatusBadge(doc.status)}
                   </TableCell>
                   <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
+                    <div className="flex gap-2 justify-end">
                       <Button 
                         variant="outline" 
                         size="sm" 
@@ -603,7 +603,7 @@ export default function AdminDokumenWajibPage() {
           
           {filteredDocuments.length === 0 && (
             <div className="py-8 text-center">
-              <FileText className="w-12 h-12 mx-auto mb-4 text-gray-400 opacity-50" />
+              <FileText className="mx-auto mb-4 w-12 h-12 text-gray-400 opacity-50" />
               <h3 className="mb-2 text-lg font-medium">Tidak ada dokumen</h3>
               <p className="text-gray-500">
                 Tidak ada dokumen yang sesuai dengan filter pencarian
@@ -627,7 +627,7 @@ export default function AdminDokumenWajibPage() {
             </DialogDescription>
           </DialogHeader>
           
-          <div className="flex-1 min-h-0 overflow-hidden border rounded-lg">
+          <div className="overflow-hidden flex-1 min-h-0 rounded-lg border">
             {selectedDoc && (
               isFilePDF(selectedDoc.file_name) ? (
                 <iframe 
@@ -637,7 +637,7 @@ export default function AdminDokumenWajibPage() {
                   sandbox="allow-scripts allow-same-origin allow-forms"
                 />
               ) : (
-                <div className="flex items-center justify-center w-full h-full bg-gray-50">
+                <div className="flex justify-center items-center w-full h-full bg-gray-50">
                   <img 
                     src={selectedDoc.file_path} 
                     alt="Document Preview" 
@@ -662,7 +662,7 @@ export default function AdminDokumenWajibPage() {
                 onClick={() => window.open(selectedDoc.file_path, '_blank')}
                 className="bg-blue-600 hover:bg-blue-700"
               >
-                <Download className="w-4 h-4 mr-1" />
+                <Download className="mr-1 w-4 h-4" />
                 Download / Buka di Tab Baru
               </Button>
             )}
@@ -717,15 +717,15 @@ export default function AdminDokumenWajibPage() {
             >
               {isUpdating ? (
                 <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  <Loader2 className="mr-2 w-4 h-4 animate-spin" />
                   Memproses...
                 </>
               ) : (
                 <>
                   {verifyStatus === 'verified' ? (
-                    <CheckCircle2 className="w-4 h-4 mr-2" />
+                    <CheckCircle2 className="mr-2 w-4 h-4" />
                   ) : (
-                    <XCircle className="w-4 h-4 mr-2" />
+                    <XCircle className="mr-2 w-4 h-4" />
                   )}
                   {verifyStatus === 'verified' ? 'Verifikasi' : 'Tolak'} Dokumen
                 </>
