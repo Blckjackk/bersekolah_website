@@ -82,6 +82,7 @@ const DashboardBeswanTable: React.FC = () => {
   const [modalError, setModalError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredData, setFilteredData] = useState<Beswan[]>([]);
+  const [rejectDialog, setRejectDialog] = useState<{ open: boolean, beswanId?: string }>({ open: false });
 
   useEffect(() => {
     fetchData();
@@ -148,10 +149,7 @@ const DashboardBeswanTable: React.FC = () => {
 
   // Handler untuk reject beswan
   const handleRejectBeswan = async (beswanId: string) => {
-    if (!confirm('Apakah Anda yakin ingin mengubah status beswan ini menjadi tidak lolos?')) {
-      return;
-    }
-
+    // confirm() dihapus, konfirmasi pakai dialog
     const token = localStorage.getItem("bersekolah_auth_token");
     const baseURL = import.meta.env.PUBLIC_API_BASE_URL || "http://localhost:8000/api";
     try {
@@ -167,13 +165,10 @@ const DashboardBeswanTable: React.FC = () => {
       
       const json = await res.json();
       if (json.status === 'success') {
-        alert('Status beswan berhasil diubah menjadi tidak lolos');
         fetchData(); // Refresh data
-      } else {
-        alert('Gagal mengubah status beswan');
       }
     } catch (e: any) {
-      alert(e?.message || 'Gagal mengubah status beswan');
+      // Optional: handle error, bisa pakai toast jika mau
     }
   };
 
@@ -182,7 +177,7 @@ const DashboardBeswanTable: React.FC = () => {
       {/* Search Bar */}
       <div className="mb-4">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+          <Search className="absolute left-3 top-1/2 w-4 h-4 text-gray-400 transform -translate-y-1/2" />
           <Input
             type="text"
             placeholder="Cari beswan berdasarkan nama, email, atau nomor telepon..."
@@ -229,19 +224,22 @@ const DashboardBeswanTable: React.FC = () => {
                 <TableCell>{formatDate(beswan.created_at)}</TableCell>
                 <TableCell>
                   <div className="flex gap-2">
-                    <button
-                      className="px-2 py-1 text-xs text-blue-600 bg-blue-50 rounded hover:underline"
+                    <Button
+                      variant="outline"
+                      size="sm"
                       onClick={() => handleShowDetail(beswan.id)}
                     >
                       Detail
-                    </button>
-                    <button
-                      className="px-2 py-1 text-xs text-red-600 bg-red-50 rounded hover:bg-red-100 flex items-center gap-1"
-                      onClick={() => handleRejectBeswan(beswan.id)}
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => setRejectDialog({ open: true, beswanId: beswan.id })}
+                      className="flex gap-1 items-center"
                     >
                       <Trash2 className="w-3 h-3" />
                       Hapus
-                    </button>
+                    </Button>
                   </div>
                 </TableCell>
               </TableRow>
@@ -269,8 +267,8 @@ const DashboardBeswanTable: React.FC = () => {
             <div className="space-y-6">
               {/* Data Pribadi */}
               <div>
-                <h3 className="text-lg font-semibold mb-3">Data Pribadi</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <h3 className="mb-3 text-lg font-semibold">Data Pribadi</h3>
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div>
                     <Label className="text-sm font-medium text-gray-500">Nama Lengkap</Label>
                     <p className="text-sm">{modal.user_name || "-"}</p>
@@ -309,8 +307,8 @@ const DashboardBeswanTable: React.FC = () => {
               {/* Data Sekolah */}
               {modal.sekolah && (
                 <div>
-                  <h3 className="text-lg font-semibold mb-3">Data Sekolah</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <h3 className="mb-3 text-lg font-semibold">Data Sekolah</h3>
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <div>
                       <Label className="text-sm font-medium text-gray-500">Nama Sekolah</Label>
                       <p className="text-sm">{modal.sekolah.asal_sekolah || "-"}</p>
@@ -334,8 +332,8 @@ const DashboardBeswanTable: React.FC = () => {
               {/* Data Keluarga */}
               {modal.keluarga && (
                 <div>
-                  <h3 className="text-lg font-semibold mb-3">Data Keluarga</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <h3 className="mb-3 text-lg font-semibold">Data Keluarga</h3>
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <div>
                       <Label className="text-sm font-medium text-gray-500">Nama Ayah</Label>
                       <p className="text-sm">{modal.keluarga.nama_ayah || "-"}</p>
@@ -375,8 +373,8 @@ const DashboardBeswanTable: React.FC = () => {
               {/* Data Alamat */}
               {modal.alamat && (
                 <div>
-                  <h3 className="text-lg font-semibold mb-3">Data Alamat</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <h3 className="mb-3 text-lg font-semibold">Data Alamat</h3>
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <div className="md:col-span-2">
                       <Label className="text-sm font-medium text-gray-500">Alamat Lengkap</Label>
                       <p className="text-sm">{modal.alamat.alamat_lengkap || "-"}</p>
@@ -432,6 +430,33 @@ const DashboardBeswanTable: React.FC = () => {
               </DialogFooter>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={rejectDialog.open} onOpenChange={open => setRejectDialog({ open, beswanId: rejectDialog.beswanId })}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Konfirmasi Ubah Status</DialogTitle>
+            <DialogDescription>
+              Apakah Anda yakin ingin mengubah status beswan ini menjadi <b>tidak lolos</b>?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRejectDialog({ open: false })}>
+              Batal
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={async () => {
+                if (rejectDialog.beswanId) {
+                  await handleRejectBeswan(rejectDialog.beswanId);
+                  setRejectDialog({ open: false });
+                }
+              }}
+            >
+              Ya, Ubah Status
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

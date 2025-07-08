@@ -4,6 +4,21 @@
 @import "tw-animate-css";
 @import "./sidebar.css";
 
+/* Add body styles for page with sidebar */
+body.has-sidebar {
+  overflow-x: hidden;
+}
+
+body.sidebar-collapsed .dashboard-content-wrapper {
+  margin-left: var(--sidebar-collapsed-width, 4rem);
+}
+
+@media (max-width: 767px) {
+  body.has-sidebar .dashboard-content-wrapper {
+    margin-left: 0;
+  }
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
@@ -125,3 +140,53 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Admin layout styles */
+.admin-layout {
+  display: flex;
+  min-height: 100vh;
+  position: relative;
+  width: 100%;
+}
+
+.admin-layout > .fixed {
+  display: flex !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* Fix for specific elements inside sidebar */
+.sidebar-desktop .h-16,
+.sidebar-mobile .h-16 {
+  display: flex !important;
+  visibility: visible !important;
+}
+
+/* Additional sidebar visibility fixes */
+aside.fixed {
+  display: flex !important;
+  visibility: visible !important;
+}
+
+aside.fixed > header,
+aside.fixed > nav,
+aside.fixed > footer {
+  display: flex !important;
+  visibility: visible !important;
+}
+
+aside.fixed > header {
+  flex-direction: row;
+  align-items: center;
+}
+
+aside.fixed > nav {
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+aside.fixed > footer {
+  flex-direction: column;
+}
+
+

@@ -125,6 +125,9 @@ export default function TestimoniPage() {
       setError(null);
       const data = await TestimoniService.getAllTestimoni();
       console.log('Fetched testimoni data:', data);
+      console.log('Total testimonials:', data.length);
+      console.log('Active testimonials:', data.filter(t => t.status === 'active').length);
+      console.log('Inactive testimonials:', data.filter(t => t.status === 'inactive').length);
       setTestimoni(data);
       
       if (isRefresh) {
@@ -433,13 +436,14 @@ export default function TestimoniPage() {
                 <TableHead>Nama</TableHead>
                 <TableHead>Angkatan</TableHead>
                 <TableHead>Aktifitas Saat Ini</TableHead>
+                <TableHead>Status</TableHead>
                 <TableHead className="text-right">Aksi</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredTestimoni.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="h-24 text-center">
+                  <TableCell colSpan={6} className="h-24 text-center">
                     Tidak ada data testimoni
                   </TableCell>
                 </TableRow>
@@ -449,7 +453,10 @@ export default function TestimoniPage() {
                     <TableCell>
                       <div className="overflow-hidden relative w-10 h-10 rounded-full">
                         <img 
-                          src={item.foto_testimoni_url || '/storage/testimoni/default.jpg'}
+                          src={
+                            item.foto_testimoni_url 
+                            || (item.foto_testimoni ? `/storage/testimoni/${item.foto_testimoni}` : '/storage/testimoni/default.jpg')
+                          }
                           alt={item.nama}
                           className="object-cover w-full h-full"
                           onError={(e) => {
@@ -462,6 +469,13 @@ export default function TestimoniPage() {
                     <TableCell className="font-medium">{item.nama}</TableCell>
                     <TableCell>{item.angkatan_beswan}</TableCell>
                     <TableCell>{item.sekarang_dimana || '-'}</TableCell>
+                    <TableCell>
+                      {item.status === 'active' ? (
+                        <Badge className="text-green-800 bg-green-100">Aktif</Badge>
+                      ) : (
+                        <Badge variant="secondary" className="text-gray-600 bg-gray-200">Non-aktif</Badge>
+                      )}
+                    </TableCell>
                     <TableCell className="text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -666,12 +680,15 @@ export default function TestimoniPage() {
                 accept="image/*"
               />
               <div className="flex gap-4 mt-2">
-                {selectedTestimoni?.foto_testimoni_url && (
+                {(selectedTestimoni?.foto_testimoni_url || selectedTestimoni?.foto_testimoni) && (
                   <div>
                     <p className="mb-1 text-sm font-medium">Foto saat ini:</p>
                     <div className="overflow-hidden relative w-20 h-20 rounded-md">
                       <img
-                        src={selectedTestimoni.foto_testimoni_url || '/storage/testimoni/default.jpg'}
+                        src={
+                          selectedTestimoni.foto_testimoni_url 
+                          || (selectedTestimoni.foto_testimoni ? `/storage/testimoni/${selectedTestimoni.foto_testimoni}` : '/storage/testimoni/default.jpg')
+                        }
                         alt="Foto testimoni saat ini"
                         className="object-cover w-full h-full"
                         onError={(e) => {
@@ -744,7 +761,10 @@ export default function TestimoniPage() {
               <div className="flex gap-4 items-center p-4 rounded-md border bg-muted/50">
                 <div className="overflow-hidden relative w-16 h-16 rounded-full">
                   <img
-                    src={selectedTestimoni?.foto_testimoni_url || '/storage/testimoni/default.jpg'}
+                    src={
+                      selectedTestimoni.foto_testimoni_url 
+                      || (selectedTestimoni.foto_testimoni ? `/storage/testimoni/${selectedTestimoni.foto_testimoni}` : '/storage/testimoni/default.jpg')
+                    }
                     alt={selectedTestimoni?.nama}
                     className="object-cover w-full h-full"
                     onError={(e) => {

@@ -443,13 +443,14 @@ export default function MentorPage() {
                 <TableHead>Foto</TableHead>
                 <TableHead>Nama</TableHead>
                 <TableHead>Email</TableHead>
+                <TableHead>Status</TableHead>
                 <TableHead className="text-right">Aksi</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredMentors.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="h-24 text-center">
+                  <TableCell colSpan={5} className="h-24 text-center">
                     Tidak ada data mentor
                   </TableCell>
                 </TableRow>
@@ -474,6 +475,18 @@ export default function MentorPage() {
                     </TableCell>
                     <TableCell className="font-medium">{mentor.name}</TableCell>
                     <TableCell>{mentor.email}</TableCell>
+                    <TableCell>
+                      {/* Jika nanti ada field status, tampilkan badge. Untuk sekarang, tampilkan '-' */}
+                      {'status' in mentor ? (
+                        mentor.status === 'active' ? (
+                          <Badge className="bg-green-100 text-green-800">Aktif</Badge>
+                        ) : (
+                          <Badge variant="secondary" className="bg-gray-200 text-gray-600">Non-aktif</Badge>
+                        )
+                      ) : (
+                        <Badge variant="secondary" className="bg-gray-200 text-gray-600">-</Badge>
+                      )}
+                    </TableCell>
                     <TableCell className="text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>

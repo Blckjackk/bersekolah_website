@@ -464,7 +464,7 @@ export default function ManageAdminPage() {
   
   return (
     <div className="container py-6 mx-auto space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold">Manajemen Admin</h1>
           <p className="text-muted-foreground">
@@ -472,7 +472,7 @@ export default function ManageAdminPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex gap-3 items-center">
           {isSuperAdmin && (
             <>
               <Dialog open={openDialog} onOpenChange={setOpenDialog}>
@@ -481,7 +481,7 @@ export default function ManageAdminPage() {
                     resetForm();
                     setOpenDialog(true);
                   }}>
-                    <Plus className="w-4 h-4 mr-2" />
+                    <Plus className="mr-2 w-4 h-4" />
                     Tambah Admin
                   </Button>
                 </DialogTrigger>
@@ -499,7 +499,7 @@ export default function ManageAdminPage() {
                   
                   <form onSubmit={handleSubmit}>
                     <div className="grid gap-4 py-4">
-                      <div className="grid items-center grid-cols-4 gap-4">
+                      <div className="grid grid-cols-4 gap-4 items-center">
                         <Label htmlFor="name" className="text-right">
                           Nama
                         </Label>
@@ -512,7 +512,7 @@ export default function ManageAdminPage() {
                         />
                       </div>
                       
-                      <div className="grid items-center grid-cols-4 gap-4">
+                      <div className="grid grid-cols-4 gap-4 items-center">
                         <Label htmlFor="email" className="text-right">
                           Email
                         </Label>
@@ -526,7 +526,7 @@ export default function ManageAdminPage() {
                         />
                       </div>
                       
-                      <div className="grid items-center grid-cols-4 gap-4">
+                      <div className="grid grid-cols-4 gap-4 items-center">
                         <Label htmlFor="password" className="text-right">
                           Password
                         </Label>
@@ -541,7 +541,7 @@ export default function ManageAdminPage() {
                         />
                       </div>
                       
-                      <div className="grid items-center grid-cols-4 gap-4">
+                      <div className="grid grid-cols-4 gap-4 items-center">
                         <Label htmlFor="password_confirmation" className="text-right">
                           Konfirmasi
                         </Label>
@@ -556,7 +556,7 @@ export default function ManageAdminPage() {
                         />
                       </div>
                       
-                      <div className="grid items-center grid-cols-4 gap-4">
+                      <div className="grid grid-cols-4 gap-4 items-center">
                         <Label htmlFor="role" className="text-right">
                           Role
                         </Label>
@@ -573,7 +573,7 @@ export default function ManageAdminPage() {
                         </Select>
                       </div>
                       
-                      <div className="grid items-center grid-cols-4 gap-4">
+                      <div className="grid grid-cols-4 gap-4 items-center">
                         <Label htmlFor="phone" className="text-right">
                           No. Telepon
                         </Label>
@@ -602,7 +602,7 @@ export default function ManageAdminPage() {
               </Dialog>
               
               <Button variant="outline" onClick={fetchAdmins}>
-                <RefreshCcw className="w-4 h-4 mr-2" />
+                <RefreshCcw className="mr-2 w-4 h-4" />
                 Refresh
               </Button>
             </>
@@ -610,9 +610,9 @@ export default function ManageAdminPage() {
         </div>
       </div>
       
-      <div className="flex items-center gap-3">
+      <div className="flex gap-3 items-center">
         <div className="relative flex-1">
-          <Search className="absolute w-4 h-4 transform -translate-y-1/2 left-3 top-1/2 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 w-4 h-4 transform -translate-y-1/2 text-muted-foreground" />
           <Input 
             placeholder="Cari admin berdasarkan nama, email, telepon, atau role..." 
             className="pl-10"
@@ -624,12 +624,12 @@ export default function ManageAdminPage() {
         <Card>
         <CardContent className="p-0">
           {isLoading ? (
-            <div className="flex flex-col items-center justify-center gap-4 p-8">
-              <div className="w-16 h-16 border-4 rounded-full border-primary/20 border-t-primary animate-spin"></div>
+            <div className="flex flex-col gap-4 justify-center items-center p-8">
+              <div className="w-16 h-16 rounded-full border-4 animate-spin border-primary/20 border-t-primary"></div>
               <p className="text-muted-foreground">Memuat data admin...</p>
             </div>
           ) : !isSuperAdmin ? (
-            <div className="flex flex-col items-center justify-center gap-2 p-8 text-center">
+            <div className="flex flex-col gap-2 justify-center items-center p-8 text-center">
               <Shield className="w-16 h-16 text-muted-foreground" />
               <h3 className="text-lg font-medium">Akses Terbatas</h3>
               <p className="max-w-md text-muted-foreground">
@@ -702,9 +702,7 @@ export default function ManageAdminPage() {
           )}
         </CardContent>
         <CardFooter className="flex justify-between border-t">
-          <div className="text-sm text-muted-foreground">
-            Total {filteredAdmins.length} admin {searchQuery && `(filter: "${searchQuery}")`}
-          </div>        </CardFooter>
+          </CardFooter>
       </Card>
 
       {/* Dialog konfirmasi hapus admin */}
@@ -718,8 +716,8 @@ export default function ManageAdminPage() {
           </DialogHeader>
           
           {adminToDelete && (
-            <div className="p-4 my-4 border rounded-md bg-muted/50">
-              <div className="flex items-center gap-4">
+            <div className="p-4 my-4 rounded-md border bg-muted/50">
+              <div className="flex gap-4 items-center">
                 <div className="p-2 rounded-full bg-destructive/10">
                   <Shield className="w-8 h-8 text-destructive" />
                 </div>
