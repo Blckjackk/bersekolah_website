@@ -22,8 +22,7 @@ const Testimonial = () => {
           role: item.angkatan_beswan,
           company: item.sekarang_dimana,
           quote: item.isi_testimoni,
-          image: item.foto_testimoni_url || '/storage/testimoni/default.jpg',
-          rating: '⭐⭐⭐⭐⭐' // tambahkan rating statis atau ambil dari backend kalau ada
+          image: item.foto_testimoni_url || '/storage/testimoni/default.jpg'
         }))
 
         setTestimonials(filtered)

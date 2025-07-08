@@ -11,7 +11,7 @@ const Program = () => {
       image: "/storage/ProgramBeasiswa.jpg",
       icon: <GraduationCap className="w-8 h-8 text-blue-600" />,
       buttonText: "Lihat Detail",
-      href: "/program"
+      href: "/company-profile/program"
     },
     {
       id: 2,
@@ -20,7 +20,7 @@ const Program = () => {
       image: "/storage/Donasi.png",
       icon: <Heart className="w-8 h-8 text-red-600" />,
       buttonText: "Donasi Sekarang",
-      href: "/donasi"
+      href: "/company-profile/donasi"
     },
     {
       id: 3,
@@ -29,20 +29,20 @@ const Program = () => {
       image: "/storage/Mentor.png",
       icon: <Users className="w-8 h-8 text-green-600" />,
       buttonText: "Kenali Mentor Kami", 
-      href: "/tentang"
+      href: "/company-profile/tentang#mentor"
     }
   ]
 
   return (
     <section className="px-4 py-12 md:py-16 sm:px-6 lg:px-8">
-      <div className="max-w-screen-xl mx-auto">
+      <div className="mx-auto max-w-screen-xl">
         {/* Header Section */}
         <div className="mb-12 text-center">
           <h2 className="mb-4 text-3xl font-bold text-gray-900 md:text-4xl">
             Program Kami
           </h2>
-          <div className="w-20 h-1 mx-auto mb-6 bg-teal-400"></div>
-          <p className="max-w-2xl mx-auto text-gray-600">
+          <div className="mx-auto mb-6 w-20 h-1 bg-teal-400"></div>
+          <p className="mx-auto max-w-2xl text-gray-600">
             Berbagai program yang kami tawarkan untuk mendukung pendidikan dan pengembangan diri pelajar Indonesia
           </p>
         </div>
@@ -57,7 +57,7 @@ const Program = () => {
             >
             {/* Card Image */}
               <CardHeader className="p-0 bg-white">
-                <div className="relative w-full overflow-hidden rounded-t-lg h-52">
+                <div className="overflow-hidden relative w-full h-52 rounded-t-lg">
                   <Image
                     alt={program.title}
                     className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
@@ -70,7 +70,7 @@ const Program = () => {
 
               {/* Card Content */}
               <CardBody className="p-6">
-                <div className="flex items-center gap-3 mb-3">
+                <div className="flex gap-3 items-center mb-3">
                   <div className="text-[#406386]">
                     {program.icon}
                   </div>

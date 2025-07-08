@@ -90,7 +90,7 @@ const Footer = () => {
             {/* Brand Section */}
             <div className="lg:col-span-1">
               <div className="mb-4">
-                <img src="assets/image/logo footer.png" alt="Bersekolah Logo" className="w-auto h-12" />
+                <img src="/storage/logo footer.png" alt="Bersekolah Logo" className="w-auto h-12" />
               </div>
               <p className="mb-6 text-sm leading-relaxed text-gray-600">
                 Kami berkomitmen membantu pelajar yang bersemangat mewujudkan mimpi melalui program beasiswa dan donasi yang transparan serta berkelanjutan.

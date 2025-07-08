@@ -45,16 +45,16 @@ const About = () => {
 
   return (
     <section className='px-4 py-12 md:py-16 sm:px-6 lg:px-8 bg-slate-50'>
-      <div className='max-w-screen-xl mx-auto'>
+      <div className='mx-auto max-w-screen-xl'>
         <h2 className='text-3xl md:text-4xl font-bold text-[#406386] mb-12 text-center'>
           Tentang Bersekolah
         </h2>
 
-        <div className='flex flex-col items-center justify-center gap-8 md:flex-row md:gap-12'>
+        <div className='flex flex-col gap-8 justify-center items-center md:flex-row md:gap-12'>
           {/* Image container with mouse tracking */}
           <div 
             ref={imageContainerRef}
-            className='relative w-3/4 mt-10 mb-10 ml-10 mr-10 cursor-pointer md:w-2/5 md:mt-16 md:ml-16'
+            className='relative mt-10 mr-10 mb-10 ml-10 w-3/4 cursor-pointer md:w-2/5 md:mt-16 md:ml-16'
             style={{
               transform: `translateX(${mousePosition.x}px) translateY(${mousePosition.y}px)`,
               transition: isHovered ? 'none' : 'transform 0.6s cubic-bezier(0.165, 0.84, 0.44, 1)'
@@ -63,7 +63,7 @@ const About = () => {
             <img 
               src="assets/image/IMG_3694.jpg" 
               alt="Siswa Bersekolah" 
-              className='relative z-10 object-cover w-full rounded-xl aspect-video brightness-105'
+              className='object-cover relative z-10 w-full rounded-xl brightness-105 aspect-video'
               style={{
                 transform: `rotateX(${mousePosition.y * 0.5}deg) rotateY(${mousePosition.x * 0.5}deg)`,
                 transition: isHovered ? 'transform 0.1s ease-out' : 'transform 0.6s cubic-bezier(0.165, 0.84, 0.44, 1)'
@@ -97,7 +97,7 @@ const About = () => {
               Bersekolah adalah bentuk nyata dari kepedulian terhadap masa depan pendidikan Indonesia. Lebih dari sekadar bantuan finansial, program ini hadir untuk menyalakan semangat belajar siswa di seluruh penjuru negeri. Melalui dukungan rutin berupa uang pembinaan dan pendampingan inspiratif, Beasiswa Bersekolah menjadi teman tumbuh bagi para pelajar agar terus melangkah maju, percaya diri, dan penuh harapan.
             </p>
             <Link 
-              href="/tentang" 
+              href="/company-profile/tentang" 
               className='text-[#406386] font-medium hover:underline inline-flex items-center gap-2 transition-all hover:gap-3'
             >
               Pelajari lebih lanjut

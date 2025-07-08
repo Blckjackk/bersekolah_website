@@ -70,6 +70,7 @@ function generateTableRow(testimonial: Testimonial): string {
           src="/storage/testimoni/${testimonial.foto_testimoni}" 
           alt="${testimonial.name}" 
           class="object-cover w-10 h-10 rounded-full"
+          onerror="this.src='/storage/testimoni/default.jpg';"
         />
       </td>
       <td class="font-medium">${testimonial.name}</td>

@@ -67,23 +67,23 @@ const DonasiPage = () => {
       <section className="relative bg-gradient-to-br from-[#406386] via-[#2d4a67] to-[#1a3447] py-20 sm:py-24 lg:py-32 overflow-hidden">
         {/* Floating Elements */}
         <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute top-20 left-10 w-20 h-20 bg-white/10 rounded-full animate-bounce" style={{ animationDelay: '0s', animationDuration: '3s' }}></div>
-          <div className="absolute top-40 right-20 w-16 h-16 bg-blue-200/20 rounded-full animate-bounce" style={{ animationDelay: '1s', animationDuration: '4s' }}></div>
-          <div className="absolute bottom-32 left-1/4 w-12 h-12 bg-white/15 rounded-full animate-bounce" style={{ animationDelay: '2s', animationDuration: '5s' }}></div>
-          <div className="absolute top-1/3 right-1/3 w-8 h-8 bg-blue-100/25 rounded-full animate-bounce" style={{ animationDelay: '1.5s', animationDuration: '3.5s' }}></div>
+          <div className="absolute w-20 h-20 rounded-full left-10 top-20 animate-bounce bg-white/10" style={{ animationDelay: '0s', animationDuration: '3s' }}></div>
+          <div className="absolute w-16 h-16 rounded-full right-20 top-40 animate-bounce bg-blue-200/20" style={{ animationDelay: '1s', animationDuration: '4s' }}></div>
+          <div className="absolute w-12 h-12 rounded-full bottom-32 left-1/4 animate-bounce bg-white/15" style={{ animationDelay: '2s', animationDuration: '5s' }}></div>
+          <div className="absolute w-8 h-8 rounded-full top-1/3 right-1/3 animate-bounce bg-blue-100/25" style={{ animationDelay: '1.5s', animationDuration: '3.5s' }}></div>
         </div>
 
         <div className="container relative px-4 mx-auto sm:px-6 lg:px-8">
           <div className="max-w-5xl mx-auto text-center">
             {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-2 mb-6 bg-white/20 backdrop-blur-sm rounded-full">
+            <div className="inline-flex items-center gap-2 px-4 py-2 mb-6 rounded-full backdrop-blur-sm bg-white/20">
               <Sparkles className="w-4 h-4 text-blue-200" />
               <span className="text-sm font-medium text-white">Mengubah Hidup Melalui Pendidikan</span>
             </div>
 
             <h1 className="mb-6 text-4xl font-bold leading-tight text-white sm:text-5xl lg:text-6xl xl:text-7xl">
               Wujudkan Mimpi
-              <span className="block mt-2 text-transparent bg-gradient-to-r from-blue-200 to-white bg-clip-text">
+              <span className="block mt-2 text-transparent bg-clip-text bg-gradient-to-r from-blue-200 to-white">
                 Anak Indonesia
               </span>
             </h1>
@@ -107,9 +107,6 @@ const DonasiPage = () => {
               </button>
             </div>
 
-            <p className="mt-4 text-sm text-blue-200">
-              💬 Langsung terhubung ke WhatsApp untuk konsultasi gratis
-            </p>
           </div>
         </div>
       </section>
@@ -145,7 +142,7 @@ const DonasiPage = () => {
             <div className="w-20 h-1 bg-[#406386] mx-auto mb-8 rounded-full"></div>
             
             <div className="grid gap-8 md:grid-cols-3">
-              <div className="p-6 bg-white rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300">
+              <div className="p-6 transition-shadow duration-300 bg-white shadow-lg rounded-2xl hover:shadow-xl">
                 <div className="w-16 h-16 bg-[#406386] rounded-full flex items-center justify-center mx-auto mb-4">
                   <BookOpen className="w-8 h-8 text-white" />
                 </div>
@@ -153,7 +150,7 @@ const DonasiPage = () => {
                 <p className="text-gray-600">Memberikan kesempatan belajar bagi anak-anak kurang mampu untuk meraih pendidikan berkualitas</p>
               </div>
               
-              <div className="p-6 bg-white rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300">
+              <div className="p-6 transition-shadow duration-300 bg-white shadow-lg rounded-2xl hover:shadow-xl">
                 <div className="w-16 h-16 bg-[#406386] rounded-full flex items-center justify-center mx-auto mb-4">
                   <Users className="w-8 h-8 text-white" />
                 </div>
@@ -161,7 +158,7 @@ const DonasiPage = () => {
                 <p className="text-gray-600">Membantu membangun generasi yang kompeten dan siap menghadapi tantangan masa depan</p>
               </div>
               
-              <div className="p-6 bg-white rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300">
+              <div className="p-6 transition-shadow duration-300 bg-white shadow-lg rounded-2xl hover:shadow-xl">
                 <div className="w-16 h-16 bg-[#406386] rounded-full flex items-center justify-center mx-auto mb-4">
                   <Heart className="w-8 h-8 text-white" />
                 </div>
@@ -186,7 +183,7 @@ const DonasiPage = () => {
               Jadilah Bagian dari Perubahan
             </h2>
             
-            <p className="text-xl text-gray-700 mb-8 leading-relaxed">
+            <p className="mb-8 text-xl leading-relaxed text-gray-700">
               Setiap rupiah yang Anda berikan memiliki kekuatan untuk mengubah hidup seseorang. 
               Mari bersama-sama membangun Indonesia melalui pendidikan.
             </p>
@@ -202,11 +199,7 @@ const DonasiPage = () => {
                   <ArrowRight className="w-6 h-6 transition-transform group-hover:translate-x-1" />
                 </span>
               </button>
-              
-              <p className="text-sm text-gray-600">
-                Konsultasi gratis • Proses mudah • Transparan 100%
-              </p>
-            </div>
+              </div>
           </div>
         </div>
       </section>

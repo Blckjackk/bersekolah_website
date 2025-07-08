@@ -180,67 +180,85 @@ const KontakPage = () => {
           </div>          {/* Removed the separate buttons section */}
           
           <div className="max-w-4xl mx-auto">
-            <Card className="overflow-hidden border-0 shadow-xl bg-gradient-to-br from-white to-blue-50">
-              <div className="absolute top-0 right-0 w-40 h-40 opacity-10">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" className="text-[#406386] w-full h-full" viewBox="0 0 24 24">
-                  <path d="M20 4H4c-1.103 0-2 .897-2 2v12c0 1.103.897 2 2 2h16c1.103 0 2-.897 2-2V6c0-1.103-.897-2-2-2zm0 2v.511l-8 6.223-8-6.222V6h16zM4 18V9.044l7.386 5.745a.994.994 0 0 0 1.228 0L20 9.044 20.002 18H4z"/>
-                </svg>
+            <Card className="overflow-hidden border-0 shadow-xl bg-gradient-to-br from-white to-blue-50 rounded-3xl transition-all duration-300 hover:shadow-2xl">
+              {/* Decorative background elements */}
+              <div className="absolute inset-0 overflow-hidden">
+                <div className="absolute top-0 right-0 w-40 h-40 opacity-10">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" className="text-[#406386] w-full h-full" viewBox="0 0 24 24">
+                    <path d="M20 4H4c-1.103 0-2 .897-2 2v12c0 1.103.897 2 2 2h16c1.103 0 2-.897 2-2V6c0-1.103-.897-2-2-2zm0 2v.511l-8 6.223-8-6.222V6h16zM4 18V9.044l7.386 5.745a.994.994 0 0 0 1.228 0L20 9.044 20.002 18H4z"/>
+                  </svg>
+                </div>
+                <div className="absolute w-16 h-16 rounded-full bottom-10 left-10 bg-blue-200/20 animate-bounce" style={{ animationDelay: '1s', animationDuration: '4s' }}></div>
               </div>
-              <CardContent className="relative z-10 p-8">            
-                <div className="mb-8">
-                  <h2 className="mb-3 text-3xl font-bold text-[#406386]">Kirim Pesan</h2>
-                  <div className="w-16 h-1 bg-[#406386] mb-4 rounded"></div>
-                  <p className="text-lg text-gray-600">
-                    Ceritakan kepada kami bagaimana kami bisa membantu Anda
-                  </p>
+              
+              <CardContent className="relative z-10 p-8 sm:p-10">            
+                {/* Header with icon and title */}
+                <div className="flex flex-col items-start gap-6 mb-8 sm:flex-row sm:items-center sm:gap-8 sm:mb-10">
+                  <div className="bg-gradient-to-br from-[#406386] to-[#2d4a67] p-4 sm:p-5 rounded-2xl shadow-md">
+                    <svg className="text-white w-7 h-7 sm:w-9 sm:h-9" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                    </svg>
+                  </div>
                   
-                  {/* Notification Alert */}
-                  {notification.show && (
-                    <div className={`mt-4 p-4 rounded-md ${
-                      notification.type === 'success' 
-                        ? 'bg-green-50 border-l-4 border-green-500 text-green-800' 
-                        : 'bg-red-50 border-l-4 border-red-500 text-red-800'
-                    }`}>
-                      <div className="flex">
-                        <div className="flex-shrink-0">                          {notification.type === 'success' ? (
-                            <svg className="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                            </svg>
-                          ) : (
-                            <svg className="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                            </svg>
-                          )}
-                        </div>
-                        <div className="ml-3">
-                          <p className="text-sm font-medium">{notification.message}</p>
-                        </div>
-                        <div className="pl-3 ml-auto">
-                          <div className="-mx-1.5 -my-1.5">
-                            <button
-                              type="button"
-                              className={`inline-flex rounded-md p-1.5 ${
-                                notification.type === 'success' 
-                                  ? 'text-green-600 hover:bg-green-100' 
-                                  : 'text-red-600 hover:bg-red-100'
-                              }`}
-                              onClick={() => setNotification({ ...notification, show: false })}
-                            >
-                              <svg className="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
-                                <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                            </svg>
-                            </button>
-                          </div>
+                  <div>
+                    <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[#406386] leading-tight">
+                      Kirim Pesan
+                    </h2>
+                    <p className="text-sm text-gray-600 mt-2 sm:text-base">
+                      Ceritakan kepada kami bagaimana kami bisa membantu Anda
+                    </p>
+                  </div>
+                </div>
+                
+                {/* Notification Alert */}
+                {notification.show && (
+                  <div className={`mb-8 p-4 rounded-xl ${
+                    notification.type === 'success' 
+                      ? 'bg-green-50 border-l-4 border-green-500 text-green-800' 
+                      : 'bg-red-50 border-l-4 border-red-500 text-red-800'
+                  }`}>
+                    <div className="flex">
+                      <div className="flex-shrink-0">                        
+                        {notification.type === 'success' ? (
+                          <svg className="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                          </svg>
+                        ) : (
+                          <svg className="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                          </svg>
+                        )}
+                      </div>
+                      <div className="ml-3">
+                        <p className="text-sm font-medium">{notification.message}</p>
+                      </div>
+                      <div className="pl-3 ml-auto">
+                        <div className="-mx-1.5 -my-1.5">
+                          <button
+                            type="button"
+                            className={`inline-flex rounded-md p-1.5 ${
+                              notification.type === 'success' 
+                                ? 'text-green-600 hover:bg-green-100' 
+                                : 'text-red-600 hover:bg-red-100'
+                            }`}
+                            onClick={() => setNotification({ ...notification, show: false })}
+                          >
+                            <svg className="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
+                              <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                          </svg>
+                          </button>
                         </div>
                       </div>
                     </div>
-                  )}
-                </div>
+                  </div>
+                )}
+                
+                {/* Form */}
                 <form onSubmit={handleSubmit} className="relative z-10">
                   <div className="space-y-6">
                     <div className="grid gap-6 md:grid-cols-2">
-                      <div>
-                        <label htmlFor="nama" className="block mb-2 text-sm font-medium text-gray-700">Nama</label>
+                      <div className="transition-all duration-200 group">
+                        <label htmlFor="nama" className="block mb-2 text-sm font-medium text-gray-700 group-hover:text-[#406386]">Nama</label>
                         <Input 
                           id="nama"
                           type="text" 
@@ -250,12 +268,12 @@ const KontakPage = () => {
                           onChange={handleInputChange}
                           onFocus={() => handleInputFocus('nama')}
                           onBlur={handleInputBlur}
-                          className={`border-gray-300 focus:ring-[#406386] focus:border-[#406386] transition-all duration-300 transform ${formFocus === 'nama' ? 'scale-105 shadow-outline' : ''}`}
+                          className={`border-gray-300 focus:ring-[#406386] focus:border-[#406386] transition-all duration-300 transform ${formFocus === 'nama' ? 'scale-102 shadow-md border-[#406386]/50' : ''}`}
                           required 
                         />
                       </div>
-                      <div>
-                        <label htmlFor="email" className="block mb-2 text-sm font-medium text-gray-700">Email</label>
+                      <div className="transition-all duration-200 group">
+                        <label htmlFor="email" className="block mb-2 text-sm font-medium text-gray-700 group-hover:text-[#406386]">Email</label>
                         <Input 
                           id="email"
                           type="email" 
@@ -265,13 +283,13 @@ const KontakPage = () => {
                           onChange={handleInputChange}
                           onFocus={() => handleInputFocus('email')}
                           onBlur={handleInputBlur}
-                          className={`border-gray-300 focus:ring-[#406386] focus:border-[#406386] transition-all duration-300 transform ${formFocus === 'email' ? 'scale-105 shadow-outline' : ''}`}
+                          className={`border-gray-300 focus:ring-[#406386] focus:border-[#406386] transition-all duration-300 transform ${formFocus === 'email' ? 'scale-102 shadow-md border-[#406386]/50' : ''}`}
                           required 
                         />
                       </div>
                     </div>
-                    <div>
-                      <label htmlFor="pesan" className="block mb-2 text-sm font-medium text-gray-700">Pesan</label>
+                    <div className="transition-all duration-200 group">
+                      <label htmlFor="pesan" className="block mb-2 text-sm font-medium text-gray-700 group-hover:text-[#406386]">Pesan</label>
                       <Textarea 
                         id="pesan"
                         placeholder="Tulis pesan atau pertanyaan Anda di sini..." 
@@ -280,16 +298,18 @@ const KontakPage = () => {
                         onChange={handleInputChange}
                         onFocus={() => handleInputFocus('pesan')}
                         onBlur={handleInputBlur}
-                        className={`border-gray-300 focus:ring-[#406386] focus:border-[#406386] transition-all duration-300 transform ${formFocus === 'pesan' ? 'scale-105 shadow-outline' : ''}`}
+                        className={`border-gray-300 focus:ring-[#406386] focus:border-[#406386] transition-all duration-300 transform ${formFocus === 'pesan' ? 'scale-102 shadow-md border-[#406386]/50' : ''}`}
                         rows={6} 
                         required 
                       />
-                    </div>                    <div className="pt-2">
+                    </div>
+                    
+                    <div className="pt-4">
                       <div className="flex flex-col gap-4 md:flex-row">
                         {/* Form Submit Button */}
                         <Button
                           type="submit"
-                          className="flex-1 h-12 bg-[#406386] hover:bg-[#365677] text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 rounded-md"
+                          className="flex-1 h-12 bg-gradient-to-r from-[#406386] to-[#365677] text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl hover:-translate-y-1"
                           disabled={isSubmitting}
                         >
                           {isSubmitting ? (
@@ -314,7 +334,7 @@ const KontakPage = () => {
                         <Button
                           type="button"
                           onClick={handleWhatsAppClick}
-                          className="flex-1 h-12 font-semibold text-white transition-all duration-300 bg-green-600 rounded-md shadow-lg hover:bg-green-700 hover:shadow-xl"
+                          className="flex-1 h-12 font-semibold text-white transition-all duration-300 bg-gradient-to-r from-green-600 to-green-700 rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-1"
                         >
                           <div className="flex items-center justify-center">
                             <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
