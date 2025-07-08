@@ -54,7 +54,7 @@ export default function PengumumanPage() {
 			}
 			setError(null);
 			
-			console.log("Mengambil data pengumuman dari database API...");			try {
+			console.log("Mengambil data pengumuman");			try {
 				// Get announcements from the API with enhanced error handling
 				const data = await AnnouncementService.getPublicAnnouncements();
 				console.log('Data pengumuman dari API:', data);
@@ -64,7 +64,7 @@ export default function PengumumanPage() {
 					setAnnouncements(data);
 					
 					// Display source information
-					let sourceMessage = "Berhasil memperbarui data dari database API";
+					let sourceMessage = "Berhasil memperbarui data";
 					
 					// Tampilkan toast hanya jika ini adalah refresh manual
 					if (isRefresh) {
