@@ -185,7 +185,7 @@ export default function StatusKelulusanPage() {
 
     switch (applicationStatus.status) {
       case "diterima":
-        return "Selamat! Anda telah diterima sebagai penerima Beasiswa Bersekolah 2025. Bergabunglah dengan grup WhatsApp penerima beasiswa untuk mendapatkan informasi terbaru dan berkomunikasi dengan sesama penerima beasiswa."
+        return "Selamat! Anda telah diterima sebagai penerima Beasiswa Bersekolah. Bergabunglah dengan grup WhatsApp penerima beasiswa untuk mendapatkan informasi terbaru dan berkomunikasi dengan sesama penerima beasiswa."
       case "ditolak":
         return "Mohon maaf, aplikasi Anda belum berhasil pada periode ini. Jangan berkecil hati, tetap semangat untuk kesempatan berikutnya."
       case "lolos_wawancara":

@@ -14,7 +14,8 @@ import {
   Clock,
   Trash2,
   XCircle,
-  Download
+  Download,
+  ExternalLink
 } from "lucide-react"
 import { DocumentStats } from "./document-stats"
 
@@ -40,6 +41,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 import { useToast } from "@/hooks/use-toast"
 
 interface UploadedDocument {
@@ -677,7 +684,7 @@ export default function DokumenWajibPage() {
     }
   }
   
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: string, keterangan?: string) => {
     switch (status) {
       case 'verified':
         return (
@@ -686,6 +693,25 @@ export default function DokumenWajibPage() {
           </Badge>
         )
       case 'rejected':
+        if (keterangan && keterangan.trim()) {
+          return (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Badge className="text-white bg-red-600 border-red-600 shadow-sm hover:bg-red-700 cursor-pointer transition-colors">
+                    <X className="w-3 h-3 mr-1" /> Ditolak
+                  </Badge>
+                </TooltipTrigger>
+                <TooltipContent className="max-w-xs">
+                  <div className="space-y-1">
+                    <p className="font-semibold text-sm">Alasan Penolakan:</p>
+                    <p className="text-sm">{keterangan}</p>
+                  </div>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )
+        }
         return (
           <Badge className="text-white bg-red-600 border-red-600 shadow-sm hover:bg-red-700">
             <X className="w-3 h-3 mr-1" /> Ditolak
@@ -961,7 +987,7 @@ export default function DokumenWajibPage() {
                       </div>
                     </TableCell>
                     <TableCell className="text-center">
-                      {doc.uploaded_doc ? getStatusBadge(doc.uploaded_doc.status) : getStatusBadge('none')}
+                      {doc.uploaded_doc ? getStatusBadge(doc.uploaded_doc.status, doc.uploaded_doc.keterangan) : getStatusBadge('none')}
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-2">
@@ -1124,23 +1150,9 @@ export default function DokumenWajibPage() {
             <DialogTitle>Preview Dokumen</DialogTitle>
             {previewDoc && (
               <DialogDescription>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium">{previewDoc.file_name}</span>
-                    {getStatusBadge(previewDoc.status)}
-                  </div>
-                  <Button 
-                    variant="ghost" 
-                    size="sm"
-                    onClick={() => {
-                      // Open file in new tab
-                      window.open(previewDoc.file_path, '_blank');
-                    }}
-                    className="text-blue-600 hover:text-blue-800"
-                  >
-                    <Download className="w-4 h-4 mr-2" />
-                    Buka di Tab Baru
-                  </Button>
+                <div className="flex items-center gap-2">
+                  <span className="font-medium">{previewDoc.file_name}</span>
+                  {getStatusBadge(previewDoc.status, previewDoc.keterangan)}
                 </div>
                 {previewDoc.keterangan && (
                   <div className="mt-2 p-2 bg-gray-50 border rounded-md text-sm">
@@ -1153,13 +1165,21 @@ export default function DokumenWajibPage() {
           </DialogHeader>
             <div className="max-h-[70vh] overflow-auto border rounded-lg bg-gray-50">
             {previewDoc ? (
-              previewDoc.file_type === 'pdf' || previewDoc.file_name.toLowerCase().endsWith('.pdf') ? (
+              isFilePDF(previewDoc.file_name, previewDoc.file_type) ? (
                 <div className="relative w-full h-[65vh]">
                   <iframe
                     src={previewDoc.file_path}
                     className="w-full h-full border-0 rounded-lg"
                     title={`Preview ${previewDoc.file_name}`}
                     onLoad={() => console.log('PDF iframe loaded successfully')}
+                    onError={() => {
+                      console.log('PDF iframe failed to load')
+                      const fallback = document.getElementById('pdf-fallback')
+                      if (fallback) {
+                        fallback.classList.remove('hidden')
+                        fallback.classList.add('flex')
+                      }
+                    }}
                   />
                   <div 
                     id="pdf-fallback" 
@@ -1169,81 +1189,48 @@ export default function DokumenWajibPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                     </svg>
                     <h3 className="text-lg font-medium text-gray-900 mb-2">Preview PDF tidak dapat ditampilkan</h3>
-                    <p className="text-gray-500 mb-4">File PDF tidak dapat ditampilkan dalam preview. Silakan unduh untuk melihat isi dokumen.</p>
-                    <a 
-                      href={previewDoc.file_path} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                    >
-                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                      </svg>
-                      Unduh PDF
-                    </a>
+                    <p className="text-gray-500 mb-4">File PDF tidak dapat ditampilkan dalam preview. Silakan buka di tab baru untuk melihat isi dokumen.</p>
                   </div>
                 </div>
-              ) : previewDoc.file_type?.includes('image') || ['jpg', 'jpeg', 'png', 'gif'].some(ext => previewDoc.file_name.toLowerCase().endsWith(`.${ext}`)) ? (
+              ) : isFileImage(previewDoc.file_name, previewDoc.file_type) ? (
                 <div className="flex items-center justify-center min-h-[65vh] p-4">
                   <img 
                     src={previewDoc.file_path} 
                     alt={`Preview ${previewDoc.file_name}`} 
-                    className="object-contain max-w-full max-h-[65vh] rounded-lg shadow-sm"
+                    className="object-contain max-w-full max-h-[65vh] rounded-lg shadow-sm cursor-zoom-in"
                     onLoad={() => console.log('Image loaded successfully')}
                     onError={(e) => {
-                      console.error('Failed to load image, showing fallback');
-                      const target = e.target as HTMLImageElement;
-                      
-                      // Try with cache-busting query param
-                      if (!target.src.includes('?nocache=')) {
-                        console.log('Retrying image load with cache-busting...');
-                        const cacheBuster = new Date().getTime();
-                        target.src = `${previewDoc.file_path}?nocache=${cacheBuster}`;
-                        return;
-                      }
-                      
-                      target.style.display = 'none';
-                      // Show fallback content
-                      const parent = target.parentElement;
+                      console.error('Image failed to load:', e)
+                      const target = e.target as HTMLImageElement
+                      target.style.display = 'none'
+                      const parent = target.parentElement
                       if (parent) {
-                        parent.innerHTML = `
-                          <div class="flex flex-col items-center justify-center p-8 text-center">
-                            <svg class="w-16 h-16 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                            </svg>
-                            <h3 class="text-lg font-medium text-gray-900 mb-2">Preview gambar tidak tersedia</h3>
-                            <p class="text-gray-500 mb-4">File gambar ini tidak dapat ditampilkan dalam preview. Silakan unduh untuk melihat gambar.</p>
-                            <a href="${previewDoc.file_path}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                              </svg>
-                              Unduh Gambar
-                            </a>
-                          </div>
-                        `;
+                        const fallback = document.createElement('div')
+                        fallback.className = 'flex flex-col items-center justify-center p-8 text-center'
+                        fallback.innerHTML = `
+                          <svg class="w-16 h-16 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                          <h3 class="text-lg font-medium text-gray-900 mb-2">Gambar tidak dapat ditampilkan</h3>
+                          <p class="text-gray-500 mb-4">File gambar tidak dapat ditampilkan dalam preview. Silakan buka di tab baru untuk melihat gambar.</p>
+                        `
+                        parent.appendChild(fallback)
                       }
+                    }}
+                    onClick={() => {
+                      // Open in new tab for full size view
+                      const cleanUrl = previewDoc.file_path.split('?')[0]
+                      window.open(cleanUrl, '_blank')
                     }}
                   />
                 </div>
               ) : (
-                // For other file types
                 <div className="flex flex-col items-center justify-center p-8 text-center min-h-[65vh]">
                   <svg className="w-16 h-16 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                   </svg>
                   <h3 className="text-lg font-medium text-gray-900 mb-2">Preview tidak tersedia</h3>
-                  <p className="text-gray-500 mb-4">Format file ini tidak dapat ditampilkan dalam preview. Silakan unduh untuk melihat isi dokumen.</p>
-                  <a 
-                    href={previewDoc.file_path} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                  >
-                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                    </svg>
-                    Unduh File
-                  </a>
+                  <p className="text-gray-500 mb-4">File ini tidak dapat ditampilkan dalam preview. Silakan buka di tab baru untuk melihat isi dokumen.</p>
                 </div>
               )
             ) : (
@@ -1260,16 +1247,18 @@ export default function DokumenWajibPage() {
             <Button variant="outline" onClick={() => setPreviewDialog(false)}>
               Tutup
             </Button>
-            {previewDoc && (
-              <Button 
-                variant="default"
-                className="bg-blue-600 hover:bg-blue-700"
-                onClick={() => window.open(previewDoc.file_path, '_blank')}
-              >
-                <Download className="w-4 h-4 mr-2" />
-                Unduh File
-              </Button>
-            )}
+            <Button 
+              onClick={() => {
+                if (previewDoc?.file_path) {
+                  // Remove cache buster for cleaner URL when opening in new tab
+                  const cleanUrl = previewDoc.file_path.split('?')[0]
+                  window.open(cleanUrl, '_blank')
+                }
+              }}
+            >
+              <ExternalLink className="w-4 h-4 mr-2" />
+              Buka di Tab Baru
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
