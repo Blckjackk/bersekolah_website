@@ -15,54 +15,32 @@ import {
   GraduationCap, 
   FileText,
   Calendar,
-  Loader2
+  Loader2,
+  Archive
 } from "lucide-react";
 
 // Daftar tabel yang dapat diekspor
 const exportableTables = [
   {
-    id: "users",
-    name: "Data Pengguna",
-    description: "Informasi pengguna seperti admin, superadmin, dll.",
-    icon: Users
-  },
-  {
-    id: "calon_beswans",
-    name: "Data Calon Beswan",
-    description: "Informasi calon penerima beasiswa.",
-    icon: GraduationCap
-  },
-  {
-    id: "beswans",
+    id: "data_beswan",
     name: "Data Beswan",
-    description: "Informasi penerima beasiswa aktif.",
+    description: "Data lengkap beswan dari tabel users, beswan, alamat_beswans, keluarga_beswan, sekolah_beswans, beswan_documents.",
     icon: GraduationCap
   },
   {
-    id: "beasiswa_applications",
-    name: "Data Aplikasi Beasiswa",
-    description: "Pendaftaran dan aplikasi beasiswa.",
-    icon: FileText
-  },
-  {
-    id: "beasiswa_periods",
-    name: "Periode Beasiswa",
-    description: "Periode dan jadwal beasiswa.",
-    icon: Calendar
-  },
-  {
-    id: "documents",
-    name: "Data Dokumen",
-    description: "Dokumen-dokumen pendukung.",
+    id: "dokumen_beswan",
+    name: "Dokumen Beswan",
+    description: "File dokumen beswan (KTP, foto, dll) diorganisir per folder nama pengguna.",
     icon: FileText
   },
 ];
 
 // Format ekspor yang tersedia
 const exportFormats = [
-  { id: "csv", name: "CSV", extension: ".csv" },
-  { id: "excel", name: "Excel", extension: ".xlsx" },
-  { id: "json", name: "JSON", extension: ".json" },
+  { id: "excel", name: "Excel (.xlsx)", extension: ".xlsx" },
+  { id: "csv", name: "CSV (.csv)", extension: ".csv" },
+  { id: "json", name: "JSON (.json)", extension: ".json" },
+  { id: "zip", name: "ZIP (Data + Dokumen)", extension: ".zip" },
 ];
 
 export default function ExportDataPage() {
@@ -73,27 +51,42 @@ export default function ExportDataPage() {
 
   // Handler untuk checkbox tabel
   const handleTableSelect = (tableId: string) => {
-    setSelectedTables((prevSelected) => {
-      if (prevSelected.includes(tableId)) {
-        return prevSelected.filter(id => id !== tableId);
-      } else {
-        return [...prevSelected, tableId];
-      }
-    });
+    const newTables = selectedTables.includes(tableId)
+      ? selectedTables.filter(id => id !== tableId)
+      : [...selectedTables, tableId];
+    
+    setSelectedTables(newTables);
+    updateFormatBasedOnTables(newTables);
   };
 
   // Handler untuk export semua tabel
   const handleSelectAll = () => {
     if (selectedTables.length === exportableTables.length) {
       setSelectedTables([]);
+      setExportFormat('excel'); // Reset ke default
     } else {
-      setSelectedTables(exportableTables.map(table => table.id));
+      // Tidak bisa select all karena kombinasi data_beswan + dokumen_beswan tidak valid
+      toast({
+        title: "Tidak Bisa Pilih Semua",
+        description: "Data beswan dan dokumen beswan tidak bisa dipilih bersamaan karena memerlukan format yang berbeda.",
+        variant: "destructive"
+      });
     }
   };
 
   // Handler untuk mengubah format ekspor
   const handleFormatChange = (value: string) => {
-    setExportFormat(value);
+    const availableFormats = getAvailableFormats();
+    
+    if (availableFormats.some(f => f.id === value)) {
+      setExportFormat(value);
+    } else {
+      toast({
+        title: "Format Tidak Tersedia",
+        description: "Format yang dipilih tidak tersedia untuk kombinasi tabel yang dipilih.",
+        variant: "destructive"
+      });
+    }
   };
 
   // Handler untuk mengubah rentang tanggal
@@ -112,6 +105,12 @@ export default function ExportDataPage() {
       return;
     }
 
+    // Jika pilih dokumen beswan, paksa format jadi ZIP
+    let finalFormat = exportFormat;
+    if (selectedTables.includes('dokumen_beswan')) {
+      finalFormat = 'zip';
+    }
+
     setIsLoading(true);
 
     try {
@@ -121,19 +120,25 @@ export default function ExportDataPage() {
       
       if (!token) {
         throw new Error("Anda harus login untuk mengekspor data");
-      }      // Persiapkan data untuk ekspor sebagai query params untuk GET request
+      }
+
+      // Persiapkan data untuk ekspor sebagai query params untuk GET request
       const tablesParam = selectedTables.join(',');
       const queryParams = new URLSearchParams({
         tables: tablesParam, 
-        format: exportFormat,
+        format: finalFormat,
         dateRange: exportDateRange
-      });      // Set appropriate Accept header based on format and adjust headers
+      });
+      
+      // Set appropriate Accept header based on format and adjust headers
       let acceptHeader = 'application/json';
       
-      if (exportFormat === 'excel') {
+      if (finalFormat === 'excel') {
         acceptHeader = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-      } else if (exportFormat === 'csv') {
+      } else if (finalFormat === 'csv') {
         acceptHeader = 'text/csv';
+      } else if (finalFormat === 'zip') {
+        acceptHeader = 'application/zip';
       }
       
       // Jalankan request ke API
@@ -162,8 +167,9 @@ export default function ExportDataPage() {
       }
       
       // Buat nama file
-      const selectedFormat = exportFormats.find(format => format.id === exportFormat);
-      const fileExtension = selectedFormat?.extension || '.xlsx';
+      const selectedFormat = exportFormats.find(format => format.id === finalFormat);
+      let fileExtension = selectedFormat?.extension || '.xlsx';
+      
       const fileName = `bersekolah_export_${new Date().toISOString().slice(0, 10)}${fileExtension}`;      // Handle different response types
       const blob = await response.blob();
       if (!blob) {
@@ -212,7 +218,7 @@ export default function ExportDataPage() {
           const devTablesParam = selectedTables.join(',');
           const devQueryParams = new URLSearchParams({
             tables: devTablesParam, 
-            format: exportFormat,
+            format: finalFormat,
             dateRange: exportDateRange
           });
           
@@ -222,10 +228,12 @@ export default function ExportDataPage() {
           };
           
           // For Excel format, we need to accept octet-stream or spreadsheet formats
-          if (exportFormat === 'excel') {
+          if (finalFormat === 'excel') {
             devHeaders['Accept'] = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel, application/octet-stream';
-          } else if (exportFormat === 'csv') {
+          } else if (finalFormat === 'csv') {
             devHeaders['Accept'] = 'text/csv, application/octet-stream';
+          } else if (finalFormat === 'zip') {
+            devHeaders['Accept'] = 'application/zip, application/octet-stream';
           } else {
             devHeaders['Accept'] = 'application/json';
           }
@@ -249,7 +257,7 @@ export default function ExportDataPage() {
           
           // Proses response dari API lokal
           let devBlob;
-          if (exportFormat === 'json' && devResponse.headers.get('Content-Type')?.includes('application/json')) {
+          if (finalFormat === 'json' && devResponse.headers.get('Content-Type')?.includes('application/json')) {
             const jsonData = await devResponse.json();
             devBlob = new Blob([JSON.stringify(jsonData, null, 2)], { 
               type: 'application/json'
@@ -263,8 +271,8 @@ export default function ExportDataPage() {
           const devAnchor = document.createElement('a');
           devAnchor.href = devUrl;
           
-          const devFileName = `bersekolah_export_dev_${exportFormat}_${new Date().toISOString().slice(0, 10)}${
-            exportFormats.find(format => format.id === exportFormat)?.extension || '.json'
+          const devFileName = `bersekolah_export_dev_${finalFormat}_${new Date().toISOString().slice(0, 10)}${
+            exportFormats.find(format => format.id === finalFormat)?.extension || '.json'
           }`;
           
           devAnchor.download = devFileName;
@@ -296,6 +304,52 @@ export default function ExportDataPage() {
       }
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // Function untuk mendapatkan format yang tersedia berdasarkan table yang dipilih
+  const getAvailableFormats = () => {
+    const hasDokumenBeswan = selectedTables.includes('dokumen_beswan');
+    const hasDataBeswan = selectedTables.includes('data_beswan');
+    
+    if (hasDokumenBeswan && hasDataBeswan) {
+      // Jika keduanya dipilih, tidak ada format yang cocok
+      return [];
+    } else if (hasDokumenBeswan) {
+      // Jika hanya dokumen beswan, hanya ZIP yang tersedia
+      return exportFormats.filter(f => f.id === 'zip');
+    } else if (hasDataBeswan) {
+      // Jika hanya data beswan, semua kecuali ZIP
+      return exportFormats.filter(f => f.id !== 'zip');
+    } else {
+      // Jika tidak ada yang dipilih, semua format tersedia
+      return exportFormats;
+    }
+  };
+
+  // Function untuk mengupdate format ketika table berubah
+  const updateFormatBasedOnTables = (tables: string[]) => {
+    const availableFormats = getAvailableFormatsForTables(tables);
+    
+    if (availableFormats.length === 0) {
+      setExportFormat('');
+    } else if (!availableFormats.some(f => f.id === exportFormat)) {
+      setExportFormat(availableFormats[0].id);
+    }
+  };
+
+  const getAvailableFormatsForTables = (tables: string[]) => {
+    const hasDokumenBeswan = tables.includes('dokumen_beswan');
+    const hasDataBeswan = tables.includes('data_beswan');
+    
+    if (hasDokumenBeswan && hasDataBeswan) {
+      return [];
+    } else if (hasDokumenBeswan) {
+      return exportFormats.filter(f => f.id === 'zip');
+    } else if (hasDataBeswan) {
+      return exportFormats.filter(f => f.id !== 'zip');
+    } else {
+      return exportFormats;
     }
   };
 
@@ -376,13 +430,26 @@ export default function ExportDataPage() {
                   <SelectValue placeholder="Pilih format ekspor" />
                 </SelectTrigger>
                 <SelectContent>
-                  {exportFormats.map((format) => (
+                  {getAvailableFormats().map((format) => (
                     <SelectItem key={format.id} value={format.id}>
                       {format.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
+              
+              {/* Pesan informasi tentang format yang tersedia */}
+              {selectedTables.length > 0 && (
+                <div className="text-xs text-gray-500 mt-2">
+                  {selectedTables.includes('dokumen_beswan') && selectedTables.includes('data_beswan') ? (
+                    <p className="text-red-600">❌ Data beswan dan dokumen beswan tidak bisa dipilih bersamaan</p>
+                  ) : selectedTables.includes('dokumen_beswan') ? (
+                    <p className="text-blue-600">ℹ️ Dokumen beswan hanya tersedia dalam format ZIP</p>
+                  ) : selectedTables.includes('data_beswan') ? (
+                    <p className="text-green-600">ℹ️ Data beswan tersedia dalam format Excel, CSV, dan JSON</p>
+                  ) : null}
+                </div>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -399,6 +466,15 @@ export default function ExportDataPage() {
                   <SelectItem value="this_year">Tahun Ini</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Informasi Format</Label>
+              <div className="text-xs text-muted-foreground space-y-1">
+                <p>• <strong>Excel/CSV/JSON:</strong> Untuk data beswan saja</p>
+                <p>• <strong>ZIP:</strong> Untuk data beswan + dokumen beswan</p>
+                <p>• <strong>Dokumen:</strong> Diorganisir per folder nama pengguna</p>
+              </div>
             </div>
           </CardContent>
           <CardFooter>
@@ -433,15 +509,40 @@ export default function ExportDataPage() {
             <div className="space-y-2">
               <h3 className="font-medium">Tentang Ekspor Data</h3>
               <p className="text-sm text-muted-foreground">
-                Fitur ini memungkinkan admin untuk mengekspor data dari database Bersekolah. Data yang diekspor dapat digunakan untuk keperluan analisis, cadangan, atau integrasi dengan sistem lain.
+                Fitur ini memungkinkan admin untuk mengekspor data dari database Bersekolah:
               </p>
+              <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
+                <li><strong>Data Beswan:</strong> Data lengkap beswan yang telah mendaftar beasiswa meliputi:</li>
+                <ul className="ml-6 text-xs text-gray-500">
+                  <li>• Data Pribadi: nama lengkap, nama panggilan, tempat/tanggal lahir, jenis kelamin, agama, email, phone</li>
+                  <li>• Alamat: alamat lengkap, RT/RW, kelurahan/desa, kecamatan, kota/kabupaten, provinsi, kode pos, nomor telepon, kontak darurat</li>
+                  <li>• Data Keluarga: nama & pekerjaan ayah/ibu, penghasilan ayah/ibu, jumlah saudara kandung, jumlah tanggungan</li>
+                  <li>• Data Pendidikan: asal sekolah, daerah sekolah, jurusan, tingkat kelas</li>
+                  <li>• Data Aplikasi: application_id, status diterima</li>
+                </ul>
+                <li><strong>Dokumen Beswan:</strong> Data dokumen yang telah diupload oleh beswan meliputi:</li>
+                <ul className="ml-6 text-xs text-gray-500">
+                  <li>• Identitas beswan: beswan_id, nama panggilan, nama lengkap, email</li>
+                  <li>• Status aplikasi: application_id, status diterima</li>
+                  <li>• Detail dokumen: jumlah dokumen, detail setiap dokumen (nama file, jenis dokumen, tanggal upload, status)</li>
+                </ul>
+              </ul>
+            </div>
+
+            <div className="space-y-2">
+              <h3 className="font-medium">Format Export</h3>
+              <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
+                <li><strong>Excel/CSV/JSON:</strong> Untuk data beswan dalam format tabular</li>
+                <li><strong>ZIP:</strong> Khusus untuk dokumen beswan (file fisik dalam folder per user)</li>
+                <li className="text-amber-600">⚠️ Data beswan dan dokumen beswan memerlukan format yang berbeda dan tidak bisa dipilih bersamaan</li>
+              </ul>
             </div>
 
             <div className="space-y-2">
               <h3 className="font-medium">Langkah-langkah</h3>
               <ol className="space-y-1 text-sm list-decimal list-inside text-muted-foreground">
-                <li>Pilih tabel yang ingin Anda ekspor datanya</li>
-                <li>Pilih format file ekspor (Excel, CSV, atau JSON)</li>
+                <li>Pilih apakah ingin ekspor "Data Beswan" atau "Dokumen Beswan"</li>
+                <li>Pilih format file ekspor sesuai kebutuhan</li>
                 <li>Tentukan rentang waktu data (opsional)</li>
                 <li>Klik tombol "Ekspor Data" dan tunggu proses selesai</li>
                 <li>File akan otomatis terunduh ke perangkat Anda</li>
@@ -451,9 +552,31 @@ export default function ExportDataPage() {
             <div className="space-y-2">
               <h3 className="font-medium">Perhatian</h3>
               <p className="text-sm text-muted-foreground">
-                Data yang diekspor mungkin berisi informasi sensitif. Pastikan untuk menyimpan file hasil ekspor dengan aman dan tidak membagikannya kepada pihak yang tidak berwenang.
+                Data yang diekspor mungkin berisi informasi sensitif termasuk dokumen pribadi (KTP, foto, dll). 
+                Dokumen akan diorganisir dalam folder sesuai nama pengguna. Pastikan untuk menyimpan file hasil ekspor dengan aman.
               </p>
             </div>
+
+            {/* Penjelasan tentang struktur ZIP */}
+            {exportFormats.find(format => format.id === exportFormat)?.id === 'zip' && (
+              <div className="space-y-2">
+                <h3 className="font-medium">Struktur File ZIP</h3>
+                <p className="text-sm text-muted-foreground">
+                  Jika Anda memilih format ZIP, data yang diekspor akan dikompresi dalam file ZIP. Struktur di dalam file ZIP adalah sebagai berikut:
+                </p>
+                <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
+                  <li>
+                    <strong>data.csv</strong> - Berisi data utama dari tabel yang dipilih dalam format CSV.
+                  </li>
+                  <li>
+                    <strong>dokumen/</strong> - Folder yang berisi dokumen terkait (jika ada) dalam format aslinya.
+                  </li>
+                </ul>
+                <p className="text-sm text-muted-foreground">
+                  Anda dapat mengekstrak file ZIP ini menggunakan perangkat lunak ekstraksi file seperti WinRAR, 7-Zip, atau alat bawaan sistem operasi Anda.
+                </p>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>

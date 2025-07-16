@@ -84,58 +84,27 @@ export default function AdminDokumenWajibPage() {
   const [isUpdating, setIsUpdating] = useState(false)
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [isAuthError, setIsAuthError] = useState(false);
 
   const { toast } = useToast()
 
-  // Helper function to verify token existence and basic format
-  const verifyTokenExists = () => {
-    const token = localStorage.getItem('bersekolah_auth_token');
-    console.log('Auth token check:', token ? 'Token exists' : 'Token missing');
-    
-    // Check all localStorage items for debugging
-    console.log('All localStorage keys:', Object.keys(localStorage));
-    
-    if (!token) {
-      setFetchError("Token tidak ditemukan. Silakan login kembali.");
-      setIsLoading(false);
-      setIsAuthError(true); // Set auth error flag
-      return false;
-    }
-    
-    // Very basic check to see if the token has a valid JWT format (header.payload.signature)
-    if (!token.match(/^[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+/=]*$/)) {
-      localStorage.removeItem('bersekolah_auth_token');
-      setFetchError("Token tidak valid. Silakan login kembali.");
-      setIsLoading(false);
-      setIsAuthError(true); // Set auth error flag
-      return false;
-    }
-    
-    return true;
-  }
-
   useEffect(() => {
-    if (verifyTokenExists()) {
-      fetchDocuments();
-    }
+    fetchDocuments()
   }, [])
 
   const fetchDocuments = async (isRefresh = false) => {
     try {
       if (isRefresh) {
-        setIsRefreshing(true);
+        setIsRefreshing(true)
       } else {
         setIsLoading(true)
       }
-      setFetchError(null);
+      setFetchError(null)
 
-      // Verify token exists and has basic valid format
-      if (!verifyTokenExists()) {
-        return; // The verifyTokenExists function already updates the error state
+      const token = localStorage.getItem('bersekolah_auth_token')
+      if (!token) {
+        setFetchError("Token tidak ditemukan. Silakan login kembali.")
+        return
       }
-      
-      const token = localStorage.getItem('bersekolah_auth_token');
 
       const response = await fetch(`${import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:8000/api'}/admin/documents/wajib`, {
         headers: {
@@ -146,15 +115,11 @@ export default function AdminDokumenWajibPage() {
 
       if (!response.ok) {
         if (response.status === 401) {
-          // Handle 401 Unauthorized error specifically
-          localStorage.removeItem('bersekolah_auth_token'); // Clear the invalid token
-          console.error('Authorization failed. Token might be invalid or expired.');
-          setIsAuthError(true);
-          throw new Error('Sesi login telah berakhir. Silakan login kembali untuk melanjutkan.');
-        } else {
-          console.error(`HTTP error ${response.status}: ${response.statusText}`);
-          throw new Error(`HTTP error: ${response.status}`);
+          localStorage.removeItem('bersekolah_auth_token')
+          setFetchError("Sesi login telah berakhir. Silakan login kembali.")
+          return
         }
+        throw new Error(`HTTP error: ${response.status}`)
       }
 
       const data = await response.json()
@@ -198,26 +163,15 @@ export default function AdminDokumenWajibPage() {
       setDocuments(documentsData)
     } catch (error) {
       console.error('Error fetching documents:', error)
-      
-      const errorMessage = error instanceof Error ? error.message : "Gagal memuat data dokumen";
-      setFetchError(errorMessage);
-      
-      // Set auth error flag if the error is related to authentication
-      if (errorMessage.toLowerCase().includes('login') || 
-          errorMessage.toLowerCase().includes('sesi') || 
-          errorMessage.toLowerCase().includes('token') ||
-          errorMessage.toLowerCase().includes('auth')) {
-        setIsAuthError(true);
-      }
-      
+      setFetchError(error instanceof Error ? error.message : "Gagal memuat data dokumen")
       toast({
         title: "Error",
-        description: errorMessage,
+        description: error instanceof Error ? error.message : "Gagal memuat data dokumen",
         variant: "destructive",
       })
     } finally {
-      setIsLoading(false);
-      setIsRefreshing(false);
+      setIsLoading(false)
+      setIsRefreshing(false)
     }
   }
 
@@ -466,7 +420,7 @@ export default function AdminDokumenWajibPage() {
   }
 
   if (fetchError) {
-    const isAuthError = fetchError.includes('login') || fetchError.includes('sesi') || fetchError.includes('401');
+    const isAuthError = fetchError.includes('login') || fetchError.includes('sesi') || fetchError.includes('token');
     
     return (
       <div className="container py-6 mx-auto">
