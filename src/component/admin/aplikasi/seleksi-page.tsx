@@ -602,7 +602,7 @@ export default function SeleksiBeasiswaPage() {
 
     return (
       <Badge variant="outline" className={`${config.color} border`}>
-        <IconComponent className="mr-1 w-3 h-3" />
+        <IconComponent className="w-3 h-3 mr-1" />
         {config.text}
       </Badge>
     )
@@ -633,13 +633,11 @@ export default function SeleksiBeasiswaPage() {
   }, [])
 
   useEffect(() => {
-<<<<<<< HEAD
-=======
+
     fetchApplications()
   }, [fetchApplications])
 
   useEffect(() => {
->>>>>>> 694cc7f74962ffce1a7be892431b45e5199b62f0
     // Reset page when filters change
     setCurrentPage(1)
   }, [searchTerm, statusFilter, periodFilter, finalizedFilter])
@@ -665,7 +663,7 @@ export default function SeleksiBeasiswaPage() {
     return (
       <div className="container py-6 mx-auto">
         <div className="flex items-center justify-center min-h-[400px]">
-          <div className="flex flex-col gap-4 items-center">
+          <div className="flex flex-col items-center gap-4">
             <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
             <div className="text-center">
               <h3 className="font-semibold">Memuat Data Aplikasi...</h3>
@@ -685,14 +683,14 @@ export default function SeleksiBeasiswaPage() {
   return (
     <div className="container py-6 mx-auto space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Seleksi Aplikasi Beasiswa</h1>
           <p className="text-muted-foreground">
             Kelola dan review aplikasi beasiswa yang masuk
           </p>
         </div>
-        <div className="flex gap-2 items-center">
+        <div className="flex items-center gap-2">
           <Button 
             variant="outline" 
             onClick={() => {
@@ -700,7 +698,7 @@ export default function SeleksiBeasiswaPage() {
               setMediaSosialDialog(true)
             }}
           >
-            <LinkIcon className="mr-2 w-4 h-4" />
+            <LinkIcon className="w-4 h-4 mr-2" />
             Atur Link Grup WA
           </Button>
           <Button 
@@ -721,7 +719,7 @@ export default function SeleksiBeasiswaPage() {
         {statisticsError && (
           <Card className="col-span-full">
             <CardContent className="p-6">
-              <div className="flex justify-center items-center space-x-2 text-center">
+              <div className="flex items-center justify-center space-x-2 text-center">
                 <AlertCircle className="w-6 h-6 text-red-500" />
                 <p className="text-red-500">{statisticsError}</p>
                 <Button 
@@ -732,12 +730,12 @@ export default function SeleksiBeasiswaPage() {
                 >
                   {isRefreshing ? (
                     <>
-                      <Loader2 className="mr-2 w-4 h-4 animate-spin" />
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                       Memuat...
                     </>
                   ) : (
                     <>
-                      <RefreshCw className="mr-2 w-4 h-4" />
+                      <RefreshCw className="w-4 h-4 mr-2" />
                       Coba Lagi
                     </>
                   )}
@@ -749,47 +747,47 @@ export default function SeleksiBeasiswaPage() {
 
         {/* Only show statistics cards if no error and data exists */}
         {!statisticsError && statistics && (
-          <div className="grid grid-cols-1 col-span-full gap-6 mb-8 w-full sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
+          <div className="grid w-full grid-cols-1 gap-6 mb-8 col-span-full sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
 
 
-            <Card className="rounded-xl shadow-md">
-              <CardContent className="flex flex-col justify-center items-center py-6 text-center">
-                <Users className="mb-2 w-8 h-8 text-blue-600" />
+            <Card className="shadow-md rounded-xl">
+              <CardContent className="flex flex-col items-center justify-center py-6 text-center">
+                <Users className="w-8 h-8 mb-2 text-blue-600" />
                 <p className="text-base font-medium text-muted-foreground">Total</p>
                 <p className="mt-1 text-3xl font-bold">{statistics.overview.total}</p>
               </CardContent>
             </Card>
-            <Card className="rounded-xl shadow-md">
-              <CardContent className="flex flex-col justify-center items-center py-6 text-center">
-                <Clock className="mb-2 w-8 h-8 text-yellow-600" />
+            <Card className="shadow-md rounded-xl">
+              <CardContent className="flex flex-col items-center justify-center py-6 text-center">
+                <Clock className="w-8 h-8 mb-2 text-yellow-600" />
                 <p className="text-base font-medium text-muted-foreground">Pending</p>
                 <p className="mt-1 text-3xl font-bold">{statistics.overview.pending}</p>
               </CardContent>
             </Card>
-            <Card className="rounded-xl shadow-md">
-              <CardContent className="flex flex-col justify-center items-center py-6 text-center">
-                <FileCheck className="mb-2 w-8 h-8 text-blue-600" />
+            <Card className="shadow-md rounded-xl">
+              <CardContent className="flex flex-col items-center justify-center py-6 text-center">
+                <FileCheck className="w-8 h-8 mb-2 text-blue-600" />
                 <p className="text-base font-medium text-muted-foreground">Lolos Berkas</p>
                 <p className="mt-1 text-3xl font-bold">{statistics.overview.lolos_berkas}</p>
               </CardContent>
             </Card>
-            <Card className="rounded-xl shadow-md">
-              <CardContent className="flex flex-col justify-center items-center py-6 text-center">
-                <Video className="mb-2 w-8 h-8 text-green-600" />
+            <Card className="shadow-md rounded-xl">
+              <CardContent className="flex flex-col items-center justify-center py-6 text-center">
+                <Video className="w-8 h-8 mb-2 text-green-600" />
                 <p className="text-base font-medium text-muted-foreground">Lolos Wawancara</p>
                 <p className="mt-1 text-3xl font-bold">{statistics.overview.lolos_wawancara}</p>
               </CardContent>
             </Card>
-            <Card className="rounded-xl shadow-md">
-              <CardContent className="flex flex-col justify-center items-center py-6 text-center">
-                <Award className="mb-2 w-8 h-8 text-emerald-600" />
+            <Card className="shadow-md rounded-xl">
+              <CardContent className="flex flex-col items-center justify-center py-6 text-center">
+                <Award className="w-8 h-8 mb-2 text-emerald-600" />
                 <p className="text-base font-medium text-muted-foreground">Diterima</p>
                 <p className="mt-1 text-3xl font-bold">{statistics.overview.diterima}</p>
               </CardContent>
             </Card>
-            <Card className="rounded-xl shadow-md">
-              <CardContent className="flex flex-col justify-center items-center py-6 text-center">
-                <X className="mb-2 w-8 h-8 text-red-600" />
+            <Card className="shadow-md rounded-xl">
+              <CardContent className="flex flex-col items-center justify-center py-6 text-center">
+                <X className="w-8 h-8 mb-2 text-red-600" />
                 <p className="text-base font-medium text-muted-foreground">Ditolak</p>
                 <p className="mt-1 text-3xl font-bold">{statistics.overview.ditolak}</p>
               </CardContent>
@@ -800,9 +798,9 @@ export default function SeleksiBeasiswaPage() {
 
       {/* Media Sosial Bersekolah */}
       {!isMediaLoading && !mediaError && (
-        <Card className="mb-6 w-full">
+        <Card className="w-full mb-6">
           <CardHeader>
-            <CardTitle className="flex gap-2 items-center">
+            <CardTitle className="flex items-center gap-2">
               <Share2 className="w-5 h-5" /> 
               Media Sosial & Kontak Bersekolah
             </CardTitle>
@@ -815,7 +813,7 @@ export default function SeleksiBeasiswaPage() {
               {/* Twibbon */}
               <div className="space-y-2">
                 <Label htmlFor="twibbon">
-                  <div className="flex gap-2 items-center">
+                  <div className="flex items-center gap-2">
                     <Share2 className="w-4 h-4" /> Link Twibbon
                   </div>
                 </Label>
@@ -853,7 +851,7 @@ export default function SeleksiBeasiswaPage() {
               {/* Instagram */}
               <div className="space-y-2">
                 <Label htmlFor="instagram">
-                  <div className="flex gap-2 items-center">
+                  <div className="flex items-center gap-2">
                     <Instagram className="w-4 h-4" /> Link Instagram
                   </div>
                 </Label>
@@ -891,7 +889,7 @@ export default function SeleksiBeasiswaPage() {
               {/* WhatsApp Group */}
               <div className="space-y-2">
                 <Label htmlFor="whatsapp-group">
-                  <div className="flex gap-2 items-center">
+                  <div className="flex items-center gap-2">
                     <MessageCircle className="w-4 h-4" /> Link Grup WhatsApp
                   </div>
                 </Label>
@@ -929,7 +927,7 @@ export default function SeleksiBeasiswaPage() {
               {/* WhatsApp Number */}
               <div className="space-y-2">
                 <Label htmlFor="whatsapp-number">
-                  <div className="flex gap-2 items-center">
+                  <div className="flex items-center gap-2">
                     <Phone className="w-4 h-4" /> Nomor WhatsApp HUMAS
                   </div>
                 </Label>
@@ -966,24 +964,24 @@ export default function SeleksiBeasiswaPage() {
           </CardContent>
           <CardFooter className="flex justify-end">
             <Button onClick={handleMediaSave} disabled={isMediaSaving}>
-              {isMediaSaving ? (<><Loader2 className="mr-2 w-4 h-4 animate-spin" />Menyimpan...</>) : (<><Save className="mr-2 w-4 h-4" />Simpan</>)}
+              {isMediaSaving ? (<><Loader2 className="w-4 h-4 mr-2 animate-spin" />Menyimpan...</>) : (<><Save className="w-4 h-4 mr-2" />Simpan</>)}
             </Button>
           </CardFooter>
         </Card>
       )}
       {isMediaLoading && (
-        <Card className="mb-6 w-full">
+        <Card className="w-full mb-6">
           <CardHeader>
             <CardTitle>Media Sosial Bersekolah</CardTitle>
             <CardDescription>Kelola link Twibbon dan Instagram untuk disebarkan ke peserta</CardDescription>
           </CardHeader>
-          <CardContent className="flex justify-center items-center py-8">
+          <CardContent className="flex items-center justify-center py-8">
             <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
           </CardContent>
         </Card>
       )}
       {mediaError && (
-        <Card className="mb-6 w-full">
+        <Card className="w-full mb-6">
           <CardHeader>
             <CardTitle>Media Sosial Bersekolah</CardTitle>
             <CardDescription>Kelola link Twibbon dan Instagram untuk disebarkan ke peserta</CardDescription>
@@ -1008,7 +1006,7 @@ export default function SeleksiBeasiswaPage() {
             <div className="space-y-2">
               <Label htmlFor="search">Cari Aplikasi</Label>
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 w-4 h-4 text-gray-500 transform -translate-y-1/2" />
+                <Search className="absolute w-4 h-4 text-gray-500 transform -translate-y-1/2 left-3 top-1/2" />
                 <Input
                   id="search"
                   placeholder="Nama, email..."
@@ -1088,7 +1086,7 @@ export default function SeleksiBeasiswaPage() {
       {/* Applications Table */}
       <Card>
         <CardHeader>
-          <div className="flex justify-between items-center">
+          <div className="flex items-center justify-between">
             <div>
               <CardTitle>Daftar Aplikasi Beasiswa</CardTitle>
               <CardDescription>
@@ -1183,7 +1181,7 @@ export default function SeleksiBeasiswaPage() {
                       )}
                     </TableCell>
                     <TableCell>
-                      <div className="flex gap-1 items-center">
+                      <div className="flex items-center gap-1">
                         <Button
                           size="sm"
                           variant="ghost"
@@ -1227,11 +1225,11 @@ export default function SeleksiBeasiswaPage() {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex justify-between items-center p-4 border-t">
+            <div className="flex items-center justify-between p-4 border-t">
               <div className="text-sm text-muted-foreground">
                 Halaman {currentPage} dari {totalPages} ({totalItems} total aplikasi)
               </div>
-              <div className="flex gap-2 items-center">
+              <div className="flex items-center gap-2">
                 <Button
                   variant="outline"
                   size="sm"
@@ -1342,7 +1340,7 @@ export default function SeleksiBeasiswaPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2">
-                    <div className="flex justify-between items-center">
+                    <div className="flex items-center justify-between">
                       <span className="text-sm">Kelengkapan Dokumen</span>
                       <span className="text-sm font-medium">
                         {selectedApplication.verification_progress.verified_count}/
@@ -1381,7 +1379,7 @@ export default function SeleksiBeasiswaPage() {
                           rel="noopener noreferrer"
                           className="flex items-center text-sm text-blue-600 hover:underline"
                         >
-                          <LinkIcon className="mr-1 w-3 h-3" />
+                          <LinkIcon className="w-3 h-3 mr-1" />
                           {selectedApplication.interview_link}
                         </a>
                       </div>
@@ -1526,7 +1524,7 @@ export default function SeleksiBeasiswaPage() {
             >
               {isUpdatingStatus ? (
                 <>
-                  <Loader2 className="mr-2 w-4 h-4 animate-spin" />
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   Memperbarui...
                 </>
               ) : (
@@ -1602,7 +1600,7 @@ export default function SeleksiBeasiswaPage() {
             >
               {isBulkUpdating ? (
                 <>
-                  <Loader2 className="mr-2 w-4 h-4 animate-spin" />
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   Memperbarui...
                 </>
               ) : (
@@ -1649,7 +1647,7 @@ export default function SeleksiBeasiswaPage() {
             >
               {isMediaSaving ? (
                 <>
-                  <Loader2 className="mr-2 w-4 h-4 animate-spin" />
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   Memperbarui...
                 </>
               ) : (
