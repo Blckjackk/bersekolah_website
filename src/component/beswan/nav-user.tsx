@@ -302,8 +302,10 @@ export function NavUser() {
   // Loading state
   if (isLoading) {
     return (
-      <div className="flex items-center gap-2 p-2">
-        <Loader2 className="w-4 h-4 animate-spin" />
+      <div className={`flex items-center transition-colors ${
+        isOpen ? 'gap-2 p-2' : 'justify-center p-2'
+      }`}>
+        <Loader2 className="w-4 h-4 animate-spin flex-shrink-0" />
         <div className={`overflow-hidden transition-all duration-300 ease-in-out ${
           isOpen 
             ? 'opacity-100 translate-x-0 w-auto' 
@@ -318,7 +320,9 @@ export function NavUser() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button className="flex items-center w-full gap-2 p-2 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors">
+        <button className={`flex items-center w-full transition-colors rounded-md hover:bg-accent hover:text-accent-foreground ${
+          isOpen ? 'gap-2 p-2' : 'justify-center p-2'
+        }`}>
           <Avatar className="w-8 h-8 rounded-lg flex-shrink-0">
             <AvatarImage src={user.avatar} alt={user.name} />
             <AvatarFallback className="text-blue-800 bg-blue-100 rounded-lg">

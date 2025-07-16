@@ -43,7 +43,7 @@ export function NavMain({
   const { isOpen } = useSidebar()
   
   return (
-    <div className="p-4 space-y-1">
+    <div className={`space-y-1 transition-all duration-200 ${isOpen ? 'p-4' : 'p-2'}`}>
       <div className={`overflow-hidden transition-all duration-300 ease-in-out ${
         isOpen 
           ? 'opacity-100 max-h-8 mb-2' 
