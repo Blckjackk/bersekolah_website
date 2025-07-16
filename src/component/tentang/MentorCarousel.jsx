@@ -37,16 +37,14 @@ const MentorCarousel = ({ mentors }) => {
   const nextSlide = () => {
     if (isTransitioning) return;
     setIsTransitioning(true);
-    setCurrentIndex((prev) => (prev + cardsPerView) % mentors.length);
+    setCurrentIndex((prev) => (prev + 1) % mentors.length);
     setTimeout(() => setIsTransitioning(false), 500);
   };
 
   const prevSlide = () => {
     if (isTransitioning) return;
     setIsTransitioning(true);
-    setCurrentIndex((prev) =>
-      (prev - cardsPerView + mentors.length) % mentors.length
-    );
+    setCurrentIndex((prev) => (prev - 1 + mentors.length) % mentors.length);
     setTimeout(() => setIsTransitioning(false), 500);
   };
 
@@ -57,8 +55,8 @@ const MentorCarousel = ({ mentors }) => {
     setTimeout(() => setIsTransitioning(false), 300);
   };
 
-  // Circular visible mentors
-  const getCircularMentors = () => {
+  // Get visible mentors with infinite loop
+  const getVisibleMentors = () => {
     const result = [];
     for (let i = 0; i < cardsPerView; i++) {
       const index = (currentIndex + i) % mentors.length;
@@ -67,9 +65,7 @@ const MentorCarousel = ({ mentors }) => {
     return result;
   };
 
-  const visibleMentors = getCircularMentors();
-  const cardWidth = 100 / cardsPerView;
-  const cardHeight = 1000 / 2;
+  const visibleMentors = getVisibleMentors();
 
   return (
     <div className="relative">
@@ -95,21 +91,26 @@ const MentorCarousel = ({ mentors }) => {
         <div
           className="flex transition-transform duration-500 ease-in-out"
           style={{
-            width: `${(mentors.length) * (100 / cardsPerView)}%`,
-            transform: `translateX(-${(100 / mentors.length) * currentIndex}%)`,
+            transform: `translateX(-${(currentIndex * (100 / cardsPerView))}%)`,
           }}
         >
-          {mentors.map((mentor, index) => (
-            <div
-              key={mentor.id}
-              className="px-3 flex-shrink-0"
-              style={{
-                width: `${100 / mentors.length}%`,
-              }}
-            >
-              <MentorCard mentor={mentor} />
-            </div>
-          ))}
+          {/* Render mentors with infinite loop */}
+          {Array.from({ length: mentors.length + cardsPerView }, (_, i) => {
+            const mentorIndex = i % mentors.length;
+            const mentor = mentors[mentorIndex];
+            
+            return (
+              <div
+                key={`${mentor.id}-${i}`}
+                className="px-3 flex-shrink-0"
+                style={{
+                  width: `${100 / cardsPerView}%`,
+                }}
+              >
+                <MentorCard mentor={mentor} />
+              </div>
+            );
+          })}
         </div>
       </div>
 
@@ -118,7 +119,7 @@ const MentorCarousel = ({ mentors }) => {
       {/* Pagination Dots */}
       {mentors.length > cardsPerView && (
         <div className="flex justify-center mt-8 space-x-2">
-          {mentors.map((_, index) => (
+          {Array.from({ length: mentors.length }, (_, index) => (
             <button
               key={index}
               onClick={() => goToSlide(index)}
