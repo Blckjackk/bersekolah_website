@@ -188,15 +188,16 @@ export function AppSidebar() {
   const minSwipeDistance = 50
   
   // Update document body class for proper styling
-  useEffect(() => {
-    document.body.classList.toggle('has-sidebar', true);
-    document.body.classList.toggle('sidebar-collapsed', !isOpen);
+  // NOTE: Disabled to prevent conflicts with page-admin.tsx layout
+  // useEffect(() => {
+  //   document.body.classList.toggle('has-sidebar', true);
+  //   document.body.classList.toggle('sidebar-collapsed', !isOpen);
     
-    return () => {
-      document.body.classList.remove('has-sidebar');
-      document.body.classList.remove('sidebar-collapsed');
-    };
-  }, [isOpen]);
+  //   return () => {
+  //     document.body.classList.remove('has-sidebar');
+  //     document.body.classList.remove('sidebar-collapsed');
+  //   };
+  // }, [isOpen]);
 
   // Monitor window size for responsive behavior
   useEffect(() => {
@@ -228,19 +229,20 @@ export function AppSidebar() {
     
     observer.observe(document.body, { childList: true, subtree: true })
     
+    // NOTE: Disabled CSS variables to prevent conflicts with page-admin.tsx layout
     // Update CSS variables based on sidebar state
-    document.documentElement.style.setProperty(
-      '--sidebar-width', 
-      isOpen ? '16rem' : '4rem'
-    )
-    document.documentElement.style.setProperty(
-      '--sidebar-expanded-width', 
-      '16rem'
-    )
-    document.documentElement.style.setProperty(
-      '--sidebar-collapsed-width', 
-      '4rem'
-    )
+    // document.documentElement.style.setProperty(
+    //   '--sidebar-width', 
+    //   isOpen ? '16rem' : '4rem'
+    // )
+    // document.documentElement.style.setProperty(
+    //   '--sidebar-expanded-width', 
+    //   '16rem'
+    // )
+    // document.documentElement.style.setProperty(
+    //   '--sidebar-collapsed-width', 
+    //   '4rem'
+    // )
     
     return () => {
       window.removeEventListener('popstate', handlePopState)
@@ -295,7 +297,7 @@ export function AppSidebar() {
       {/* Mobile overlay */}
       {isMobile && isOpen && (
         <div 
-          className="fixed inset-0 bg-black/50 z-20"
+          className="fixed inset-0 z-20 bg-black/50"
           onClick={toggle}
         />
       )}
@@ -327,7 +329,7 @@ export function AppSidebar() {
           data-testid="sidebar-header"
         >
           <div 
-            className="w-16 h-full flex items-center justify-center"
+            className="flex items-center justify-center w-16 h-full"
             onClick={(e) => {
               if (isOpen) {
                 e.stopPropagation();
@@ -337,7 +339,7 @@ export function AppSidebar() {
             }}
           >
             <div 
-              className="flex items-center justify-center rounded-lg aspect-square size-8 bg-primary text-primary-foreground transition-colors"
+              className="flex items-center justify-center transition-colors rounded-lg aspect-square size-8 bg-primary text-primary-foreground"
               onClick={(e) => {
                 e.stopPropagation();
                 console.log('Logo clicked, toggle state:', isOpen);
@@ -354,7 +356,7 @@ export function AppSidebar() {
               ? 'sidebar-content-expanded' 
               : 'sidebar-content-collapsed'
           }`}>
-            <span className="font-semibold text-sm whitespace-nowrap">Bersekolah</span>
+            <span className="text-sm font-semibold whitespace-nowrap">Bersekolah</span>
             <span className="text-xs text-muted-foreground whitespace-nowrap">
               {isSuperAdmin ? 'Super Admin Panel' : 'Admin Panel'}
             </span>
@@ -367,7 +369,7 @@ export function AppSidebar() {
                 e.stopPropagation();
                 toggle();
               }}
-              className="ml-auto mr-2 flex items-center justify-center w-8 h-8 rounded-md hover:bg-accent/10 transition-colors"
+              className="flex items-center justify-center w-8 h-8 ml-auto mr-2 transition-colors rounded-md hover:bg-accent/10"
               aria-label="Tutup sidebar"
               title="Tutup sidebar"
             >
@@ -382,7 +384,7 @@ export function AppSidebar() {
         </nav>
 
         {/* Footer NavUser - Fixed di bottom */}
-        <footer className="flex-shrink-0 bg-background border-t border-border">
+        <footer className="flex-shrink-0 border-t bg-background border-border">
           <div className="p-4">
             <NavUser />
           </div>

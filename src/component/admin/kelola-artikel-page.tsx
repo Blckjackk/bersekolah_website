@@ -369,7 +369,7 @@ export default function KelolaArtikelPage({ defaultCategory = "news" }: { defaul
   // Helper untuk membangun URL gambar dari nama file
   const getImageUrl = (gambar: string | null | undefined): string | undefined => {
     if (!gambar) return undefined;
-    return `/storage/artikel/${gambar}`;
+    return `/assets/image/artikel/${gambar}`;
   };
   
   // Loading state
@@ -519,7 +519,7 @@ export default function KelolaArtikelPage({ defaultCategory = "news" }: { defaul
                       ) : (
                         <div className="flex justify-center items-center w-8 h-8 bg-gray-100 rounded">
                           <img
-                            src="/storage/artikel/default.jpg"
+                            src="/assets/image/artikel/default.jpg"
                             alt="default"
                             className="object-cover w-full h-full"
                           />

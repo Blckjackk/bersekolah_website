@@ -213,7 +213,7 @@ export function NavUser() {
       localStorage.removeItem('bersekolah_user');
       localStorage.removeItem('bersekolah_login_time');
       
-      window.location.href = '/login';
+      window.location.href = '/masuk';
     }
   };
   

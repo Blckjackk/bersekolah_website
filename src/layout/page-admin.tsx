@@ -8,13 +8,10 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar";
 import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
+import { CustomSidebarTrigger } from "@/component/layout/custom-sidebar-trigger";
+import { SidebarProvider as CustomSidebarProvider, useSidebar } from "@/contexts/SidebarContext";
 
 import type { ReactNode } from "react";
 
@@ -52,9 +49,30 @@ const getAuthData = () => {
 };
 
 export default function Page({ children }: { children: ReactNode }) {
+  return (
+    <CustomSidebarProvider>
+      <PageContent>{children}</PageContent>
+    </CustomSidebarProvider>
+  );
+}
+
+function PageContent({ children }: { children: ReactNode }) {
+  const { isOpen, toggle } = useSidebar();
   const [pathSegments, setPathSegments] = useState<string[]>([]);
   const [isAuthChecking, setIsAuthChecking] = useState(true);
   const [isAuthorized, setIsAuthorized] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Monitor window size for responsive behavior
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Auth middleware check for admin
   useEffect(() => {
@@ -225,25 +243,39 @@ export default function Page({ children }: { children: ReactNode }) {
   }
 
   return (
-    <SidebarProvider>
-      <div className="admin-layout">
-        <AppSidebar />
-        <SidebarInset>
-          <div 
-            className={`dashboard-content-wrapper transition-all duration-300 ease-in-out ${
-              false ? "ml-0" : ""
-            }`}
-          >
-          <header className="flex items-center h-16 gap-2 shrink-0 border-b bg-background px-4 sticky top-0 z-10">
-            <div className="flex items-center gap-2">
-              <SidebarTrigger className="-ml-1" />
-              <Separator orientation="vertical" className="h-4 mr-2" />
-              <Breadcrumb>
-                <BreadcrumbList>
-                  {pathSegments.length === 0 ? (
-                    <BreadcrumbItem className="block">
-                      <BreadcrumbPage>Dashboard Admin</BreadcrumbPage>
-                    </BreadcrumbItem>
+    <div className="min-h-screen">
+      {/* Mobile overlay */}
+      {isMobile && isOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-20"
+          onClick={() => {
+            // Close sidebar on mobile when clicking overlay
+            toggle();
+          }}
+        />
+      )}
+      
+      {/* Sidebar - Fixed position */}
+      <AppSidebar />
+      
+      {/* Main content area - Adjust margin for sidebar like beswan */}
+      <div 
+        className={`transition-all duration-300 ease-in-out ${
+          isMobile 
+            ? "ml-0" 
+            : (isOpen ? "ml-64" : "ml-16")  // Same as beswan - adjust based on sidebar state
+        }`}
+      >
+        <header className="flex h-16 shrink-0 items-center gap-2 border-b bg-background px-4 sticky top-0 z-10">
+          <div className="flex items-center gap-2">
+            <CustomSidebarTrigger className="-ml-1" />
+            <Separator orientation="vertical" className="h-4 mr-2" />
+            <Breadcrumb>
+              <BreadcrumbList>
+                {pathSegments.length === 0 ? (
+                  <BreadcrumbItem className="block">
+                    <BreadcrumbPage>Dashboard Admin</BreadcrumbPage>
+                  </BreadcrumbItem>
                 ) : (
                   pathSegments.map((segment, index) => {
                     const isLast = index === pathSegments.length - 1;
@@ -269,10 +301,10 @@ export default function Page({ children }: { children: ReactNode }) {
             </Breadcrumb>
           </div>
         </header>
-        <div className="flex flex-col flex-1 gap-4 p-4 pt-0">{children}</div>
-        </div>
-      </SidebarInset>
+        <main className="p-4 min-h-[calc(100vh-4rem)]">
+          {children}
+        </main>
       </div>
-    </SidebarProvider>
+    </div>
   );
 }

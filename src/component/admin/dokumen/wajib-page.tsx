@@ -58,6 +58,7 @@ interface Document {
   keterangan?: string;
   created_at: string;
   updated_at: string;
+  fileType?: 'image' | 'pdf' | 'document' | 'unknown';
   user: {
     id: number;
     name: string;
@@ -83,11 +84,41 @@ export default function AdminDokumenWajibPage() {
   const [isUpdating, setIsUpdating] = useState(false)
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isAuthError, setIsAuthError] = useState(false);
 
   const { toast } = useToast()
 
+  // Helper function to verify token existence and basic format
+  const verifyTokenExists = () => {
+    const token = localStorage.getItem('bersekolah_auth_token');
+    console.log('Auth token check:', token ? 'Token exists' : 'Token missing');
+    
+    // Check all localStorage items for debugging
+    console.log('All localStorage keys:', Object.keys(localStorage));
+    
+    if (!token) {
+      setFetchError("Token tidak ditemukan. Silakan login kembali.");
+      setIsLoading(false);
+      setIsAuthError(true); // Set auth error flag
+      return false;
+    }
+    
+    // Very basic check to see if the token has a valid JWT format (header.payload.signature)
+    if (!token.match(/^[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+/=]*$/)) {
+      localStorage.removeItem('bersekolah_auth_token');
+      setFetchError("Token tidak valid. Silakan login kembali.");
+      setIsLoading(false);
+      setIsAuthError(true); // Set auth error flag
+      return false;
+    }
+    
+    return true;
+  }
+
   useEffect(() => {
-    fetchDocuments()
+    if (verifyTokenExists()) {
+      fetchDocuments();
+    }
   }, [])
 
   const fetchDocuments = async (isRefresh = false) => {
@@ -99,11 +130,12 @@ export default function AdminDokumenWajibPage() {
       }
       setFetchError(null);
 
-      const token = localStorage.getItem('bersekolah_auth_token')
-      if (!token) {
-        setFetchError("Token tidak ditemukan. Silakan login kembali.");
-        return;
+      // Verify token exists and has basic valid format
+      if (!verifyTokenExists()) {
+        return; // The verifyTokenExists function already updates the error state
       }
+      
+      const token = localStorage.getItem('bersekolah_auth_token');
 
       const response = await fetch(`${import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:8000/api'}/admin/documents/wajib`, {
         headers: {
@@ -112,7 +144,18 @@ export default function AdminDokumenWajibPage() {
         }
       })
 
-      if (!response.ok) throw new Error(`HTTP error: ${response.status}`)
+      if (!response.ok) {
+        if (response.status === 401) {
+          // Handle 401 Unauthorized error specifically
+          localStorage.removeItem('bersekolah_auth_token'); // Clear the invalid token
+          console.error('Authorization failed. Token might be invalid or expired.');
+          setIsAuthError(true);
+          throw new Error('Sesi login telah berakhir. Silakan login kembali untuk melanjutkan.');
+        } else {
+          console.error(`HTTP error ${response.status}: ${response.statusText}`);
+          throw new Error(`HTTP error: ${response.status}`);
+        }
+      }
 
       const data = await response.json()
       
@@ -155,10 +198,21 @@ export default function AdminDokumenWajibPage() {
       setDocuments(documentsData)
     } catch (error) {
       console.error('Error fetching documents:', error)
-      setFetchError(error instanceof Error ? error.message : "Gagal memuat data dokumen");
+      
+      const errorMessage = error instanceof Error ? error.message : "Gagal memuat data dokumen";
+      setFetchError(errorMessage);
+      
+      // Set auth error flag if the error is related to authentication
+      if (errorMessage.toLowerCase().includes('login') || 
+          errorMessage.toLowerCase().includes('sesi') || 
+          errorMessage.toLowerCase().includes('token') ||
+          errorMessage.toLowerCase().includes('auth')) {
+        setIsAuthError(true);
+      }
+      
       toast({
         title: "Error",
-        description: "Gagal memuat data dokumen",
+        description: errorMessage,
         variant: "destructive",
       })
     } finally {
@@ -189,6 +243,11 @@ export default function AdminDokumenWajibPage() {
       })
 
       if (!response.ok) {
+        if (response.status === 401) {
+          localStorage.removeItem('bersekolah_auth_token'); // Clear the invalid token
+          throw new Error('Sesi login telah berakhir. Silakan login kembali untuk melanjutkan.');
+        } 
+        
         const errorData = await response.json()
         throw new Error(errorData.message || 'Update failed')
       }
@@ -242,13 +301,52 @@ export default function AdminDokumenWajibPage() {
       }
     }
     
+    // Tambahkan parameter untuk menghindari cache jika diperlukan
+    directFileUrl = `${directFileUrl}?t=${new Date().getTime()}`;
+    
     console.log('Preview URL:', directFileUrl);
+    
+    // Tentukan jenis file berdasarkan ekstensi
+    const fileExtension = doc.file_name.split('.').pop()?.toLowerCase() || '';
+    const fileType = getFileType(fileExtension);
     
     setSelectedDoc({
       ...doc,
-      file_path: directFileUrl
+      file_path: directFileUrl,
+      fileType: fileType // Simpan jenis file untuk digunakan di preview
     });
     setPreviewDialog(true);
+  }
+  
+  // Helper function untuk menentukan jenis file berdasarkan ekstensi
+  const getFileType = (extension: string): 'image' | 'pdf' | 'document' | 'unknown' => {
+    // Normalize the extension (lowercase and remove any dot prefix)
+    const ext = extension.toLowerCase().replace(/^\./, '');
+    
+    // Define file type categories
+    const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg', 'tiff', 'tif', 'ico', 'heic', 'heif'];
+    const documentExtensions = [
+      // Microsoft Office
+      'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 
+      // Open Document Format
+      'odt', 'ods', 'odp',
+      // Text files
+      'txt', 'rtf', 'csv', 'md', 'markdown',
+      // Other document formats
+      'pages', 'numbers', 'key'
+    ];
+    
+    // Check file type
+    if (imageExtensions.includes(ext)) {
+      return 'image';
+    } else if (ext === 'pdf') {
+      return 'pdf';
+    } else if (documentExtensions.includes(ext)) {
+      return 'document';
+    } else {
+      console.log(`Unknown file extension: ${ext}`);
+      return 'unknown';
+    }
   }
 
   const handleVerify = (doc: Document, status: 'verified' | 'rejected') => {
@@ -263,21 +361,21 @@ export default function AdminDokumenWajibPage() {
       case 'verified':
         return (
           <Badge className="text-green-800 bg-green-100 hover:bg-green-100">
-            <CheckCircle2 className="mr-1 w-3 h-3" />
+            <CheckCircle2 className="w-3 h-3 mr-1" />
             Terverifikasi
           </Badge>
         )
       case 'rejected':
         return (
           <Badge variant="destructive">
-            <XCircle className="mr-1 w-3 h-3" />
+            <XCircle className="w-3 h-3 mr-1" />
             Ditolak
           </Badge>
         )
       default:
         return (
           <Badge variant="secondary">
-            <Clock className="mr-1 w-3 h-3" />
+            <Clock className="w-3 h-3 mr-1" />
             Menunggu
           </Badge>
         )
@@ -332,7 +430,7 @@ export default function AdminDokumenWajibPage() {
   }
 
   const isFilePDF = (fileName: string) => {
-    return fileName.toLowerCase().endsWith('.pdf')
+    return getFileType(fileName.split('.').pop()?.toLowerCase() || '') === 'pdf';
   }
 
   // Filter documents
@@ -357,8 +455,8 @@ export default function AdminDokumenWajibPage() {
   if (isLoading) {
     return (
       <div className="container py-6 mx-auto">
-        <div className="flex justify-center items-center h-64">
-          <div className="flex gap-2 items-center">
+        <div className="flex items-center justify-center h-64">
+          <div className="flex items-center gap-2">
             <Loader2 className="w-6 h-6 animate-spin" />
             <span>Memuat data dokumen...</span>
           </div>
@@ -368,18 +466,32 @@ export default function AdminDokumenWajibPage() {
   }
 
   if (fetchError) {
+    const isAuthError = fetchError.includes('login') || fetchError.includes('sesi') || fetchError.includes('401');
+    
     return (
       <div className="container py-6 mx-auto">
         <Card className="border-red-200">
           <CardHeader>
             <div className="flex items-center space-x-2">
               <AlertCircle className="w-6 h-6 text-red-500" />
-              <CardTitle>Error Loading Documents</CardTitle>
+              <CardTitle>{isAuthError ? 'Sesi Login Berakhir' : 'Error Loading Documents'}</CardTitle>
             </div>
           </CardHeader>
           <CardContent>
             <p className="mb-4 text-red-600">{fetchError}</p>
-            <Button onClick={() => fetchDocuments()}>Try Again</Button>
+            <div className="flex flex-wrap gap-3">
+              <Button onClick={() => fetchDocuments()}>Try Again</Button>
+              
+              {isAuthError && (
+                <Button 
+                  variant="default"
+                  className="bg-blue-600 hover:bg-blue-700"
+                  onClick={() => window.location.href = '/masuk'}
+                >
+                  Login Kembali
+                </Button>
+              )}
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -426,7 +538,7 @@ export default function AdminDokumenWajibPage() {
             <div className="space-y-2">
               <Label htmlFor="search">Cari Pendaftar/File</Label>
               <div className="relative">
-                <Search className="absolute top-3 left-3 w-4 h-4 text-gray-400" />
+                <Search className="absolute w-4 h-4 text-gray-400 top-3 left-3" />
                 <Input
                   id="search"
                   placeholder="Nama, email, atau nama file..."
@@ -467,7 +579,7 @@ export default function AdminDokumenWajibPage() {
               </Select>
             </div>
             
-            <div className="flex gap-2 items-end">
+            <div className="flex items-end gap-2">
               <Button 
                 variant="outline" 
                 onClick={() => {
@@ -483,7 +595,7 @@ export default function AdminDokumenWajibPage() {
                 variant="outline"
                 onClick={() => fetchDocuments(true)}
                 disabled={isRefreshing}
-                className="p-0 w-10"
+                className="w-10 p-0"
               >
                 <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
               </Button>
@@ -495,7 +607,7 @@ export default function AdminDokumenWajibPage() {
       {/* Documents Table */}
       <Card>
         <CardHeader>
-          <div className="flex justify-between items-center">
+          <div className="flex items-center justify-between">
             <CardTitle>Daftar Dokumen Wajib</CardTitle>
             <Badge variant="outline">
               {filteredDocuments.length} dokumen
@@ -518,7 +630,7 @@ export default function AdminDokumenWajibPage() {
               {filteredDocuments.map((doc) => (
                 <TableRow key={doc.id}>
                   <TableCell>
-                    <div className="flex gap-2 items-center">
+                    <div className="flex items-center gap-2">
                       <User className="w-4 h-4 text-gray-400" />
                       <div>
                         <div className="font-medium">{doc.user.name}</div>
@@ -527,19 +639,31 @@ export default function AdminDokumenWajibPage() {
                     </div>
                   </TableCell>
                   <TableCell className="font-medium">
-                    <div className="flex gap-2 items-center">
+                    <div className="flex items-center gap-2">
                       {getDocumentTypeIcon(doc.document_type)}
                       {getDocumentTypeName(doc.document_type)}
                     </div>
                   </TableCell>
                   <TableCell>
-                    <div className="flex gap-2 items-center">                      {isFilePDF(doc.file_name) ? 
-                        <FileText className="w-4 h-4 text-red-400" /> : 
-                        <FileText className="w-4 h-4 text-blue-400" />
-                      }
+                    <div className="flex items-center gap-2">
+                      {(() => {
+                        const fileType = getFileType(doc.file_name.split('.').pop()?.toLowerCase() || '');
+                        switch (fileType) {
+                          case 'pdf':
+                            return <FileText className="w-4 h-4 text-red-400" />;
+                          case 'image':
+                            return (
+                              <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                              </svg>
+                            );
+                          case 'document':
+                            return <FileText className="w-4 h-4 text-green-400" />;
+                          default:
+                            return <FileText className="w-4 h-4 text-gray-400" />;
+                        }
+                      })()}
                       <span className="truncate max-w-[200px]" title={doc.file_name}>
-                        {doc.file_name}
-                      </span><span className="truncate max-w-[200px]" title={doc.file_name}>
                         {doc.file_name}
                       </span>
                     </div>
@@ -555,7 +679,7 @@ export default function AdminDokumenWajibPage() {
                     {getStatusBadge(doc.status)}
                   </TableCell>
                   <TableCell className="text-right">
-                    <div className="flex gap-2 justify-end">
+                    <div className="flex justify-end gap-2">
                       <Button 
                         variant="outline" 
                         size="sm" 
@@ -603,7 +727,7 @@ export default function AdminDokumenWajibPage() {
           
           {filteredDocuments.length === 0 && (
             <div className="py-8 text-center">
-              <FileText className="mx-auto mb-4 w-12 h-12 text-gray-400 opacity-50" />
+              <FileText className="w-12 h-12 mx-auto mb-4 text-gray-400 opacity-50" />
               <h3 className="mb-2 text-lg font-medium">Tidak ada dokumen</h3>
               <p className="text-gray-500">
                 Tidak ada dokumen yang sesuai dengan filter pencarian
@@ -626,32 +750,149 @@ export default function AdminDokumenWajibPage() {
               )}
             </DialogDescription>
           </DialogHeader>
-          
-          <div className="overflow-hidden flex-1 min-h-0 rounded-lg border">
-            {selectedDoc && (
-              isFilePDF(selectedDoc.file_name) ? (
-                <iframe 
-                  src={selectedDoc.file_path} 
-                  className="w-full h-full" 
-                  title="Document Preview"
-                  sandbox="allow-scripts allow-same-origin allow-forms"
-                />
-              ) : (
-                <div className="flex justify-center items-center w-full h-full bg-gray-50">
-                  <img 
-                    src={selectedDoc.file_path} 
-                    alt="Document Preview" 
-                    className="object-contain max-w-full max-h-full"
-                    onError={(e) => {
-                      console.error('Image failed to load:', selectedDoc.file_path);
-                      e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNMTIgMjJDNi40NzcgMjIgMiAxNy41MjMgMiAxMkMyIDYuNDc3IDYuNDc3IDIgMTIgMkMxNy41MjMgMiAyMiA2LjQ3NyAyMiAxMkMyMiAxNy41MjMgMTcuNTIzIDIyIDEyIDIyWk0xMiAyMEMxNi40MTggMjAgMjAgMTYuNDE4IDIwIDEyQzIwIDcuNTgyIDE2LjQxOCA0IDEyIDRDNy41ODIgNCA0IDcuNTgyIDQgMTJDNCAxNi40MTggNy41ODIgMjAgMTIgMjBaTTExIDd2MkgxM1Y3SDExWk0xMSAxN0gxM1YxMUgxMVYxN1oiIGZpbGw9IiNmZjAwMDAiLz48L3N2Zz4=';
-                      e.currentTarget.classList.add('w-24', 'h-24');
-                    }}
-                  />
-                </div>
-              )
-            )}
-          </div>
+
+          {selectedDoc && (
+            <div className="flex-1 min-h-0 overflow-hidden border rounded-lg">
+              {(() => {
+                const fileType = getFileType(selectedDoc.file_name.split('.').pop()?.toLowerCase() || '');
+                
+                if (fileType === 'pdf') {
+                  return (
+                    <div className="flex flex-col w-full h-full">
+                      <div className="flex items-center justify-between p-3 bg-gray-100 border-b border-gray-200">
+                        <div className="flex items-center">
+                          <FileText className="w-5 h-5 mr-2 text-red-500" />
+                          <span className="font-medium truncate max-w-[20rem]">{selectedDoc.file_name}</span>
+                        </div>
+                        <Button 
+                          onClick={() => window.open(selectedDoc.file_path, '_blank')}
+                          variant="outline"
+                          size="sm"
+                        >
+                          <Download className="w-4 h-4 mr-1" />
+                          Buka di Tab Baru
+                        </Button>
+                      </div>
+                      <div className="flex-1 bg-gray-50 min-h-[400px]">
+                        <iframe 
+                          src={`${selectedDoc.file_path}#toolbar=0&navpanes=0`}
+                          className="w-full h-full border-0" 
+                          title="PDF Preview"
+                          sandbox="allow-scripts allow-same-origin allow-forms"
+                        />
+                      </div>
+                    </div>
+                  );
+                }
+                
+                if (fileType === 'image') {
+                  return (
+                    <div className="flex flex-col w-full h-full">
+                      <div className="flex items-center justify-between p-3 bg-gray-100 border-b border-gray-200">
+                        <div className="flex items-center">
+                          <svg className="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                          <span className="font-medium truncate max-w-[20rem]">{selectedDoc.file_name}</span>
+                        </div>
+                        <Button 
+                          onClick={() => window.open(selectedDoc.file_path, '_blank')}
+                          variant="outline"
+                          size="sm"
+                        >
+                          <Download className="w-4 h-4 mr-1" />
+                          Buka di Tab Baru
+                        </Button>
+                      </div>
+                      <div className="flex justify-center items-center flex-1 bg-gray-50 min-h-[400px]">
+                        <img 
+                          src={selectedDoc.file_path} 
+                          alt="Document Preview" 
+                          className="object-contain max-w-full max-h-full p-2"
+                          onError={(e) => {
+                            console.error('Image failed to load:', selectedDoc.file_path);
+                            e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNMTIgMjJDNi40NzcgMjIgMiAxNy41MjMgMiAxMkMyIDYuNDc3IDYuNDc3IDIgMTIgMkMxNy41MjMgMiAyMiA2LjQ3NyAyMiAxMkMyMiAxNy41MjMgMTcuNTIzIDIyIDEyIDIyWk0xMiAyMEMxNi40MTggMjAgMjAgMTYuNDE4IDIwIDEyQzIwIDcuNTgyIDE2LjQxOCA0IDEyIDRDNy41ODIgNCA0IDcuNTgyIDQgMTJDNCAxNi40MTggNy41ODIgMjAgMTIgMjBaTTExIDd2MkgxM1Y3SDExWk0xMSAxN0gxM1YxMUgxMVYxN1oiIGZpbGw9IiNmZjAwMDAiLz48L3N2Zz4=';
+                            e.currentTarget.classList.add('w-24', 'h-24');
+                          }}
+                        />
+                      </div>
+                    </div>
+                  );
+                }
+                
+                if (fileType === 'document') {
+                  return (
+                    <div className="flex flex-col w-full h-full">
+                      <div className="flex items-center justify-between p-3 bg-gray-100 border-b border-gray-200">
+                        <div className="flex items-center">
+                          <FileText className="w-5 h-5 mr-2 text-green-500" />
+                          <span className="font-medium truncate max-w-[20rem]">{selectedDoc.file_name}</span>
+                        </div>
+                        <Button 
+                          onClick={() => window.open(selectedDoc.file_path, '_blank')}
+                          variant="outline"
+                          size="sm"
+                        >
+                          <Download className="w-4 h-4 mr-1" />
+                          Buka di Tab Baru
+                        </Button>
+                      </div>
+                      <div className="flex flex-col justify-center items-center flex-1 bg-gray-50 min-h-[400px] p-6">
+                        <FileText className="w-20 h-20 mb-4 text-green-500 opacity-70" />
+                        <h3 className="mb-2 text-xl font-medium text-gray-800">Dokumen: {selectedDoc.file_name}</h3>
+                        <p className="mb-6 text-sm text-center text-gray-600">
+                          File dokumen tidak dapat ditampilkan secara langsung di browser.<br />
+                          Silakan download atau buka di tab baru.
+                        </p>
+                        <Button 
+                          onClick={() => window.open(selectedDoc.file_path, '_blank')}
+                          className="bg-blue-600 hover:bg-blue-700"
+                        >
+                          <Download className="w-5 h-5 mr-2" />
+                          Download / Buka di Tab Baru
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                }
+                
+                // Default case - unknown file type
+                return (
+                  <div className="flex flex-col w-full h-full">
+                    <div className="flex items-center justify-between p-3 bg-gray-100 border-b border-gray-200">
+                      <div className="flex items-center">
+                        <FileText className="w-5 h-5 mr-2 text-gray-500" />
+                        <span className="font-medium truncate max-w-[20rem]">{selectedDoc.file_name}</span>
+                      </div>
+                      <Button 
+                        onClick={() => window.open(selectedDoc.file_path, '_blank')}
+                        variant="outline"
+                        size="sm"
+                      >
+                        <Download className="w-4 h-4 mr-1" />
+                        Buka di Tab Baru
+                      </Button>
+                    </div>
+                    <div className="flex flex-col justify-center items-center flex-1 bg-gray-50 min-h-[400px] p-6">
+                      <FileText className="w-20 h-20 mb-4 text-gray-400 opacity-70" />
+                      <h3 className="mb-2 text-xl font-medium text-gray-800">File: {selectedDoc.file_name}</h3>
+                      <p className="mb-6 text-sm text-center text-gray-600">
+                        Pratinjau tidak tersedia untuk tipe file ini.<br />
+                        Silakan download untuk melihat konten file.
+                      </p>
+                      <Button 
+                        onClick={() => window.open(selectedDoc.file_path, '_blank')}
+                        className="bg-blue-600 hover:bg-blue-700"
+                      >
+                        <Download className="w-5 h-5 mr-2" />
+                        Download File
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+          )}
           
           <DialogFooter className="gap-2 sm:gap-0">
             <Button variant="outline" onClick={() => setPreviewDialog(false)}>
@@ -662,7 +903,7 @@ export default function AdminDokumenWajibPage() {
                 onClick={() => window.open(selectedDoc.file_path, '_blank')}
                 className="bg-blue-600 hover:bg-blue-700"
               >
-                <Download className="mr-1 w-4 h-4" />
+                <Download className="w-4 h-4 mr-1" />
                 Download / Buka di Tab Baru
               </Button>
             )}
@@ -717,15 +958,15 @@ export default function AdminDokumenWajibPage() {
             >
               {isUpdating ? (
                 <>
-                  <Loader2 className="mr-2 w-4 h-4 animate-spin" />
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   Memproses...
                 </>
               ) : (
                 <>
                   {verifyStatus === 'verified' ? (
-                    <CheckCircle2 className="mr-2 w-4 h-4" />
+                    <CheckCircle2 className="w-4 h-4 mr-2" />
                   ) : (
-                    <XCircle className="mr-2 w-4 h-4" />
+                    <XCircle className="w-4 h-4 mr-2" />
                   )}
                   {verifyStatus === 'verified' ? 'Verifikasi' : 'Tolak'} Dokumen
                 </>

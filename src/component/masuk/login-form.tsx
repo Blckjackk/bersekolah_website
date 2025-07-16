@@ -95,8 +95,25 @@ export function LoginForm({
       if (response.ok) {
         // Simpan token ke localStorage dengan prefix bersekolah_
         if (result.token) {
-          localStorage.setItem('bersekolah_auth_token', result.token);
-          console.log("Token berhasil disimpan:", result.token);
+          // Pastikan token yang diterima valid sebelum disimpan
+          if (typeof result.token === 'string' && result.token.trim() !== '') {
+            localStorage.setItem('bersekolah_auth_token', result.token);
+            console.log("Token berhasil disimpan:", result.token.substring(0, 10) + "...");
+            
+            // Verifikasi token tersimpan dengan benar
+            const savedToken = localStorage.getItem('bersekolah_auth_token');
+            if (savedToken === result.token) {
+              console.log("✅ Verifikasi: Token tersimpan dengan benar");
+            } else {
+              console.error("⚠️ Verifikasi: Token tidak tersimpan dengan benar!");
+              console.log("Saved token length:", savedToken ? savedToken.length : 0);
+              console.log("Original token length:", result.token.length);
+            }
+          } else {
+            console.error("⚠️ Token tidak valid:", result.token);
+          }
+        } else {
+          console.error("⚠️ Tidak ada token dalam response:", result);
         }
         
         // ✅ FIXED: Simpan data user dengan role ke localStorage

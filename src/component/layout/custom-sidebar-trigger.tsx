@@ -15,7 +15,7 @@ export function CustomSidebarTrigger({ className }: { className?: string }) {
       className={`h-7 w-7 ${className}`}
       aria-label="Toggle sidebar"
     >
-      <PanelLeft className="h-4 w-4" />
+      <PanelLeft className="w-4 h-4" />
     </Button>
   )
 }
