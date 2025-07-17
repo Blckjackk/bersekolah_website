@@ -294,7 +294,7 @@ export function LoginForm({
         </Button>
       </div>      <div className="flex flex-col gap-2 text-sm text-center">
         <div>
-          <a href="/lupa-password" className="text-muted-foreground hover:text-foreground">
+          <a href="/lupa-password/" className="text-muted-foreground hover:text-foreground hover:underline">
             Lupa kata sandi?
           </a>
         </div>

@@ -160,7 +160,7 @@ export function ResetPasswordForm({
         
         // Redirect ke halaman login
         setTimeout(() => {
-          window.location.href = "/masuk";
+          window.location.href = "/masuk/";
         }, 2000);
       } else {
         if (response.status === 422 && result.errors) {
@@ -222,7 +222,7 @@ export function ResetPasswordForm({
             {isLoading ? "Mengirim..." : "Kirim Kode Verifikasi"}
           </Button>
             <div className="text-sm text-center">
-            <a href="/masuk" className="text-sm text-muted-foreground hover:text-foreground">
+            <a href="/masuk/" className="text-sm text-muted-foreground hover:text-foreground hover:underline">
               Kembali ke halaman masuk
             </a>
           </div>

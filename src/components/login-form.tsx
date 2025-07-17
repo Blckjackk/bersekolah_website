@@ -278,8 +278,8 @@ export function LoginForm({
         
         <div className="flex justify-end">
           <a 
-            href="/lupa-password" 
-            className="text-sm text-muted-foreground hover:text-foreground"
+            href="/lupa-password/" 
+            className="text-sm text-muted-foreground hover:text-foreground hover:underline"
           >
             Lupa kata sandi?
           </a>
