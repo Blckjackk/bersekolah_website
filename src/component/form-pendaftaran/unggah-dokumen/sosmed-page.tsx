@@ -2,6 +2,7 @@
 "use client"
 
 import React, { useState, useEffect, useRef } from "react"
+import { validateFile as utilValidateFile, formatFileSize as utilFormatFileSize } from "@/utils/file-validation"
 import { 
   FileUp, 
   AlertCircle, 
@@ -299,10 +300,28 @@ export default function DokumenSosmedPage() {
     }
   }
 
+  // Add a validateFile function that uses our utility function
+  const validateFile = (file: File, docType: DocumentType): boolean => {
+    return utilValidateFile(file, docType, (title, description) => {
+      toast({
+        title,
+        description,
+        variant: "destructive",
+      });
+    });
+  }
+
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
-    if (file) {
-      setSelectedFile(file)
+    if (file && activeDocument) {
+      if (validateFile(file, activeDocument)) {
+        setSelectedFile(file)
+      } else {
+        // Reset file input when validation fails
+        if (fileInputRef.current) {
+          fileInputRef.current.value = ''
+        }
+      }
     }
   }
 
@@ -322,14 +341,28 @@ export default function DokumenSosmedPage() {
     e.stopPropagation()
 
     const files = e.dataTransfer.files
-    if (files.length > 0) {
+    if (files.length > 0 && activeDocument) {
       const file = files[0]
-      setSelectedFile(file)
+      if (validateFile(file, activeDocument)) {
+        setSelectedFile(file)
+      }
     }
   }
 
   const handleUpload = async () => {
-    if (!selectedFile || !activeDocument) return
+    if (!selectedFile || !activeDocument) {
+      toast({
+        title: "Error",
+        description: "Silakan pilih file yang akan diunggah",
+        variant: "destructive",
+      })
+      return
+    }
+
+    // Revalidate file before uploading in case validation was bypassed
+    if (!validateFile(selectedFile, activeDocument)) {
+      return
+    }
 
     setUploading(true)
     try {
@@ -340,7 +373,8 @@ export default function DokumenSosmedPage() {
       formData.append('file', selectedFile)
       if (keterangan.trim()) {
         formData.append('keterangan', keterangan.trim())
-      }      // Map document code ke endpoint
+      }      
+      // Map document code ke endpoint
       const endpointMap: { [key: string]: string } = {
         'instagram_follow': '/upload-bukti-follow',
         'twibbon_post': '/upload-twibon'

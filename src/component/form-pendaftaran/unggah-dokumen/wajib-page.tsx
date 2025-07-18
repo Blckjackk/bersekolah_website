@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState, useEffect, useRef } from "react"
+import { validateFile as utilValidateFile, formatFileSize as utilFormatFileSize } from "@/utils/file-validation"
 import { 
   FileUp, 
   AlertCircle, 
@@ -445,33 +446,15 @@ export default function DokumenWajibPage() {
   }
 
   // Validate file berdasarkan document type
+  // File validation logic using the utility function
   const validateFile = (file: File, docType: DocumentType): boolean => {
-    const allowedFormats = docType.allowed_formats || ['jpg', 'jpeg', 'png', 'pdf']
-    const maxSize = docType.max_file_size || (10 * 1024 * 1024) // Default 10MB
-
-    // Check file extension
-    const fileExtension = file.name.split('.').pop()?.toLowerCase()
-    if (!fileExtension || !allowedFormats.includes(fileExtension)) {
+    return utilValidateFile(file, docType, (title, description) => {
       toast({
-        title: "Error",
-        description: `Format file tidak didukung. Gunakan: ${allowedFormats.join(', ').toUpperCase()}`,
+        title,
+        description,
         variant: "destructive",
-      })
-      return false
-    }
-
-    // Check file size
-    if (file.size > maxSize) {
-      const maxSizeMB = (maxSize / 1024 / 1024).toFixed(1)
-      toast({
-        title: "Error",
-        description: `Ukuran file maksimal ${maxSizeMB}MB`,
-        variant: "destructive",
-      })
-      return false
-    }
-
-    return true
+      });
+    });
   }
 
   // Handler untuk file selection
@@ -522,7 +505,19 @@ export default function DokumenWajibPage() {
 
   // Upload document
   const handleUpload = async () => {
-    if (!selectedFile || !activeDocument) return
+    if (!selectedFile || !activeDocument) {
+      toast({
+        title: "Error",
+        description: "Silakan pilih file yang akan diunggah",
+        variant: "destructive",
+      })
+      return
+    }
+
+    // Revalidate file before uploading in case validation was bypassed
+    if (!validateFile(selectedFile, activeDocument)) {
+      return
+    }
 
     console.log(`Uploading document ${activeDocument.name} (ID: ${activeDocument.id}, Code: ${activeDocument.code})`)
     

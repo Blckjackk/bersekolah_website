@@ -2,6 +2,7 @@
 "use client"
 
 import React, { useState, useEffect, useRef, useCallback } from "react"
+import { validateFile as utilValidateFile, formatFileSize as utilFormatFileSize } from "@/utils/file-validation"
 import { 
   FileUp, 
   AlertCircle, 
@@ -494,27 +495,17 @@ export default function DokumenPendukungPage() {
       }
     }
 
-    // Validate file size
-    if (selectedDocTypeData && selectedFile.size > selectedDocTypeData.max_file_size) {
-      toast({
-        title: "Error",
-        description: `Ukuran file melebihi batas maksimum (${formatFileSize(selectedDocTypeData.max_file_size)})`,
-        variant: "destructive",
-      })
-      return
-    }
-
-    // Validate file format
-    if (selectedDocTypeData?.allowed_formats) {
-      const fileExtension = selectedFile.name.split('.').pop()?.toLowerCase()
-      if (!fileExtension || !selectedDocTypeData.allowed_formats.includes(fileExtension)) {
+    // Use our utility function for validation
+    if (selectedDocTypeData) {
+      const isValid = utilValidateFile(selectedFile, selectedDocTypeData, (title, description) => {
         toast({
-          title: "Error",
-          description: `Format file tidak sesuai. Format yang diizinkan: ${selectedDocTypeData.allowed_formats.join(', ').toUpperCase()}`,
+          title,
+          description,
           variant: "destructive",
         })
-        return
-      }
+      });
+      
+      if (!isValid) return;
     }
 
     setUploading(true)
