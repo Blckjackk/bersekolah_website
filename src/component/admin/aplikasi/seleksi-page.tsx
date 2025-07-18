@@ -239,6 +239,7 @@ export default function SeleksiBeasiswaPage() {
   const [instagramLink, setInstagramLink] = useState("")
   const [whatsappGroupLink, setWhatsappGroupLink] = useState("")
   const [whatsappNumber, setWhatsappNumber] = useState("")
+  const [judulEssay, setJudulEssay] = useState("")
 
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false)
   const [isBulkUpdating, setIsBulkUpdating] = useState(false)
@@ -372,12 +373,14 @@ export default function SeleksiBeasiswaPage() {
         setInstagramLink(latestEntry.instagram_link || "")
         setWhatsappGroupLink(latestEntry.link_grup_beasiswa || "")
         setWhatsappNumber(latestEntry.whatsapp_number || "")
+        setJudulEssay(latestEntry.judul_essay || "")
       } else {
         setMediaLinks(null)
         setTwibbonLink("")
         setInstagramLink("")
         setWhatsappGroupLink("")
         setWhatsappNumber("")
+        setJudulEssay("")
       }
     } catch (error) {
       setMediaError(error instanceof Error ? error.message : "Gagal memuat data media sosial")
@@ -420,7 +423,8 @@ export default function SeleksiBeasiswaPage() {
           twibbon_link: twibbonLink.trim() || null,
           instagram_link: instagramLink.trim() || null,
           link_grup_beasiswa: whatsappGroupLink.trim() || null,
-          whatsapp_number: whatsappNumber.trim() || null
+          whatsapp_number: whatsappNumber.trim() || null,
+          judul_essay: judulEssay.trim() || null
         })
       });
       if (!response.ok) {
@@ -925,6 +929,7 @@ export default function SeleksiBeasiswaPage() {
                 <p className="text-sm text-gray-500">Link grup WhatsApp Bersekolah untuk peserta</p>
               </div>
               {/* WhatsApp Number */}
+              {/* WhatsApp Number - Original field kept */}
               <div className="space-y-2">
                 <Label htmlFor="whatsapp-number">
                   <div className="flex items-center gap-2">
@@ -959,6 +964,31 @@ export default function SeleksiBeasiswaPage() {
                   )}
                 </div>
                 <p className="text-sm text-gray-500">Nomor WhatsApp HUMAS Bersekolah untuk konsultasi</p>
+              </div>
+              
+              {/* Judul Essay - New field */}
+              <div className="space-y-2">
+                <Label htmlFor="judul-essay">
+                  <div className="flex items-center gap-2">
+                    <FileText className="w-4 h-4" /> Judul Essay
+                  </div>
+                </Label>
+                <div className="flex flex-wrap gap-2">
+                  <div className="flex-1">
+                    <Input id="judul-essay" placeholder="Masukkan judul essay" value={judulEssay} onChange={(e) => setJudulEssay(e.target.value)} />
+                  </div>
+                  {judulEssay && (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button variant="outline" size="icon" onClick={() => copyToClipboard(judulEssay, "Judul Essay")}> <Copy className="w-4 h-4" /> </Button>
+                        </TooltipTrigger>
+                        <TooltipContent><p>Salin ke clipboard</p></TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
+                </div>
+                <p className="text-sm text-gray-500">Judul essay yang akan ditampilkan kepada peserta</p>
               </div>
             </div>
           </CardContent>
