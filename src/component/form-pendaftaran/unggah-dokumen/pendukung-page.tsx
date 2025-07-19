@@ -2,6 +2,7 @@
 "use client"
 
 import React, { useState, useEffect, useRef, useCallback } from "react"
+import { validateFile as utilValidateFile, formatFileSize as utilFormatFileSize } from "@/utils/file-validation"
 import { 
   FileUp, 
   AlertCircle, 
@@ -48,6 +49,18 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { useToast } from "@/hooks/use-toast"
+
+// Media Sosial interface
+interface MediaSosial {
+  id: number;
+  twibbon_link: string | null;
+  instagram_link: string | null;
+  link_grup_beasiswa: string | null;
+  whatsapp_number: string | null;
+  judul_essay: string | null;
+  created_at: string;
+  updated_at: string;
+}
 
 // Helper function for delay
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -147,6 +160,8 @@ export default function DokumenPendukungPage() {
   const [keterangan, setKeterangan] = useState("")
   const [uploading, setUploading] = useState(false)
   const [previewDoc, setPreviewDoc] = useState<UploadedDocument | null>(null)
+  const [mediaSosial, setMediaSosial] = useState<MediaSosial | null>(null)
+  const [isLoadingMediaSosial, setIsLoadingMediaSosial] = useState(false)
   const [lastUploadTime, setLastUploadTime] = useState(0)
   const [forceUpdateCounter, setForceUpdateCounter] = useState(0)
   
@@ -182,6 +197,32 @@ export default function DokumenPendukungPage() {
     return true
   }
 
+  // Fetch media sosial data
+  const fetchMediaSosial = async () => {
+    setIsLoadingMediaSosial(true)
+    try {
+      const baseURL = import.meta.env.PUBLIC_API_BASE_URL
+      const response = await fetch(`${baseURL}/media-sosial/latest`, {
+        headers: {
+          'Accept': 'application/json',
+        }
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch media sosial data')
+      }
+
+      const data = await response.json()
+      if (data.data) {
+        setMediaSosial(data.data)
+      }
+    } catch (error) {
+      console.error('Error fetching media sosial data:', error)
+    } finally {
+      setIsLoadingMediaSosial(false)
+    }
+  }
+
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true)
@@ -190,7 +231,8 @@ export default function DokumenPendukungPage() {
         console.log('Starting to fetch data...')
         await Promise.all([
           fetchDocumentTypes(),
-          fetchDocuments()
+          fetchDocuments(),
+          fetchMediaSosial()
         ])
         console.log('Data fetched successfully')
       } catch (error) {
@@ -233,7 +275,7 @@ export default function DokumenPendukungPage() {
         throw new Error('Invalid response format: missing data property')
       }
         // Process document types
-      const processedDocTypes = (data.data || [])
+      let processedDocTypes = (data.data || [])
         // Filter untuk hanya Essay dan Sertifikat Prestasi saja
         .filter((docType: any) => 
           docType.name === 'Essay' || 
@@ -242,7 +284,7 @@ export default function DokumenPendukungPage() {
           docType.name === 'Prestasi' ||
           docType.code === 'essay' || 
           docType.code === 'sertifikat_prestasi' || 
-          docType.code === 'essay_motivasi' ||
+          docType.code === 'essay_motivation' ||
           docType.code === 'prestasi'
         )
         .map((docType: any) => ({
@@ -273,15 +315,23 @@ export default function DokumenPendukungPage() {
           id: 102,
           code: 'sertifikat_prestasi',
           name: 'Sertifikat Prestasi',
-          description: 'Sertifikat kejuaraan, penghargaan, atau prestasi lainnya',
+          description: 'Sertifikat kejuaraan, penghargaan, atau prestasi lainnya. Jika memiliki beberapa sertifikat, harap digabungkan menjadi satu file PDF.',
           category: 'pendukung',
           is_required: false,
-          allowed_formats: ['pdf', 'jpg', 'jpeg', 'png'],
-          max_file_size: 5 * 1024 * 1024, // 5MB
+          allowed_formats: ['pdf'],
+          max_file_size: 5 * 1024 * 1024, // 5MB // 5MB
           is_active: true,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         })
+      }
+      
+      // Find achievement certificate documents in the existing doc list
+      const achievementCertificateType = processedDocTypes.find((dt: DocumentType) =>
+        dt.code === 'achievement_certificate' || dt.code === 'sertifikat_prestasi'
+      );      if (achievementCertificateType) {
+        achievementCertificateType.description = 
+          'Unggah file sertifikat prestasi Anda. Jika memiliki beberapa sertifikat, harap digabungkan menjadi satu file PDF (maksimal 5MB).';
       }
       
       console.log('Processed document types:', processedDocTypes)
@@ -482,31 +532,35 @@ export default function DokumenPendukungPage() {
     if (!checkUploadCooldown()) {
       return
     }
-
-    // Validate all files
-    for (const file of filesToUpload) {
-      // Validate file size
-      if (selectedDocTypeData && file.size > selectedDocTypeData.max_file_size) {
+    
+    // Check if already has an achievement certificate
+    if (selectedDocType === 'achievement_certificate') {
+      const achievementCount = uploadedDocs.filter(doc => 
+        doc.document_type === 'achievement_certificate' || 
+        doc.document_type_code === 'achievement_certificate'
+      ).length;
+      
+      if (achievementCount >= 1) {
         toast({
-          title: "Error",
-          description: `Ukuran file "${file.name}" melebihi batas maksimum (${formatFileSize(selectedDocTypeData.max_file_size)})`,
+          title: "Sertifikat Sudah Ada",
+          description: "Anda sudah mengunggah sertifikat prestasi. Silakan hapus sertifikat yang sudah ada jika ingin mengunggah yang baru.",
           variant: "destructive",
         })
         return
       }
+    }
 
-      // Validate file format
-      if (selectedDocTypeData?.allowed_formats) {
-        const fileExtension = file.name.split('.').pop()?.toLowerCase()
-        if (!fileExtension || !selectedDocTypeData.allowed_formats.includes(fileExtension)) {
-          toast({
-            title: "Error",
-            description: `Format file "${file.name}" tidak sesuai. Format yang diizinkan: ${selectedDocTypeData.allowed_formats.join(', ').toUpperCase()}`,
-            variant: "destructive",
-          })
-          return
-        }
-      }
+    // Use our utility function for validation
+    if (selectedDocTypeData) {
+      const isValid = utilValidateFile(selectedFile, selectedDocTypeData, (title, description) => {
+        toast({
+          title,
+          description,
+          variant: "destructive",
+        })
+      });
+      
+      if (!isValid) return;
     }
 
     setUploading(true)
@@ -749,13 +803,13 @@ export default function DokumenPendukungPage() {
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Badge className="text-white bg-red-600 border-red-600 shadow-sm hover:bg-red-700 cursor-pointer transition-colors">
+                  <Badge className="text-white transition-colors bg-red-600 border-red-600 shadow-sm cursor-pointer hover:bg-red-700">
                     <X className="w-3 h-3 mr-1" /> Ditolak
                   </Badge>
                 </TooltipTrigger>
                 <TooltipContent className="max-w-xs">
                   <div className="space-y-1">
-                    <p className="font-semibold text-sm">Alasan Penolakan:</p>
+                    <p className="text-sm font-semibold">Alasan Penolakan:</p>
                     <p className="text-sm">{keterangan}</p>
                   </div>
                 </TooltipContent>
@@ -832,15 +886,28 @@ export default function DokumenPendukungPage() {
 
       {/* Info Alert */}
       <Alert className="mb-6 border-blue-200 bg-blue-50">
-        <Info className="w-4 h-4 text-blue-600 flex-shrink-0" />
-        <div className="flex-1">
-          <AlertTitle className="text-blue-800">Tips Pendaftaran</AlertTitle>
-          <AlertDescription className="text-blue-700 text-sm">
-            Dokumen pendukung seperti sertifikat prestasi dan essay motivasi dapat meningkatkan peluang Anda untuk mendapatkan beasiswa.
-            <br />
-            <strong className="text-blue-800">Khusus untuk Sertifikat Prestasi:</strong> Anda dapat mengunggah beberapa sertifikat sekaligus untuk menunjukkan berbagai pencapaian Anda.
-          </AlertDescription>
-        </div>
+        <Info className="w-4 h-4 text-blue-600" />
+        <AlertTitle className="text-blue-800">Informasi Tambahan</AlertTitle>
+        <AlertDescription className="text-blue-700">
+          <p>
+            Pada bagian dokumen pendukung ini, calon Beswan diminta untuk mengunggah:
+          </p>
+          <ol className="mt-2 ml-5 space-y-2 text-blue-700 list-decimal">
+            <li>
+              <span className="font-medium">Sertifikat Prestasi</span> - Maksimal 3 sertifikat prestasi terbaik yang digabungkan dalam satu file PDF
+            </li>
+            <li>
+              <span className="font-medium">Essay</span> - {mediaSosial && mediaSosial.judul_essay ? (
+                <>Buatlah essay dengan judul "<strong>{mediaSosial.judul_essay}</strong>"</>
+              ) : (
+                <>Buatlah essay motivasi yang menjelaskan mengapa Anda layak menerima beasiswa ini</>
+              )}
+            </li>
+          </ol>
+          <p className="mt-3 font-medium">
+            <span className="text-blue-800">PENTING:</span> Dokumen yang lengkap dan berkualitas akan meningkatkan peluang Anda untuk mendapatkan beasiswa.
+          </p>
+        </AlertDescription>
       </Alert>
 
       {/* Main Content */}
@@ -871,8 +938,19 @@ export default function DokumenPendukungPage() {
                     </span>
                   )}
                 </CardDescription>
+                {/* Show certificate info message */}
+                {uploadedDocs.filter(doc => 
+                  doc.document_type === 'achievement_certificate' || 
+                  doc.document_type_code === 'achievement_certificate'
+                ).length > 0 && (
+                  <div className="mt-2 text-sm text-blue-600">
+                    <span className="font-medium">
+                      Sertifikat Prestasi telah diunggah
+                    </span>
+                  </div>
+                )}
               </div>
-              <Button onClick={() => setIsAddDialogOpen(true)} className="w-full sm:w-auto">
+              <Button onClick={() => setIsAddDialogOpen(true)}>
                 <Plus className="w-4 h-4 mr-2" />
                 Tambah Dokumen
               </Button>
@@ -894,81 +972,45 @@ export default function DokumenPendukungPage() {
               </div>
             ) : (
               <>
-                {/* Mobile Card Layout */}
-                <div className="block sm:hidden space-y-4">
-                  {uploadedDocs.map((doc) => (
-                    <Card 
-                      key={doc.id}
-                      className={`transition-all duration-200 ${
-                        doc.status === 'verified' ? 'border-green-200 bg-green-50/30' : 
-                        doc.status === 'rejected' ? 'border-red-200 bg-red-50/30' :
-                        doc.status === 'pending' ? 'border-yellow-200 bg-yellow-50/30' :
-                        'border-gray-200 hover:border-gray-300'
-                      }`}
-                    >
-                      <CardContent className="p-4">
-                        <div className="space-y-3">
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1 min-w-0">
-                              <h3 className="font-medium text-gray-900 truncate">
-                                {typeof doc.document_type === 'string' ? getDocumentTypeName(doc.document_type) : ''}
-                              </h3>
-                              <p className="text-sm text-gray-600 truncate mt-1">
-                                {doc.file_name || ''}
-                              </p>
-                            </div>
-                            <div className="flex-shrink-0 ml-2">
-                              {typeof doc.status === 'string' ? getStatusBadge(doc.status, doc.keterangan) : ''}
-                            </div>
-                          </div>
-                          
-                          <div className="text-xs text-gray-500">
-                            Diunggah: {doc.created_at ? new Date(doc.created_at).toLocaleDateString('id-ID') : ''}
-                          </div>
-                          
-                          <div className="flex gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handlePreview(doc)}
-                              className="flex-1"
-                            >
-                              <Eye className="w-4 h-4 mr-2" />
-                              Preview
-                            </Button>
-                            
-                            {/* Only show delete button for documents that are not verified */}
-                            {doc.status !== 'verified' && (
-                              <Button 
-                                variant="outline" 
-                                size="sm"
-                                className="text-red-600 border-red-200 hover:text-red-700"
-                                onClick={() => handleDelete(doc.id)}
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
-                            )}
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
+                {/* Helper note for certificate upload */}
+                <div className="p-3 mb-4 border border-yellow-200 rounded-md bg-yellow-50">
+                  <div className="flex items-center font-medium text-yellow-800">
+                    <Info className="w-4 h-4 mr-2" /> 
+                    <span>Panduan Unggah Sertifikat Prestasi</span>
+                  </div>
+                  <p className="mt-1 text-sm text-yellow-700">
+                    Jika memiliki beberapa sertifikat prestasi, harap digabungkan menjadi satu file PDF (maks. 5MB)
+                  </p>
                 </div>
 
-                {/* Desktop Table Layout */}
-                <div className="hidden sm:block overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Jenis Dokumen</TableHead>
-                        <TableHead>Nama File</TableHead>
-                        <TableHead>Tanggal Upload</TableHead>
-                        <TableHead className="text-center">Status</TableHead>
-                        <TableHead className="text-right">Aksi</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {uploadedDocs.map((doc) => (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Jenis Dokumen</TableHead>
+                    <TableHead>Nama File</TableHead>
+                    <TableHead>Tanggal Upload</TableHead>
+                    <TableHead className="text-center">Status</TableHead>
+                    <TableHead className="text-right">Aksi</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {/* Group documents by type for better organization */}
+                  {(() => {
+                    // Get achievement certificates
+                    const achievementCerts = uploadedDocs.filter(doc => 
+                      doc.document_type === 'achievement_certificate' || 
+                      doc.document_type_code === 'achievement_certificate'
+                    );
+                    
+                    // Get other documents
+                    const otherDocs = uploadedDocs.filter(doc => 
+                      doc.document_type !== 'achievement_certificate' && 
+                      doc.document_type_code !== 'achievement_certificate'
+                    );
+                    
+                    // First render achievement certificates with numbering if multiple
+                    return [
+                      ...achievementCerts.map((doc, index) => (
                         <TableRow 
                           key={doc.id}
                           className={`${
@@ -1012,10 +1054,57 @@ export default function DokumenPendukungPage() {
                             </div>
                           </TableCell>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
+                      )),
+                      // Then render other documents
+                      ...otherDocs.map((doc) => (
+                        <TableRow 
+                          key={doc.id}
+                          className={`${
+                            doc.status === 'verified' ? 'bg-green-50/50 hover:bg-green-50/70' : 
+                            doc.status === 'rejected' ? 'bg-red-50/50 hover:bg-red-50/70' :
+                            doc.status === 'pending' ? 'bg-yellow-50/30 hover:bg-yellow-50/50' :
+                            ''
+                          }`}
+                        >
+                          <TableCell className="font-medium">
+                            {typeof doc.document_type === 'string' ? getDocumentTypeName(doc.document_type) : ''}
+                          </TableCell>
+                          <TableCell>{doc.file_name || ''}</TableCell>
+                          <TableCell>
+                            {doc.created_at ? new Date(doc.created_at).toLocaleDateString('id-ID') : ''}
+                          </TableCell>
+                          <TableCell className="text-center">
+                            {typeof doc.status === 'string' ? getStatusBadge(doc.status, doc.keterangan) : ''}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex justify-end gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handlePreview(doc)}
+                              >
+                                <Eye className="w-4 h-4" />
+                              </Button>
+                              
+                              {/* Only show delete button for documents that are not verified */}
+                              {doc.status !== 'verified' && (
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  className="text-red-600 border-red-200 hover:text-red-700"
+                                  onClick={() => handleDelete(doc.id)}
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              )}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    ];
+                  })()}
+                </TableBody>
+              </Table>
               </>
             )}
           </CardContent>
@@ -1039,28 +1128,47 @@ export default function DokumenPendukungPage() {
                     <SelectValue placeholder="Pilih jenis dokumen" />
                   </SelectTrigger>
                   <SelectContent>
-                    {documentTypes.map((docType) => (
-                      <SelectItem key={docType.code} value={docType.code}>
-                        {docType.name}
-                      </SelectItem>
-                    ))}
+                    {documentTypes.map((docType) => {
+                      // Check if it's achievement certificate and already have one
+                      const isAchievementCert = docType.code === 'achievement_certificate';
+                      const achievementCount = uploadedDocs.filter(doc => 
+                        doc.document_type === 'achievement_certificate' || 
+                        doc.document_type_code === 'achievement_certificate'
+                      ).length;
+                      const isDisabled = isAchievementCert && achievementCount >= 1;
+                      
+                      return (
+                        <SelectItem 
+                          key={docType.code} 
+                          value={docType.code}
+                          disabled={isDisabled}
+                        >
+                          {docType.name}
+                          {isAchievementCert && achievementCount > 0 && (
+                            <span className="ml-2 text-xs text-gray-500">
+                              (Sudah diunggah)
+                            </span>
+                          )}
+                        </SelectItem>
+                      );
+                    })}
                   </SelectContent>
                 </Select>
                 {selectedDocTypeData && (
                   <p className="mt-1 text-xs text-gray-500">
                     {selectedDocTypeData.description}
-                    {supportsMultipleUpload(selectedDocType) && (
-                      <span className="text-blue-600 font-medium"> (Dapat mengunggah beberapa file)</span>
+                    {selectedDocTypeData.code === 'achievement_certificate' && (
+                      <span className="block mt-1 text-blue-600">
+                        Jika memiliki beberapa sertifikat prestasi, harap digabungkan menjadi satu file PDF.
+                      </span>
                     )}
                   </p>
                 )}
               </div>
               
               <div>
-                <Label htmlFor="file">
-                  {supportsMultipleUpload(selectedDocType) ? 'Pilih File (Dapat memilih beberapa)' : 'Pilih File'}
-                </Label>
-                <div className="mt-1 relative">
+                <Label htmlFor="file">Pilih File</Label>
+                <div className="relative mt-1">
                   <input
                     id="file"
                     type="file"
@@ -1237,13 +1345,13 @@ export default function DokumenPendukungPage() {
                       />
                       <div 
                         id="pdf-fallback" 
-                        className="absolute inset-0 flex-col items-center justify-center p-8 text-center bg-gray-50 hidden"
+                        className="absolute inset-0 flex-col items-center justify-center hidden p-8 text-center bg-gray-50"
                       >
-                        <svg className="w-16 h-16 text-gray-400 mb-4 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-16 h-16 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                         </svg>
-                        <h3 className="text-lg font-medium text-gray-900 mb-2">Preview PDF tidak dapat ditampilkan</h3>
-                        <p className="text-gray-500 mb-4">File PDF tidak dapat ditampilkan dalam preview. Silakan buka di tab baru untuk melihat isi dokumen.</p>
+                        <h3 className="mb-2 text-lg font-medium text-gray-900">Preview PDF tidak dapat ditampilkan</h3>
+                        <p className="mb-4 text-gray-500">File PDF tidak dapat ditampilkan dalam preview. Silakan buka di tab baru untuk melihat isi dokumen.</p>
                       </div>
                     </div>
                   ) : isFileImage(previewDoc.file_name, previewDoc.file_type) ? (
@@ -1265,7 +1373,7 @@ export default function DokumenPendukungPage() {
                             const target = e.target as HTMLImageElement
                             target.style.display = 'none'
                             const fallback = document.createElement('div')
-                            fallback.className = 'flex flex-col items-center justify-center p-8 text-center bg-gray-50 w-full h-full'
+                            fallback.className = 'flex flex-col items-center justify-center w-full h-full p-8 text-center bg-gray-50'
                             fallback.innerHTML = `
                               <svg class="w-16 h-16 text-gray-400 mb-4 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -1284,12 +1392,12 @@ export default function DokumenPendukungPage() {
                       </div>
                     </div>
                   ) : (
-                    <div className="flex flex-col items-center justify-center p-8 text-center bg-gray-50 w-full h-full">
-                      <svg className="w-16 h-16 text-gray-400 mb-4 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="flex flex-col items-center justify-center w-full h-full p-8 text-center bg-gray-50">
+                      <svg className="w-16 h-16 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                       </svg>
-                      <h3 className="text-lg font-medium text-gray-900 mb-2">Preview tidak tersedia</h3>
-                      <p className="text-gray-500 mb-4">File ini tidak dapat ditampilkan dalam preview. Silakan buka di tab baru untuk melihat isi dokumen.</p>
+                      <h3 className="mb-2 text-lg font-medium text-gray-900">Preview tidak tersedia</h3>
+                      <p className="mb-4 text-gray-500">File ini tidak dapat ditampilkan dalam preview. Silakan buka di tab baru untuk melihat isi dokumen.</p>
                     </div>
                   )}
                 </div>
