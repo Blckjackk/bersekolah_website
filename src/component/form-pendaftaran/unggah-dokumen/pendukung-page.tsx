@@ -143,6 +143,7 @@ export default function DokumenPendukungPage() {
   const [previewDialog, setPreviewDialog] = useState(false)
   const [selectedDocType, setSelectedDocType] = useState<string>("")
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]) // For multiple files (sertifikat prestasi)
   const [keterangan, setKeterangan] = useState("")
   const [uploading, setUploading] = useState(false)
   const [previewDoc, setPreviewDoc] = useState<UploadedDocument | null>(null)
@@ -151,6 +152,19 @@ export default function DokumenPendukungPage() {
   
   const fileInputRef = useRef<HTMLInputElement>(null)
   const { toast } = useToast()
+
+  // Check if document type supports multiple uploads
+  const supportsMultipleUpload = (docTypeCode: string) => {
+    return docTypeCode === 'sertifikat_prestasi' || docTypeCode === 'prestasi'
+  }
+
+  // Get files based on document type support
+  const getSelectedFiles = () => {
+    if (supportsMultipleUpload(selectedDocType)) {
+      return selectedFiles
+    }
+    return selectedFile ? [selectedFile] : []
+  }
 
   // Add upload cooldown check
   const checkUploadCooldown = () => {
@@ -408,13 +422,54 @@ export default function DokumenPendukungPage() {
 
     const files = e.dataTransfer.files
     if (files.length > 0) {
-      const file = files[0]
-      setSelectedFile(file)
+      if (supportsMultipleUpload(selectedDocType)) {
+        // For multiple upload (sertifikat prestasi), add all files
+        const filesArray = Array.from(files)
+        setSelectedFiles(prev => [...prev, ...filesArray])
+      } else {
+        // For single upload, just take the first file
+        const file = files[0]
+        setSelectedFile(file)
+      }
+    }
+  }
+
+  // Handle file input change
+  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (files && files.length > 0) {
+      if (supportsMultipleUpload(selectedDocType)) {
+        // For multiple upload (sertifikat prestasi), add all files
+        const filesArray = Array.from(files)
+        setSelectedFiles(prev => [...prev, ...filesArray])
+      } else {
+        // For single upload, just take the first file
+        const file = files[0]
+        setSelectedFile(file)
+      }
+    }
+  }
+
+  // Remove file from multiple selection
+  const removeFileFromSelection = (indexToRemove: number) => {
+    setSelectedFiles(prev => prev.filter((_, index) => index !== indexToRemove))
+  }
+
+  // Handle document type change
+  const handleDocTypeChange = (newDocType: string) => {
+    setSelectedDocType(newDocType)
+    // Reset file selections when document type changes
+    setSelectedFile(null)
+    setSelectedFiles([])
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
     }
   }
 
   const handleUpload = async () => {
-    if (!selectedFile || !selectedDocType) {
+    const filesToUpload = getSelectedFiles()
+    
+    if (filesToUpload.length === 0 || !selectedDocType) {
       toast({
         title: "Error",
         description: "Silakan pilih jenis dokumen dan file yang akan diunggah",
@@ -428,82 +483,99 @@ export default function DokumenPendukungPage() {
       return
     }
 
-    // Validate file size
-    if (selectedDocTypeData && selectedFile.size > selectedDocTypeData.max_file_size) {
-      toast({
-        title: "Error",
-        description: `Ukuran file melebihi batas maksimum (${formatFileSize(selectedDocTypeData.max_file_size)})`,
-        variant: "destructive",
-      })
-      return
-    }
-
-    // Validate file format
-    if (selectedDocTypeData?.allowed_formats) {
-      const fileExtension = selectedFile.name.split('.').pop()?.toLowerCase()
-      if (!fileExtension || !selectedDocTypeData.allowed_formats.includes(fileExtension)) {
+    // Validate all files
+    for (const file of filesToUpload) {
+      // Validate file size
+      if (selectedDocTypeData && file.size > selectedDocTypeData.max_file_size) {
         toast({
           title: "Error",
-          description: `Format file tidak sesuai. Format yang diizinkan: ${selectedDocTypeData.allowed_formats.join(', ').toUpperCase()}`,
+          description: `Ukuran file "${file.name}" melebihi batas maksimum (${formatFileSize(selectedDocTypeData.max_file_size)})`,
           variant: "destructive",
         })
         return
       }
+
+      // Validate file format
+      if (selectedDocTypeData?.allowed_formats) {
+        const fileExtension = file.name.split('.').pop()?.toLowerCase()
+        if (!fileExtension || !selectedDocTypeData.allowed_formats.includes(fileExtension)) {
+          toast({
+            title: "Error",
+            description: `Format file "${file.name}" tidak sesuai. Format yang diizinkan: ${selectedDocTypeData.allowed_formats.join(', ').toUpperCase()}`,
+            variant: "destructive",
+          })
+          return
+        }
+      }
     }
 
     setUploading(true)
-    try {      const token = localStorage.getItem('bersekolah_auth_token')
+    try {
+      const token = localStorage.getItem('bersekolah_auth_token')
       if (!token) throw new Error('Token autentikasi tidak ditemukan')
       
-      const formData = new FormData()
-      formData.append('file', selectedFile)
-      if (keterangan.trim()) {
-        formData.append('keterangan', keterangan.trim())
-      }
-      formData.append('document_type', selectedDocType)
-      
-      // Also send document_type_id if we have it (more reliable than code)
-      if (selectedDocTypeData?.id) {
-        formData.append('document_type_id', selectedDocTypeData.id.toString())
-      }      // For pendukung documents, use the correct API pattern
-      // The backend expects: /upload-document/{documentCode}
-      const uploadUrl = `${import.meta.env.PUBLIC_API_BASE_URL}/upload-document/${selectedDocType}`
-      
-      console.log('Attempting upload to:', uploadUrl)
-      console.log('Document type:', selectedDocType)
-      console.log('Document type data:', selectedDocTypeData)
+      // Upload files one by one to ensure each is saved as separate record
+      const uploadPromises = filesToUpload.map(async (file, index) => {
+        const formData = new FormData()
+        formData.append('file', file)
+        
+        // Add keterangan with file index for multiple files
+        if (keterangan.trim()) {
+          const fileKeterangan = filesToUpload.length > 1 
+            ? `${keterangan.trim()} (File ${index + 1})`
+            : keterangan.trim()
+          formData.append('keterangan', fileKeterangan)
+        }
+        
+        formData.append('document_type', selectedDocType)
+        
+        // Also send document_type_id if we have it (more reliable than code)
+        if (selectedDocTypeData?.id) {
+          formData.append('document_type_id', selectedDocTypeData.id.toString())
+        }
+        
+        // For pendukung documents, use the correct API pattern
+        const uploadUrl = `${import.meta.env.PUBLIC_API_BASE_URL}/upload-document/${selectedDocType}`
+        
+        console.log(`Uploading file ${index + 1}/${filesToUpload.length}:`, file.name, 'to:', uploadUrl)
 
-      const response = await fetch(uploadUrl, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json'
-        },
-        body: formData
+        const response = await fetch(uploadUrl, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json'
+          },
+          body: formData
+        })
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({ message: 'Failed to parse error response' }))
+          throw new Error(errorData.message || `Upload failed for ${file.name}: ${response.status} ${response.statusText}`)
+        }
+
+        const result = await response.json()
+        console.log(`Upload response for ${file.name}:`, result)
+        return result
       })
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: 'Failed to parse error response' }))
-        throw new Error(errorData.message || `Upload failed: ${response.status} ${response.statusText}`)
-      }
-
-      const result = await response.json()
-      console.log('Upload response:', result)
-
+      // Wait for all uploads to complete
+      const results = await Promise.all(uploadPromises)
+      
       // Update last upload time
       setLastUploadTime(Date.now())
 
       const docTypeName = documentTypes.find(dt => dt.code === selectedDocType)?.name || 'Dokumen'
+      const fileCount = filesToUpload.length
       
       toast({
         title: "Berhasil",
-        description: `${docTypeName} berhasil diunggah`,
-      })      // Set last upload time for cooldown
-      setLastUploadTime(Date.now())
+        description: `${fileCount} ${docTypeName} berhasil diunggah`,
+      })
       
-      // Close dialog and reset form (better UX to do this before fetching)
+      // Close dialog and reset form
       setIsAddDialogOpen(false)
       setSelectedFile(null)
+      setSelectedFiles([])
       setSelectedDocType("")
       setKeterangan("")
       if (fileInputRef.current) {
@@ -728,6 +800,11 @@ export default function DokumenPendukungPage() {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
   }, [])
 
+  // Get count of uploaded documents by type
+  const getDocumentCountByType = useCallback((docTypeCode: string) => {
+    return uploadedDocs.filter(doc => doc.document_type === docTypeCode).length
+  }, [uploadedDocs])
+
   const selectedDocTypeData = documentTypes.find(dt => dt.code === selectedDocType)
 
   if (isLoading) {
@@ -744,23 +821,26 @@ export default function DokumenPendukungPage() {
   }
 
   return (
-    <div className="container py-6 mx-auto">
+    <div className="py-4 mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="mb-2 text-2xl font-bold">Dokumen Pendukung</h1>
-        <p className="text-gray-600">
+        <h1 className="mb-2 text-xl sm:text-2xl font-bold">Dokumen Pendukung</h1>
+        <p className="text-sm sm:text-base text-gray-600">
           Unggah dokumen pendukung untuk memperkuat pendaftaran beasiswa Anda
         </p>
       </div>
 
       {/* Info Alert */}
       <Alert className="mb-6 border-blue-200 bg-blue-50">
-        <Info className="w-4 h-4 text-blue-600" />
-        <AlertTitle className="text-blue-800">Tips Pendaftaran</AlertTitle>
-        <AlertDescription className="text-blue-700">
-          Dokumen pendukung dapat meningkatkan peluang Anda untuk mendapatkan beasiswa. 
-          Unggah sertifikat prestasi, surat rekomendasi, essay motivasi, CV, atau dokumen lain yang relevan.
-        </AlertDescription>
+        <Info className="w-4 h-4 text-blue-600 flex-shrink-0" />
+        <div className="flex-1">
+          <AlertTitle className="text-blue-800">Tips Pendaftaran</AlertTitle>
+          <AlertDescription className="text-blue-700 text-sm">
+            Dokumen pendukung seperti sertifikat prestasi dan essay motivasi dapat meningkatkan peluang Anda untuk mendapatkan beasiswa.
+            <br />
+            <strong className="text-blue-800">Khusus untuk Sertifikat Prestasi:</strong> Anda dapat mengunggah beberapa sertifikat sekaligus untuk menunjukkan berbagai pencapaian Anda.
+          </AlertDescription>
+        </div>
       </Alert>
 
       {/* Main Content */}
@@ -775,14 +855,24 @@ export default function DokumenPendukungPage() {
         
         <Card>
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle>Dokumen Pendukung</CardTitle>
-                <CardDescription>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div className="flex-1 min-w-0">
+                <CardTitle className="text-lg sm:text-xl">Dokumen Pendukung</CardTitle>
+                <CardDescription className="text-sm">
                   Unggah dokumen pendukung untuk memperkuat pendaftaran beasiswa Anda
+                  {uploadedDocs.length > 0 && (
+                    <span className="block mt-1 text-sm">
+                      Total dokumen terunggah: {uploadedDocs.length}
+                      {getDocumentCountByType('sertifikat_prestasi') > 0 && (
+                        <span className="ml-2 text-blue-600">
+                          | Sertifikat Prestasi: {getDocumentCountByType('sertifikat_prestasi')}
+                        </span>
+                      )}
+                    </span>
+                  )}
                 </CardDescription>
               </div>
-              <Button onClick={() => setIsAddDialogOpen(true)}>
+              <Button onClick={() => setIsAddDialogOpen(true)} className="w-full sm:w-auto">
                 <Plus className="w-4 h-4 mr-2" />
                 Tambah Dokumen
               </Button>
@@ -803,80 +893,148 @@ export default function DokumenPendukungPage() {
                 </p>
               </div>
             ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Jenis Dokumen</TableHead>
-                    <TableHead>Nama File</TableHead>
-                    <TableHead>Tanggal Upload</TableHead>
-                    <TableHead className="text-center">Status</TableHead>
-                    <TableHead className="text-right">Aksi</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>                  {uploadedDocs.map((doc) => (
-                    <TableRow 
+              <>
+                {/* Mobile Card Layout */}
+                <div className="block sm:hidden space-y-4">
+                  {uploadedDocs.map((doc) => (
+                    <Card 
                       key={doc.id}
-                      className={`${
-                        doc.status === 'verified' ? 'bg-green-50/50 hover:bg-green-50/70' : 
-                        doc.status === 'rejected' ? 'bg-red-50/50 hover:bg-red-50/70' :
-                        doc.status === 'pending' ? 'bg-yellow-50/30 hover:bg-yellow-50/50' :
-                        ''
+                      className={`transition-all duration-200 ${
+                        doc.status === 'verified' ? 'border-green-200 bg-green-50/30' : 
+                        doc.status === 'rejected' ? 'border-red-200 bg-red-50/30' :
+                        doc.status === 'pending' ? 'border-yellow-200 bg-yellow-50/30' :
+                        'border-gray-200 hover:border-gray-300'
                       }`}
                     >
-                      <TableCell className="font-medium">
-                        {typeof doc.document_type === 'string' ? getDocumentTypeName(doc.document_type) : ''}
-                      </TableCell>
-                      <TableCell>{doc.file_name || ''}</TableCell>
-                      <TableCell>
-                        {doc.created_at ? new Date(doc.created_at).toLocaleDateString('id-ID') : ''}
-                      </TableCell>
-                      <TableCell className="text-center">
-                        {typeof doc.status === 'string' ? getStatusBadge(doc.status, doc.keterangan) : ''}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handlePreview(doc)}
-                          >
-                            <Eye className="w-4 h-4" />
-                          </Button>
+                      <CardContent className="p-4">
+                        <div className="space-y-3">
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1 min-w-0">
+                              <h3 className="font-medium text-gray-900 truncate">
+                                {typeof doc.document_type === 'string' ? getDocumentTypeName(doc.document_type) : ''}
+                              </h3>
+                              <p className="text-sm text-gray-600 truncate mt-1">
+                                {doc.file_name || ''}
+                              </p>
+                            </div>
+                            <div className="flex-shrink-0 ml-2">
+                              {typeof doc.status === 'string' ? getStatusBadge(doc.status, doc.keterangan) : ''}
+                            </div>
+                          </div>
                           
-                          {/* Only show delete button for documents that are not verified */}
-                          {doc.status !== 'verified' && (
-                            <Button 
-                              variant="outline" 
+                          <div className="text-xs text-gray-500">
+                            Diunggah: {doc.created_at ? new Date(doc.created_at).toLocaleDateString('id-ID') : ''}
+                          </div>
+                          
+                          <div className="flex gap-2">
+                            <Button
+                              variant="outline"
                               size="sm"
-                              className="text-red-600 border-red-200 hover:text-red-700"
-                              onClick={() => handleDelete(doc.id)}
+                              onClick={() => handlePreview(doc)}
+                              className="flex-1"
                             >
-                              <Trash2 className="w-4 h-4" />
+                              <Eye className="w-4 h-4 mr-2" />
+                              Preview
                             </Button>
-                          )}
+                            
+                            {/* Only show delete button for documents that are not verified */}
+                            {doc.status !== 'verified' && (
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                className="text-red-600 border-red-200 hover:text-red-700"
+                                onClick={() => handleDelete(doc.id)}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            )}
+                          </div>
                         </div>
-                      </TableCell>
-                    </TableRow>
+                      </CardContent>
+                    </Card>
                   ))}
-                </TableBody>
-              </Table>
+                </div>
+
+                {/* Desktop Table Layout */}
+                <div className="hidden sm:block overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Jenis Dokumen</TableHead>
+                        <TableHead>Nama File</TableHead>
+                        <TableHead>Tanggal Upload</TableHead>
+                        <TableHead className="text-center">Status</TableHead>
+                        <TableHead className="text-right">Aksi</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {uploadedDocs.map((doc) => (
+                        <TableRow 
+                          key={doc.id}
+                          className={`${
+                            doc.status === 'verified' ? 'bg-green-50/50 hover:bg-green-50/70' : 
+                            doc.status === 'rejected' ? 'bg-red-50/50 hover:bg-red-50/70' :
+                            doc.status === 'pending' ? 'bg-yellow-50/30 hover:bg-yellow-50/50' :
+                            ''
+                          }`}
+                        >
+                          <TableCell className="font-medium">
+                            {typeof doc.document_type === 'string' ? getDocumentTypeName(doc.document_type) : ''}
+                          </TableCell>
+                          <TableCell>{doc.file_name || ''}</TableCell>
+                          <TableCell>
+                            {doc.created_at ? new Date(doc.created_at).toLocaleDateString('id-ID') : ''}
+                          </TableCell>
+                          <TableCell className="text-center">
+                            {typeof doc.status === 'string' ? getStatusBadge(doc.status, doc.keterangan) : ''}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex justify-end gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handlePreview(doc)}
+                              >
+                                <Eye className="w-4 h-4" />
+                              </Button>
+                              
+                              {/* Only show delete button for documents that are not verified */}
+                              {doc.status !== 'verified' && (
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  className="text-red-600 border-red-200 hover:text-red-700"
+                                  onClick={() => handleDelete(doc.id)}
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              )}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </>
             )}
           </CardContent>
         </Card>
 
         {/* Dialog Tambah Dokumen */}
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-          <DialogContent className="sm:max-w-md">
+          <DialogContent className="sm:max-w-md max-w-[95vw] w-full mx-4">
             <DialogHeader>
-              <DialogTitle>Tambah Dokumen Pendukung</DialogTitle>
-              <DialogDescription>
+              <DialogTitle className="text-lg">Tambah Dokumen Pendukung</DialogTitle>
+              <DialogDescription className="text-sm">
                 Pilih jenis dokumen dan unggah file untuk memperkuat pendaftaran beasiswa
               </DialogDescription>
             </DialogHeader>
             
             <div className="space-y-4">
               <div>
-                <Label htmlFor="doc-type">Jenis Dokumen</Label>
-                <Select value={selectedDocType} onValueChange={setSelectedDocType}>
+                <Label htmlFor="doc-type" className="text-sm">Jenis Dokumen</Label>
+                <Select value={selectedDocType} onValueChange={handleDocTypeChange}>
                   <SelectTrigger className="mt-1">
                     <SelectValue placeholder="Pilih jenis dokumen" />
                   </SelectTrigger>
@@ -891,24 +1049,30 @@ export default function DokumenPendukungPage() {
                 {selectedDocTypeData && (
                   <p className="mt-1 text-xs text-gray-500">
                     {selectedDocTypeData.description}
+                    {supportsMultipleUpload(selectedDocType) && (
+                      <span className="text-blue-600 font-medium"> (Dapat mengunggah beberapa file)</span>
+                    )}
                   </p>
                 )}
               </div>
               
               <div>
-                <Label htmlFor="file">Pilih File</Label>
+                <Label htmlFor="file">
+                  {supportsMultipleUpload(selectedDocType) ? 'Pilih File (Dapat memilih beberapa)' : 'Pilih File'}
+                </Label>
                 <div className="mt-1 relative">
                   <input
                     id="file"
                     type="file"
                     ref={fileInputRef}
+                    multiple={supportsMultipleUpload(selectedDocType)}
                     accept={selectedDocTypeData?.allowed_formats?.map(f => `.${f}`).join(',') || ''}
-                    onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                    onChange={handleFileInputChange}
                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                   />
                   <div 
-                    className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
-                      selectedFile 
+                    className={`border-2 border-dashed rounded-lg p-4 sm:p-6 text-center transition-colors ${
+                      (selectedFile || selectedFiles.length > 0)
                         ? 'border-green-300 bg-green-50' 
                         : 'border-gray-300 bg-gray-50 hover:border-blue-400 hover:bg-blue-50'
                     }`}
@@ -916,19 +1080,28 @@ export default function DokumenPendukungPage() {
                     onDragLeave={handleDragLeave}
                     onDrop={handleDrop}
                   >
-                    {selectedFile ? (
+                    {(selectedFile || selectedFiles.length > 0) ? (
                       <div className="flex items-center justify-center gap-2">
                         <CheckCircle2 className="w-5 h-5 text-green-600" />
                         <span className="text-sm font-medium text-green-800">
-                          {selectedFile.name}
+                          {supportsMultipleUpload(selectedDocType) 
+                            ? `${selectedFiles.length} file dipilih`
+                            : selectedFile?.name
+                          }
                         </span>
                       </div>
                     ) : (
                       <div className="flex flex-col items-center gap-2">
-                        <Upload className="w-8 h-8 text-gray-400" />
+                        <Upload className="w-6 h-6 sm:w-8 sm:h-8 text-gray-400" />
                         <div className="text-sm text-gray-600">
-                          <span className="font-medium text-blue-600">Klik untuk pilih file</span> atau drag & drop
+                          <span className="font-medium text-blue-600">Klik untuk pilih file</span> 
+                          <span className="hidden sm:inline"> atau drag & drop</span>
                         </div>
+                        {supportsMultipleUpload(selectedDocType) && (
+                          <div className="text-xs text-blue-500">
+                            Dapat memilih beberapa file sekaligus
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
@@ -940,6 +1113,32 @@ export default function DokumenPendukungPage() {
                   </p>
                 )}
               </div>
+
+              {/* Show selected files list for multiple upload */}
+              {supportsMultipleUpload(selectedDocType) && selectedFiles.length > 0 && (
+                <div className="space-y-2">
+                  <Label>File yang dipilih:</Label>
+                  <div className="max-h-32 overflow-y-auto space-y-1">
+                    {selectedFiles.map((file, index) => (
+                      <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">{file.name}</p>
+                          <p className="text-xs text-gray-500">{formatFileSize(file.size)}</p>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeFileFromSelection(index)}
+                          className="text-red-500 hover:text-red-700"
+                        >
+                          <X className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
               
               <div>
                 <Label htmlFor="keterangan">Keterangan (Opsional)</Label>
@@ -963,12 +1162,13 @@ export default function DokumenPendukungPage() {
               )}
             </div>
             
-            <DialogFooter>
+            <DialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0">
               <Button
                 variant="outline"
                 onClick={() => {
                   setIsAddDialogOpen(false)
                   setSelectedFile(null)
+                  setSelectedFiles([])
                   setSelectedDocType("")
                   setKeterangan("")
                   if (fileInputRef.current) {
@@ -976,12 +1176,14 @@ export default function DokumenPendukungPage() {
                   }
                 }}
                 disabled={uploading}
+                className="w-full sm:w-auto"
               >
                 Batal
               </Button>
               <Button 
                 onClick={handleUpload}
-                disabled={uploading || !selectedFile || !selectedDocType}
+                disabled={uploading || (getSelectedFiles().length === 0) || !selectedDocType}
+                className="w-full sm:w-auto"
               >
                 {uploading ? (
                   <>
@@ -991,7 +1193,10 @@ export default function DokumenPendukungPage() {
                 ) : (
                   <>
                     <Upload className="w-4 h-4 mr-2" />
-                    Unggah
+                    Unggah {supportsMultipleUpload(selectedDocType) && selectedFiles.length > 0 
+                      ? `(${selectedFiles.length} file)` 
+                      : ''
+                    }
                   </>
                 )}
               </Button>

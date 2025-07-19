@@ -27,6 +27,23 @@ import { useEffect, useState } from "react"
 import { useToast } from "@/hooks/use-toast"
 import { useSidebar } from "@/contexts/SidebarContext"
 
+// Hook untuk deteksi mobile
+const useIsMobile = () => {
+  const [isMobile, setIsMobile] = useState(false)
+  
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+  
+  return isMobile
+}
+
 // Interface untuk tipe data user
 interface User {
   id?: number;
@@ -54,6 +71,7 @@ export function NavUser() {
   const [user, setUser] = useState<User>(defaultUser);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
+  const isMobile = useIsMobile(); // Tambahkan hook mobile detection
   
   // Coba load user dari localStorage saat inisialisasi
   useEffect(() => {
@@ -322,7 +340,7 @@ export function NavUser() {
       <DropdownMenuTrigger asChild>
         <button className={`flex items-center w-full transition-colors rounded-md hover:bg-accent hover:text-accent-foreground ${
           isOpen ? 'gap-2 p-2' : 'justify-center p-2'
-        }`}>
+        } ${isMobile ? 'min-h-[48px] touch-manipulation' : ''}`}>
           <Avatar className="w-8 h-8 rounded-lg flex-shrink-0">
             <AvatarImage src={user.avatar} alt={user.name} />
             <AvatarFallback className="text-blue-800 bg-blue-100 rounded-lg">
@@ -347,10 +365,12 @@ export function NavUser() {
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
-        className="w-56 rounded-lg"
-        side="right"
-        align="end"
+        className={`${isMobile ? 'w-64' : 'w-56'} rounded-lg`}
+        side={isMobile ? "top" : "right"}
+        align={isMobile ? "end" : "end"}
         sideOffset={4}
+        avoidCollisions={true}
+        collisionPadding={16}
       >
         <DropdownMenuLabel className="p-0 font-normal">
           <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
@@ -377,7 +397,7 @@ export function NavUser() {
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <DropdownMenuItem asChild>
-            <a href="/" className="flex items-center w-full">
+            <a href="/" className={`flex items-center w-full ${isMobile ? 'py-3 px-4 touch-manipulation' : ''}`}>
               <PanelsTopLeft className="w-4 h-4 mr-2" />
               Halaman Utama
             </a>
@@ -385,7 +405,7 @@ export function NavUser() {
         </DropdownMenuGroup>
         <DropdownMenuItem 
           onClick={handleLogout} 
-          className="text-red-500 cursor-pointer hover:bg-red-50"
+          className={`text-red-500 cursor-pointer hover:bg-red-50 ${isMobile ? 'py-3 px-4 touch-manipulation' : ''}`}
         >
           <LogOut className="w-4 h-4 mr-2" />
           Keluar

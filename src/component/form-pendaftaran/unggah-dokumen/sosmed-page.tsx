@@ -644,11 +644,11 @@ export default function DokumenSosmedPage() {
   }
 
   return (
-    <div className="container py-6 mx-auto">
+    <div className="container py-4 mx-auto px-4 sm:px-6 lg:px-8">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="mb-2 text-2xl font-bold">Dokumen Sosial Media</h1>
-        <p className="text-gray-600">
+        <h1 className="mb-2 text-xl sm:text-2xl font-bold">Dokumen Sosial Media</h1>
+        <p className="text-sm sm:text-base text-gray-600">
           Unggah bukti follow Instagram dan postingan twibbon untuk melengkapi syarat beasiswa.
         </p>
       </div>
@@ -658,18 +658,20 @@ export default function DokumenSosmedPage() {
         <Instagram className="w-4 h-4 text-blue-600" />
         <AlertTitle className="text-blue-800">Petunjuk Sosial Media</AlertTitle>
         <AlertDescription className="text-blue-700">
-          <div className="space-y-2">            <p>1. Follow akun Instagram resmi Bersekolah</p>
-            <p>2. Posting twibbon beasiswa di feed Instagram Anda</p>
-            <p>3. Screenshot bukti follow dan postingan sebagai dokumen</p>
-          </div>          <div className="flex gap-2 mt-3">
-            <Button size="sm" variant="outline" className="text-blue-600 border-blue-200" asChild>
+          <div className="space-y-2">
+            <p className="text-sm">1. Follow akun Instagram resmi Bersekolah</p>
+            <p className="text-sm">2. Posting twibbon beasiswa di feed Instagram Anda</p>
+            <p className="text-sm">3. Screenshot bukti follow dan postingan sebagai dokumen</p>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-2 mt-3">
+            <Button size="sm" variant="outline" className="text-blue-600 border-blue-200 w-full sm:w-auto" asChild>
               <a href={socialLinks.instagram_link} target="_blank" rel="noopener noreferrer">
                 <Instagram className="w-4 h-4 mr-1" />
                 Follow Instagram
                 <ExternalLink className="w-3 h-3 ml-1" />
               </a>
             </Button>
-            <Button size="sm" variant="outline" className="text-blue-600 border-blue-200" asChild>
+            <Button size="sm" variant="outline" className="text-blue-600 border-blue-200 w-full sm:w-auto" asChild>
               <a href={socialLinks.twibbon_link} target="_blank" rel="noopener noreferrer">
                 <FileText className="w-4 h-4 mr-1" />
                 Ambil Twibbon
@@ -681,7 +683,7 @@ export default function DokumenSosmedPage() {
       </Alert>
 
       {/* Document Cards */}
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-4 sm:gap-6 md:grid-cols-2">
         {documentTypes.map((docType) => {
           const uploadedDoc = getUploadedDoc(docType.code)
           const isUploaded = !!uploadedDoc
@@ -690,19 +692,19 @@ export default function DokumenSosmedPage() {
             <Card key={docType.id} className={`transition-all duration-200 ${isUploaded ? 'border-green-200 bg-green-50/30' : 'border-gray-200 hover:border-gray-300'}`}>
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <CardTitle className="flex items-center gap-2 text-lg">
-                      {docType.code === 'instagram_follow' && <Instagram className="w-5 h-5 text-pink-500" />}
-                      {docType.code === 'twibbon_post' && <FileText className="w-5 h-5 text-blue-500" />}
-                      {docType.name}
-                      {docType.is_required && <span className="text-sm text-red-500">*</span>}
+                  <div className="flex-1 min-w-0">
+                    <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                      {docType.code === 'instagram_follow' && <Instagram className="w-4 h-4 sm:w-5 sm:h-5 text-pink-500 flex-shrink-0" />}
+                      {docType.code === 'twibbon_post' && <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500 flex-shrink-0" />}
+                      <span className="truncate">{docType.name}</span>
+                      {docType.is_required && <span className="text-sm text-red-500 flex-shrink-0">*</span>}
                     </CardTitle>
-                    <CardDescription className="mt-1">
+                    <CardDescription className="mt-1 text-sm">
                       {docType.description}
                     </CardDescription>
                   </div>
                   {isUploaded && (
-                    <CheckCircle2 className="flex-shrink-0 w-6 h-6 mt-1 text-green-600" />
+                    <CheckCircle2 className="flex-shrink-0 w-5 h-5 sm:w-6 sm:h-6 mt-1 text-green-600" />
                   )}
                 </div>
               </CardHeader>
@@ -718,18 +720,19 @@ export default function DokumenSosmedPage() {
                   {/* Upload Status */}
                   {isUploaded ? (
                     <div className="p-3 bg-white border rounded-lg">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium text-gray-900">{uploadedDoc.file_name}</span>
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2 gap-2">
+                        <span className="text-sm font-medium text-gray-900 truncate">{uploadedDoc.file_name}</span>
                         {getStatusBadge(uploadedDoc.status, uploadedDoc.keterangan)}
                       </div>
                       <div className="mb-3 text-xs text-gray-500">
                         Diunggah: {new Date(uploadedDoc.created_at).toLocaleDateString('id-ID')}
                       </div>
-                      <div className="flex gap-2">
+                      <div className="flex flex-col sm:flex-row gap-2">
                         <Button 
                           size="sm" 
                           variant="outline"
                           onClick={() => handlePreview(uploadedDoc)}
+                          className="w-full sm:w-auto"
                         >
                           <Eye className="w-3 h-3 mr-1" />
                           Preview
@@ -738,6 +741,7 @@ export default function DokumenSosmedPage() {
                           size="sm" 
                           variant="outline"
                           onClick={() => handleUploadClick(docType)}
+                          className="w-full sm:w-auto"
                         >
                           <Upload className="w-3 h-3 mr-1" />
                           Ganti

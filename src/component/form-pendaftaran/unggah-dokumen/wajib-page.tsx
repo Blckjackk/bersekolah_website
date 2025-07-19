@@ -783,11 +783,11 @@ export default function DokumenWajibPage() {
   }
 
   return (
-    <div className="container py-6 mx-auto space-y-6">
+    <div className="container py-4 mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="mb-2 text-2xl font-bold">Dokumen Wajib</h1>
-        <p className="text-gray-600">
+        <h1 className="mb-2 text-xl sm:text-2xl font-bold">Dokumen Wajib</h1>
+        <p className="text-sm sm:text-base text-gray-600">
           Unggah semua dokumen wajib yang diperlukan untuk melengkapi persyaratan beasiswa.
         </p>
       </div>
@@ -836,15 +836,35 @@ export default function DokumenWajibPage() {
 
       <Card>        
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>Daftar Dokumen Wajib</CardTitle>
-              <CardDescription>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex-1 min-w-0">
+              <CardTitle className="text-lg sm:text-xl">Daftar Dokumen Wajib</CardTitle>
+              <CardDescription className="text-sm">
                 Dokumen yang harus dilengkapi untuk pendaftaran beasiswa
               </CardDescription>
             </div>
-            <div className="flex flex-col items-end gap-2">
+            
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+              {/* Status Badge */}
               <div className="flex items-center gap-2">
+                <Badge 
+                  variant={completedDocs === totalDocs ? "default" : "outline"} 
+                  className={`text-xs ${
+                    completedDocs === totalDocs 
+                      ? "bg-green-600 hover:bg-green-700 text-white" 
+                      : completedDocs > 0 
+                        ? "text-yellow-700 bg-yellow-50 border-yellow-200" 
+                        : "text-gray-600"
+                  }`}
+                >
+                  {completedDocs === totalDocs ? (
+                    <><CheckCircle2 className="w-3 h-3 mr-1" /> Selesai</>
+                  ) : (
+                    <><FileText className="w-3 h-3 mr-1" /> {completedDocs}/{totalDocs}</>
+                  )}
+                </Badge>
+                
+                {/* Refresh Button */}
                 <Button 
                   variant="outline" 
                   size="sm" 
@@ -862,41 +882,28 @@ export default function DokumenWajibPage() {
                       <path d="M3 21v-5h5"/>
                     </svg>
                   )}
-                  {isLoading ? "Menyegarkan..." : "Segarkan"}
+                  <span className="hidden sm:inline">{isLoading ? "Menyegarkan..." : "Segarkan"}</span>
                 </Button>
-                <Badge 
-                  variant={completedDocs === totalDocs ? "default" : "outline"} 
-                  className={
-                    completedDocs === totalDocs 
-                      ? "bg-green-600 hover:bg-green-700 text-white" 
-                      : completedDocs > 0 
-                        ? "text-yellow-700 bg-yellow-50 border-yellow-200" 
-                        : "text-gray-600"
-                  }
-                >
-                  {completedDocs === totalDocs ? (
-                    <><CheckCircle2 className="w-3 h-3 mr-1" /> Semua Selesai</>
-                  ) : (
-                    <><FileText className="w-3 h-3 mr-1" /> {completedDocs}/{totalDocs} Dokumen Selesai</>
-                  )}
-                </Badge>
               </div>
               
-              {documentsData.filter(doc => doc.uploaded_doc?.status === 'pending').length > 0 && (
-                <span className="text-xs text-yellow-600">
-                  {documentsData.filter(doc => doc.uploaded_doc?.status === 'pending').length} dokumen menunggu verifikasi
-                </span>
-              )}
-              
-              {documentsData.filter(doc => doc.uploaded_doc?.status === 'rejected').length > 0 && (
-                <span className="text-xs font-medium text-red-600">
-                  {documentsData.filter(doc => doc.uploaded_doc?.status === 'rejected').length} dokumen ditolak
-                </span>
-              )}
+              {/* Status Messages */}
+              <div className="flex flex-col gap-1 text-xs">
+                {documentsData.filter(doc => doc.uploaded_doc?.status === 'pending').length > 0 && (
+                  <span className="text-yellow-600">
+                    {documentsData.filter(doc => doc.uploaded_doc?.status === 'pending').length} menunggu verifikasi
+                  </span>
+                )}
+                
+                {documentsData.filter(doc => doc.uploaded_doc?.status === 'rejected').length > 0 && (
+                  <span className="font-medium text-red-600">
+                    {documentsData.filter(doc => doc.uploaded_doc?.status === 'rejected').length} dokumen ditolak
+                  </span>
+                )}
+              </div>
             </div>
           </div>
         </CardHeader>        
-        <CardContent>
+        <CardContent className="p-4 sm:p-6">
           {documentsData.length === 0 ? (
             <div className="py-8 text-center">
               <FileText className="w-12 h-12 mx-auto mb-4 text-gray-400 opacity-50" />
@@ -921,17 +928,107 @@ export default function DokumenWajibPage() {
               </Button>
             </div>
           ) : (
-            <Table key={`documents-table-${forceUpdateCounter}`}>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nama Dokumen</TableHead>
-                  <TableHead>Deskripsi</TableHead>
-                  <TableHead>Tanggal Upload</TableHead>
-                  <TableHead className="text-center">Status</TableHead>
-                  <TableHead className="text-right">Aksi</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+            <>
+              {/* Mobile Card View */}
+              <div className="block md:hidden space-y-4">
+                {documentsData.map((doc) => (
+                  <Card 
+                    key={`mobile-doc-${doc.id}-${doc.uploaded_doc?.id || 'none'}-${forceUpdateCounter}`}
+                    className={`${doc.uploaded_doc ? 
+                      doc.uploaded_doc.status === 'verified' ? 'border-green-200 bg-green-50/40' : 
+                      doc.uploaded_doc.status === 'pending' ? 'border-yellow-200 bg-yellow-50/40' : 
+                      doc.uploaded_doc.status === 'rejected' ? 'border-red-200 bg-red-50/30' : '' 
+                      : 'border-gray-200 bg-gray-50/30'}`}
+                  >
+                    <CardContent className="p-4">
+                      <div className="space-y-3">
+                        {/* Document Header */}
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <FileText className={`h-4 w-4 flex-shrink-0 ${
+                              doc.uploaded_doc ? 
+                                doc.uploaded_doc.status === 'verified' ? 'text-green-600' : 
+                                doc.uploaded_doc.status === 'pending' ? 'text-yellow-600' : 
+                                doc.uploaded_doc.status === 'rejected' ? 'text-red-600' : 'text-gray-600'
+                              : 'text-gray-400'
+                            }`} />
+                            <div className="min-w-0">
+                              <h3 className="font-medium text-sm truncate">{doc.name}</h3>
+                              {doc.is_required && (
+                                <Badge variant="secondary" className="text-xs mt-1">Wajib</Badge>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex-shrink-0">
+                            {doc.uploaded_doc ? 
+                              getStatusBadge(doc.uploaded_doc.status, doc.uploaded_doc.keterangan) : 
+                              <Badge variant="outline" className="text-xs">Belum Upload</Badge>
+                            }
+                          </div>
+                        </div>
+                        
+                        {/* Document Info */}
+                        <div className="text-xs text-gray-600 space-y-1">
+                          <p>{doc.description}</p>
+                          <p>Format: {formatAllowedFormats(doc.allowed_formats)} | Max: {formatMaxFileSize(doc.max_file_size)}</p>
+                          {doc.uploaded_doc && (
+                            <p>Diupload: {doc.uploaded_at}</p>
+                          )}
+                        </div>
+                        
+                        {/* Action Buttons */}
+                        <div className="flex flex-col gap-2">
+                          {doc.uploaded_doc ? (
+                            <div className="flex flex-col sm:flex-row gap-2">
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                onClick={() => doc.uploaded_doc && handlePreview(doc.uploaded_doc)}
+                                className="w-full sm:w-auto text-xs"
+                              >
+                                <Eye className="w-3 h-3 mr-2" />
+                                Lihat
+                              </Button>
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                onClick={() => handleUploadClick(doc)}
+                                className="w-full sm:w-auto text-xs"
+                              >
+                                <Upload className="w-3 h-3 mr-2" />
+                                Ganti
+                              </Button>
+                            </div>
+                          ) : (
+                            <Button 
+                              onClick={() => handleUploadClick(doc)}
+                              size="sm"
+                              className="w-full text-xs"
+                            >
+                              <Upload className="w-3 h-3 mr-2" />
+                              Upload Dokumen
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+
+              {/* Desktop Table View */}
+              <div className="hidden md:block">
+                <Table key={`documents-table-${forceUpdateCounter}`}>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Nama Dokumen</TableHead>
+                      <TableHead>Deskripsi</TableHead>
+                      <TableHead>Tanggal Upload</TableHead>
+                      <TableHead className="text-center">Status</TableHead>
+                      <TableHead className="text-right">Aksi</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
                 {documentsData.map((doc) => (                
                   <TableRow 
                     key={`doc-${doc.id}-${doc.uploaded_doc?.id || 'none'}-${doc.uploaded_doc?.status || 'none'}-${forceUpdateCounter}`}
@@ -1038,9 +1135,11 @@ export default function DokumenWajibPage() {
                 ))}
               </TableBody>
             </Table>
-          )}
-        </CardContent>
-      </Card>
+          </div>
+        </>
+      )}
+    </CardContent>
+  </Card>
 
       {/* Dialog Upload */}
       <Dialog open={uploadDialog} onOpenChange={setUploadDialog}>

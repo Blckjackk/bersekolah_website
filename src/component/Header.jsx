@@ -240,10 +240,37 @@ export default function Header() {
       </NavbarContent>
 
       {/* Logo untuk Mobile dan Tablet */}
-      <NavbarContent className="pr-3 md:hidden" justify="start">
-        <NavbarBrand className="ml-4">
+      <NavbarContent className="md:hidden" justify="center">
+        <NavbarBrand>
           <img src={getLogoUrl()} className="max-w-[100px]" alt="Logo Bersekolah" />
         </NavbarBrand>
+      </NavbarContent>
+
+      {/* Tombol Masuk untuk Mobile - di pojok kanan atas */}
+      <NavbarContent className="md:hidden" justify="end">
+        {!isLoggedIn && (
+          <NavbarItem>
+            <Button
+              as={Link}
+              href="/masuk"
+              className="bg-[#406386] text-white font-medium hover:bg-[#2d4a66] transition-colors"
+              size="sm"
+            >
+              Masuk
+            </Button>
+          </NavbarItem>
+        )}
+        {isLoggedIn && (
+          <NavbarItem>
+            <div className="flex items-center">
+              <Avatar
+                size="sm"
+                src={userData?.avatar}
+                fallback={getInitials()}
+              />
+            </div>
+          </NavbarItem>
+        )}
       </NavbarContent>
 
       {/* Menu Desktop */}
@@ -292,8 +319,8 @@ export default function Header() {
         </NavbarItem>
       </NavbarContent>
 
-      {/* Menu Login/Register atau User Profile Dropdown */}
-      <NavbarContent justify="end">
+      {/* Menu Login/Register atau User Profile Dropdown - Desktop only */}
+      <NavbarContent className="hidden md:flex" justify="end">
         {isLoggedIn ? (
           <Dropdown placement="bottom-end">
             <DropdownTrigger>
@@ -331,23 +358,23 @@ export default function Header() {
         ) : (
           <>
             <NavbarItem className="hidden lg:flex">
-              <Link 
+              <Button 
+                as={Link}
                 href="/masuk" 
-                className={isActive("/masuk") ? "text-[#406386] font-semibold" : "text-foreground"}
+                className="bg-[#406386] text-white font-medium"
+                variant="flat"
               >
                 Masuk
-              </Link>
+              </Button>
             </NavbarItem>            {/* Only show the register button if there is an active period */}
             {hasActivePeriod() && (
-              <NavbarItem>
-                <Button 
-                  as={Link} 
-                  className={isActive("/daftar") ? "bg-[#406386] text-white" : "bg-warning text-warning-foreground"}
+              <NavbarItem className="hidden lg:flex">
+                <Link 
                   href="/daftar" 
-                  variant="flat"
+                  className={isActive("/daftar") ? "text-[#406386] font-semibold" : "text-foreground"}
                 >
                   Daftar
-                </Button>
+                </Link>
               </NavbarItem>
             )}
           </>
@@ -373,27 +400,34 @@ export default function Header() {
         {!isLoggedIn && (
           <>
             <NavbarMenuItem>
-              <Link
-                className={`w-full ${isActive("/masuk") ? "text-[#406386] font-semibold" : "text-foreground"}`}
-                href="/masuk"
-                size="lg"
-              >
-                Masuk
-              </Link>
-            </NavbarMenuItem>            {/* Only show the register button for mobile if there is an active period */}
-            {hasActivePeriod() && (
-              <NavbarMenuItem>
-                <Button 
-                  as={Link} 
-                  className={isActive("/daftar") ? "bg-[#406386] text-white" : "bg-warning text-warning-foreground"}
-                  href="/daftar" 
-                  variant="flat"
-                  fullWidth
-                >
-                  Daftar
-                </Button>
-              </NavbarMenuItem>
-            )}
+              <div className="flex flex-col gap-3 py-4">
+                <h3 className="text-sm font-semibold text-gray-600 uppercase tracking-wider">
+                  Akun
+                </h3>
+                <div className="flex flex-col gap-2">
+                  <Button
+                    as={Link}
+                    href="/masuk"
+                    variant="bordered"
+                    className="w-full border-[#406386] text-[#406386] font-medium"
+                    size="lg"
+                  >
+                    Masuk
+                  </Button>
+                  {/* Only show the register button for mobile if there is an active period */}
+                  {hasActivePeriod() && (
+                    <Button 
+                      as={Link} 
+                      href="/daftar" 
+                      className="w-full bg-[#406386] text-white font-medium"
+                      size="lg"
+                    >
+                      Daftar Sekarang
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </NavbarMenuItem>
           </>
         )}
         

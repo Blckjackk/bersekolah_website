@@ -53,7 +53,19 @@ export function NavUser() {
   const { isOpen } = useSidebar()
   const [user, setUser] = useState<User>(defaultUser);
   const [isLoading, setIsLoading] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
   const { toast } = useToast();
+  
+  // Monitor window size for mobile detection
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
   
   // Coba load user dari localStorage saat inisialisasi
   useEffect(() => {
@@ -245,8 +257,10 @@ export function NavUser() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button className="flex gap-2 items-center p-2 w-full rounded-md transition-colors hover:bg-accent hover:text-accent-foreground">
-          <Avatar className="flex-shrink-0 w-8 h-8 rounded-lg">
+        <button className={`flex gap-2 items-center w-full rounded-md transition-colors hover:bg-accent hover:text-accent-foreground ${
+          isMobile ? 'p-3' : 'p-2'
+        }`}>
+          <Avatar className={`flex-shrink-0 rounded-lg ${isMobile ? 'w-10 h-10' : 'w-8 h-8'}`}>
             <AvatarImage src={user.avatar} alt={user.name} />
             <AvatarFallback className="text-blue-800 bg-blue-100 rounded-lg">
               {getInitials()}
@@ -257,40 +271,54 @@ export function NavUser() {
               ? 'w-auto opacity-100 translate-x-0' 
               : 'w-0 opacity-0 -translate-x-4'
           }`}>
-            <div className="text-sm font-semibold truncate whitespace-nowrap">{user.name}</div>
-            <div className="text-xs truncate whitespace-nowrap text-muted-foreground">{user.email}</div>
+            <div className={`font-semibold truncate whitespace-nowrap ${isMobile ? 'text-base' : 'text-sm'}`}>
+              {user.name}
+            </div>
+            <div className={`truncate whitespace-nowrap text-muted-foreground ${isMobile ? 'text-sm' : 'text-xs'}`}>
+              {user.email}
+            </div>
           </div>
           <div className={`overflow-hidden transition-all duration-300 ease-in-out ${
             isOpen 
               ? 'w-auto opacity-100 translate-x-0' 
               : 'w-0 opacity-0 -translate-x-4'
           }`}>
-            <ChevronsUpDown className="w-4 h-4" />
+            <ChevronsUpDown className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'}`} />
           </div>
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
-        className="w-56 rounded-lg"
-        side="right"
-        align="end"
-        sideOffset={4}
+        className={`rounded-lg ${isMobile ? 'w-64' : 'w-56'}`}
+        side={isMobile ? "top" : "right"}
+        align={isMobile ? "start" : "end"}
+        sideOffset={isMobile ? 8 : 4}
+        alignOffset={isMobile ? 8 : 0}
+        avoidCollisions={true}
+        collisionPadding={isMobile ? 16 : 8}
+        style={{
+          zIndex: isMobile ? 50 : 40
+        }}
       >
         <DropdownMenuLabel className="p-0 font-normal">
-          <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-            <Avatar className="w-8 h-8 rounded-lg">
+          <div className={`flex items-center gap-2 px-1 text-left ${isMobile ? 'py-2.5' : 'py-1.5'}`}>
+            <Avatar className={`rounded-lg ${isMobile ? 'w-10 h-10' : 'w-8 h-8'}`}>
               <AvatarImage src={user.avatar} alt={user.name} />
               <AvatarFallback className="text-blue-800 bg-blue-100 rounded-lg">
                 {getInitials()}
               </AvatarFallback>
             </Avatar>
             <div className="flex-1 text-left">
-              <div className="text-sm font-semibold truncate">{user.name}</div>
-              <div className="text-xs truncate">{user.email}</div>
-              <div className="text-xs capitalize truncate text-muted-foreground">
+              <div className={`font-semibold truncate ${isMobile ? 'text-base' : 'text-sm'}`}>
+                {user.name}
+              </div>
+              <div className={`truncate ${isMobile ? 'text-sm' : 'text-xs'}`}>
+                {user.email}
+              </div>
+              <div className={`capitalize truncate text-muted-foreground ${isMobile ? 'text-sm' : 'text-xs'}`}>
                 {getUserRole()}
               </div>
               {user.phone && (
-                <div className="text-xs truncate text-muted-foreground">
+                <div className={`truncate text-muted-foreground ${isMobile ? 'text-sm' : 'text-xs'}`}>
                   {user.phone}
                 </div>
               )}
@@ -300,24 +328,24 @@ export function NavUser() {
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <DropdownMenuItem asChild>
-            <a href="/dashboard/pengaturan" className="flex items-center w-full">
-              <Settings className="mr-2 w-4 h-4" />
-              Pengaturan Akun
+            <a href="/dashboard/pengaturan" className={`flex items-center w-full ${isMobile ? 'py-3' : ''}`}>
+              <Settings className={`mr-2 ${isMobile ? 'w-5 h-5' : 'w-4 h-4'}`} />
+              <span className={isMobile ? 'text-base' : 'text-sm'}>Pengaturan Akun</span>
             </a>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
-            <a href="/" className="flex items-center w-full">
-              <PanelsTopLeft className="mr-2 w-4 h-4" />
-              Halaman Utama
+            <a href="/" className={`flex items-center w-full ${isMobile ? 'py-3' : ''}`}>
+              <PanelsTopLeft className={`mr-2 ${isMobile ? 'w-5 h-5' : 'w-4 h-4'}`} />
+              <span className={isMobile ? 'text-base' : 'text-sm'}>Halaman Utama</span>
             </a>
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuItem 
           onClick={handleLogout} 
-          className="text-red-500 cursor-pointer hover:bg-red-50"
+          className={`text-red-500 cursor-pointer hover:bg-red-50 ${isMobile ? 'py-3' : ''}`}
         >
-          <LogOut className="mr-2 w-4 h-4" />
-          Keluar
+          <LogOut className={`mr-2 ${isMobile ? 'w-5 h-5' : 'w-4 h-4'}`} />
+          <span className={isMobile ? 'text-base' : 'text-sm'}>Keluar</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

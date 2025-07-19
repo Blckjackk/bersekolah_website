@@ -297,8 +297,11 @@ export function AppSidebar() {
       {/* Mobile overlay */}
       {isMobile && isOpen && (
         <div 
-          className="fixed inset-0 z-20 bg-black/50"
-          onClick={toggle}
+          className="fixed inset-0 bg-black/50 z-35"
+          onClick={() => {
+            // Close sidebar on mobile when clicking overlay
+            toggle();
+          }}
         />
       )}
       
@@ -310,7 +313,8 @@ export function AppSidebar() {
             : 'sidebar-desktop'
         }`}
         style={{ 
-          width: isMobile ? '16rem' : (isOpen ? '16rem' : '4rem')
+          width: isMobile ? '16rem' : (isOpen ? '16rem' : '4rem'),
+          zIndex: isMobile ? 40 : 30 // Higher z-index for mobile
         }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
@@ -384,8 +388,14 @@ export function AppSidebar() {
         </nav>
 
         {/* Footer NavUser - Fixed di bottom */}
-        <footer className="flex-shrink-0 border-t bg-background border-border">
-          <div className="p-4">
+        <footer className="flex-shrink-0 bg-background border-t border-border">
+          <div className={`transition-all duration-200 ${
+            isMobile 
+              ? 'p-2' 
+              : isOpen 
+                ? 'p-4' 
+                : 'p-2'
+          }`}>
             <NavUser />
           </div>
           {isSuperAdmin && isOpen && (

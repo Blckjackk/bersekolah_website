@@ -416,47 +416,49 @@ export default function KelolaArtikelPage({ defaultCategory = "news" }: { defaul
   }
 
   return (
-    <div className="container p-6 mx-auto">
+    <div className="container mx-auto p-4 sm:p-6 space-y-4 sm:space-y-6">
       {/* Toast notification */}
       {toast.visible && (
-        <div className={`fixed top-4 right-4 z-50 p-4 rounded-md shadow-md ${
+        <div className={`fixed top-4 right-4 z-50 p-4 rounded-md shadow-md max-w-sm ${
           toast.type === "success" ? "bg-green-500 text-white" : "bg-red-500 text-white"
         }`}>
-          <p>{toast.message}</p>
+          <p className="text-sm">{toast.message}</p>
         </div>
       )}
       
       {/* Header */}
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Kelola Artikel</h1>
-          <p className="text-gray-600">Kelola artikel terbaru</p>
+          <h1 className="text-xl sm:text-2xl font-bold">Kelola Artikel</h1>
+          <p className="text-sm sm:text-base text-gray-600">Kelola artikel terbaru</p>
         </div>
-        <div className="flex items-center space-x-2">
+        <div className="flex gap-2">
           <Button 
             variant="outline" 
             size="sm"
             onClick={() => fetchHalaman(true)}
             disabled={isRefreshing}
+            className="flex-1 sm:flex-none"
           >
             <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`} />
-            Refresh
+            <span className="hidden sm:inline">Refresh</span>
           </Button>
-          <Button onClick={openCreateDialog} className="bg-[#406386] hover:bg-[#355475]">
+          <Button onClick={openCreateDialog} className="bg-[#406386] hover:bg-[#355475] flex-1 sm:flex-none">
             <PlusCircle className="mr-2 w-4 h-4" />
-            Tambah Artikel
+            <span className="hidden sm:inline">Tambah Artikel</span>
+            <span className="sm:hidden">Tambah</span>
           </Button>
         </div>
       </div>
       
       {/* Search */}
-      <Card className="mb-6">
+      <Card>
         <CardContent className="p-4">
           <div className="relative">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
             <Input
               placeholder="Cari berdasarkan judul, slug atau kategori..."
-              className="pl-8"
+              className="pl-8 text-sm"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -466,26 +468,128 @@ export default function KelolaArtikelPage({ defaultCategory = "news" }: { defaul
       
       {/* Halaman List */}
       <Card>
-        <CardHeader>
+        <CardHeader className="pb-2 sm:pb-4">
           <CardTitle className="text-lg">Daftar Halaman</CardTitle>
         </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[250px]">Judul Halaman</TableHead>
-                <TableHead className="w-[150px]">Slug</TableHead>
-                <TableHead className="w-[100px]">Kategori</TableHead>
-                <TableHead className="w-[100px]">Tanggal</TableHead>
-                <TableHead className="w-[100px] text-center">Status</TableHead>
-                <TableHead className="w-[100px] text-right">Aksi</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredHalaman.length === 0 && (
+        <CardContent className="p-4 sm:p-6">
+          {/* Desktop Table */}
+          <div className="hidden lg:block">
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={6} className="py-8 text-center">
-                    <p className="text-gray-500">Belum ada data halaman</p>
+                  <TableHead className="w-[250px]">Judul Halaman</TableHead>
+                  <TableHead className="w-[150px]">Slug</TableHead>
+                  <TableHead className="w-[100px]">Kategori</TableHead>
+                  <TableHead className="w-[100px]">Tanggal</TableHead>
+                  <TableHead className="w-[100px] text-center">Status</TableHead>
+                  <TableHead className="w-[100px] text-right">Aksi</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredHalaman.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={6} className="py-8 text-center">
+                      <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                        <Image className="w-8 h-8" />
+                        <p>Belum ada data halaman</p>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={openCreateDialog}
+                          className="mt-2"
+                        >
+                          <PlusCircle className="mr-2 w-4 h-4" />
+                          Tambah Halaman Baru
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                )}
+                {filteredHalaman.map((page) => (
+                  <TableRow key={page.id}>
+                    <TableCell>
+                      <div className="flex items-center space-x-3">
+                        {page.gambar ? (
+                          <div className="overflow-hidden w-8 h-8 bg-gray-100 rounded">
+                            <img 
+                              src={page.gambar || "/storage/artikel/default.jpg"}
+                              alt={page.judul_halaman}
+                              className="object-cover w-full h-full"
+                              onError={(e) => {
+                                e.currentTarget.onerror = null;
+                                e.currentTarget.src = "/storage/artikel/default.jpg";
+                              }}
+                            />
+                          </div>
+                        ) : (
+                          <div className="flex justify-center items-center w-8 h-8 bg-gray-100 rounded">
+                            <img
+                              src="/assets/image/artikel/default.jpg"
+                              alt="default"
+                              className="object-cover w-full h-full"
+                            />
+                          </div>
+                        )}
+                        <div>
+                          <p className="font-medium">{page.judul_halaman}</p>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell className="font-mono text-sm">
+                      {page.slug}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className="capitalize">
+                        {page.category}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      {formatDate(page.created_at)}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <button 
+                        onClick={() => handleToggleStatus(page)}
+                        className="inline-flex rounded-full hover:bg-gray-50"
+                      >
+                        {getStatusBadge(page.status)}
+                      </button>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm">
+                            <MoreHorizontal className="w-4 h-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => openEditDialog(page)}>
+                            <FileEdit className="mr-2 w-4 h-4" />
+                            Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            onClick={() => openDeleteDialog(page)}
+                            className="text-red-600"
+                          >
+                            <Trash2 className="mr-2 w-4 h-4" />
+                            Hapus
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+
+          {/* Mobile Cards */}
+          <div className="space-y-3 lg:hidden">
+            {filteredHalaman.length === 0 ? (
+              <Card className="p-8">
+                <div className="flex flex-col items-center gap-3 text-muted-foreground text-center">
+                  <Image className="w-12 h-12" />
+                  <div>
+                    <p className="font-medium">Belum ada data halaman</p>
                     <Button 
                       variant="outline" 
                       size="sm"
@@ -495,86 +599,77 @@ export default function KelolaArtikelPage({ defaultCategory = "news" }: { defaul
                       <PlusCircle className="mr-2 w-4 h-4" />
                       Tambah Halaman Baru
                     </Button>
-                  </TableCell>
-                </TableRow>
-              )}
-              {filteredHalaman.map((page) => (
-                <TableRow key={page.id}>
-                  <TableCell>
-                    <div className="flex items-center space-x-3">
+                  </div>
+                </div>
+              </Card>
+            ) : (
+              filteredHalaman.map((page) => (
+                <Card key={page.id} className="p-4">
+                  <div className="flex gap-3">
+                    <div className="overflow-hidden relative w-16 h-16 bg-gray-100 rounded flex-shrink-0">
                       {page.gambar ? (
-                        <div className="overflow-hidden w-8 h-8 bg-gray-100 rounded">
-                          <img 
-                            src={page.gambar || "/storage/artikel/default.jpg"}
-                            alt={page.judul_halaman}
-                            className="object-cover w-full h-full"
-                            onError={(e) => {
-                              e.currentTarget.onerror = null;
-                              e.currentTarget.src = "/storage/artikel/default.jpg";
-                            }}
-                          />
-                          {/* Debug: tampilkan nama file gambar */}
-                          <span style={{fontSize: '10px', color: '#888'}}>{page.gambar}</span>
-                        </div>
+                        <img 
+                          src={page.gambar || "/storage/artikel/default.jpg"}
+                          alt={page.judul_halaman}
+                          className="object-cover w-full h-full"
+                          onError={(e) => {
+                            e.currentTarget.onerror = null;
+                            e.currentTarget.src = "/storage/artikel/default.jpg";
+                          }}
+                        />
                       ) : (
-                        <div className="flex justify-center items-center w-8 h-8 bg-gray-100 rounded">
-                          <img
-                            src="/assets/image/artikel/default.jpg"
-                            alt="default"
-                            className="object-cover w-full h-full"
-                          />
-                        </div>
+                        <img
+                          src="/assets/image/artikel/default.jpg"
+                          alt="default"
+                          className="object-cover w-full h-full"
+                        />
                       )}
-                      <div>
-                        <p className="font-medium">{page.judul_halaman}</p>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2 mb-2">
+                        <h3 className="font-medium text-sm line-clamp-2">{page.judul_halaman}</h3>
+                        <button 
+                          onClick={() => handleToggleStatus(page)}
+                          className="flex-shrink-0"
+                        >
+                          {getStatusBadge(page.status)}
+                        </button>
+                      </div>
+                      <div className="space-y-1 text-xs text-muted-foreground mb-3">
+                        <p className="font-mono truncate">{page.slug}</p>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline" className="capitalize text-xs">
+                            {page.category}
+                          </Badge>
+                          <span>{formatDate(page.created_at)}</span>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => openEditDialog(page)}
+                          className="flex-1 text-xs h-8"
+                        >
+                          <FileEdit className="w-3 h-3 mr-1" />
+                          Edit
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => openDeleteDialog(page)}
+                          className="flex-1 text-xs h-8 text-red-600 hover:text-red-800"
+                        >
+                          <Trash2 className="w-3 h-3 mr-1" />
+                          Hapus
+                        </Button>
                       </div>
                     </div>
-                  </TableCell>
-                  <TableCell className="font-mono text-sm">
-                    {page.slug}
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="outline" className="capitalize">
-                      {page.category}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    {formatDate(page.created_at)}
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <button 
-                      onClick={() => handleToggleStatus(page)}
-                      className="inline-flex rounded-full hover:bg-gray-50"
-                    >
-                      {getStatusBadge(page.status)}
-                    </button>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm">
-                          <MoreHorizontal className="w-4 h-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => openEditDialog(page)}>
-                          <FileEdit className="mr-2 w-4 h-4" />
-                          Edit
-                        </DropdownMenuItem>
-                        <DropdownMenuItem 
-                          onClick={() => openDeleteDialog(page)}
-                          className="text-red-600"
-                        >
-                          <Trash2 className="mr-2 w-4 h-4" />
-                          Hapus
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+                  </div>
+                </Card>
+              ))
+            )}
+          </div>
         </CardContent>
       </Card>
       

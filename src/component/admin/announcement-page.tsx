@@ -482,87 +482,89 @@ export default function AnnouncementPage() {
   }
   
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Kelola Pengumuman</h1>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <h1 className="text-xl sm:text-2xl font-bold">Kelola Pengumuman</h1>
         <div className="flex gap-2">
           <Button 
             onClick={() => fetchAnnouncements(true)} 
             variant="outline" 
             size="sm" 
             disabled={isRefreshing}
+            className="flex-1 sm:flex-none"
           >
             <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`} />
-            Refresh
+            <span className="hidden sm:inline">Refresh</span>
           </Button>
-          <Button onClick={handleOpenCreateDialog} size="sm">
+          <Button onClick={handleOpenCreateDialog} size="sm" className="flex-1 sm:flex-none">
             <PlusCircle className="w-4 h-4 mr-2" />
-            Tambah Pengumuman
+            <span className="hidden sm:inline">Tambah Pengumuman</span>
+            <span className="sm:hidden">Tambah</span>
           </Button>
         </div>
       </div>
       
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         <Card>
-          <CardContent className="p-4">
+          <CardContent className="p-3 sm:p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Total Pengumuman</p>
-                <p className="text-2xl font-bold">{stats.total}</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">Total</p>
+                <p className="text-lg sm:text-2xl font-bold">{stats.total}</p>
               </div>
-              <FileText className="w-8 h-8 text-blue-500" />
+              <FileText className="w-6 h-6 sm:w-8 sm:h-8 text-blue-500" />
             </div>
           </CardContent>
         </Card>
         
         <Card>
-          <CardContent className="p-4">
+          <CardContent className="p-3 sm:p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Draft</p>
-                <p className="text-2xl font-bold">{stats.draft}</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">Draft</p>
+                <p className="text-lg sm:text-2xl font-bold">{stats.draft}</p>
               </div>
-              <Clock className="w-8 h-8 text-gray-500" />
+              <Clock className="w-6 h-6 sm:w-8 sm:h-8 text-gray-500" />
             </div>
           </CardContent>
         </Card>
         
         <Card>
-          <CardContent className="p-4">
+          <CardContent className="p-3 sm:p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Dipublikasikan</p>
-                <p className="text-2xl font-bold">{stats.published}</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">Publikasi</p>
+                <p className="text-lg sm:text-2xl font-bold">{stats.published}</p>
               </div>
-              <CheckCircle2 className="w-8 h-8 text-green-500" />
+              <CheckCircle2 className="w-6 h-6 sm:w-8 sm:h-8 text-green-500" />
             </div>
           </CardContent>
         </Card>
         
         <Card>
-          <CardContent className="p-4">
+          <CardContent className="p-3 sm:p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Diarsipkan</p>
-                <p className="text-2xl font-bold">{stats.archived}</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">Arsip</p>
+                <p className="text-lg sm:text-2xl font-bold">{stats.archived}</p>
               </div>
-              <Archive className="w-8 h-8 text-amber-500" />
+              <Archive className="w-6 h-6 sm:w-8 sm:h-8 text-amber-500" />
             </div>
           </CardContent>
         </Card>
       </div>
 
       {/* Filters */}
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle className="text-lg">Filter & Pencarian</CardTitle>
+      <Card className="mb-4 sm:mb-6">
+        <CardHeader className="pb-2 sm:pb-4">
+          <CardTitle className="text-base sm:text-lg">Filter & Pencarian</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-            <div>
-              <Label htmlFor="search">Cari Pengumuman</Label>
+        <CardContent className="p-4">
+          <div className="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="space-y-2">
+              <Label htmlFor="search" className="text-sm font-medium">Cari Pengumuman</Label>
               <div className="relative">
                 <Search className="absolute w-4 h-4 text-gray-400 left-3 top-3" />
                 <Input
@@ -570,15 +572,15 @@ export default function AnnouncementPage() {
                   placeholder="Judul, konten, atau tag..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
+                  className="pl-10 text-sm"
                 />
               </div>
             </div>
             
-            <div>
-              <Label htmlFor="status">Status</Label>
+            <div className="space-y-2">
+              <Label htmlFor="status" className="text-sm font-medium">Status</Label>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger>
+                <SelectTrigger className="text-sm">
                   <SelectValue placeholder="Semua Status" />
                 </SelectTrigger>
                 <SelectContent>
@@ -590,10 +592,10 @@ export default function AnnouncementPage() {
               </Select>
             </div>
             
-            <div>
-              <Label htmlFor="tag">Tag</Label>
+            <div className="space-y-2">
+              <Label htmlFor="tag" className="text-sm font-medium">Tag</Label>
               <Select value={tagFilter} onValueChange={setTagFilter}>
-                <SelectTrigger>
+                <SelectTrigger className="text-sm">
                   <SelectValue placeholder="Semua Tag" />
                 </SelectTrigger>
                 <SelectContent>
@@ -613,7 +615,8 @@ export default function AnnouncementPage() {
                   setStatusFilter("all");
                   setTagFilter("all");
                 }}
-                className="w-full"
+                className="w-full text-sm"
+                size="sm"
               >
                 Reset Filter
               </Button>
@@ -624,157 +627,257 @@ export default function AnnouncementPage() {
       
       {/* Announcements Table */}
       <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>Daftar Pengumuman</CardTitle>
-            <Badge variant="outline">
+        <CardHeader className="pb-2 sm:pb-4">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <CardTitle className="text-base sm:text-lg">Daftar Pengumuman</CardTitle>
+            <Badge variant="outline" className="self-start sm:self-auto">
               {filteredAnnouncements.length} pengumuman
             </Badge>
           </div>
         </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[300px]">Judul</TableHead>
-                <TableHead>Tag</TableHead>
-                <TableHead>Tanggal Publikasi</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Aksi</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredAnnouncements.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={5} className="h-24 text-center">
-                    Tidak ada pengumuman yang ditemukan
-                  </TableCell>
-                </TableRow>
-              ) : (
-                filteredAnnouncements.map((announcement) => (
-                  <TableRow key={announcement.id}>
-                    <TableCell className="font-medium">{announcement.title}</TableCell>
-                    <TableCell>
-                      {announcement.tag ? (
-                        <Badge variant="outline" className="bg-blue-50">
-                          <Tag className="w-3 h-3 mr-1" />
-                          {announcement.tag}
-                        </Badge>
-                      ) : (
-                        "-"
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {announcement.published_at ? (
-                        <div className="flex items-center gap-2">
-                          <Calendar className="w-4 h-4 text-gray-500" />
-                          {formatDate(announcement.published_at)}
+        <CardContent className="p-0 sm:p-6">
+          {filteredAnnouncements.length === 0 ? (
+            <div className="text-center p-8 text-gray-500">
+              <FileText className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+              <p>Tidak ada pengumuman yang ditemukan</p>
+            </div>
+          ) : (
+            <>
+              {/* Mobile View - Cards */}
+              <div className="lg:hidden space-y-4 p-4">
+                {filteredAnnouncements.map((announcement) => (
+                  <Card key={announcement.id} className="border border-gray-200">
+                    <CardContent className="p-4">
+                      <div className="space-y-3">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-semibold text-gray-900 line-clamp-2 text-sm">
+                              {announcement.title}
+                            </h3>
+                            {announcement.tag && (
+                              <Badge variant="outline" className="mt-2 text-xs bg-blue-50">
+                                <Tag className="w-3 h-3 mr-1" />
+                                {announcement.tag}
+                              </Badge>
+                            )}
+                          </div>
+                          {getStatusBadge(announcement.status)}
                         </div>
-                      ) : (
-                        <span className="text-gray-500">-</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {getStatusBadge(announcement.status)}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                            <span className="sr-only">Open menu</span>
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => handleOpenViewDialog(announcement)}>
-                            <Eye className="w-4 h-4 mr-2" />
-                            Lihat Detail
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleOpenEditDialog(announcement)}>
-                            <Edit className="w-4 h-4 mr-2" />
-                            Edit
-                          </DropdownMenuItem>
-                          
-                          {announcement.status !== 'published' && (
-                            <DropdownMenuItem onClick={() => handleUpdateStatus(announcement, 'published')}>
-                              <CheckCircle2 className="w-4 h-4 mr-2" />
-                              Publikasikan
-                            </DropdownMenuItem>
+
+                        <div className="text-sm text-gray-600">
+                          {announcement.published_at ? (
+                            <div className="flex items-center gap-2">
+                              <Calendar className="w-4 h-4" />
+                              {formatDate(announcement.published_at)}
+                            </div>
+                          ) : (
+                            <span className="text-gray-400">Belum dipublikasi</span>
                           )}
-                          
-                          {announcement.status !== 'draft' && (
-                            <DropdownMenuItem onClick={() => handleUpdateStatus(announcement, 'draft')}>
-                              <Clock className="w-4 h-4 mr-2" />
-                              Kembalikan ke Draft
-                            </DropdownMenuItem>
-                          )}
-                          
-                          {announcement.status !== 'archived' && (
-                            <DropdownMenuItem onClick={() => handleUpdateStatus(announcement, 'archived')}>
-                              <Archive className="w-4 h-4 mr-2" />
-                              Arsipkan
-                            </DropdownMenuItem>
-                          )}
-                          
-                          <DropdownMenuItem 
-                            onClick={() => handleOpenDeleteDialog(announcement)}
-                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        </div>
+
+                        <div className="flex items-center justify-end gap-2 pt-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleOpenViewDialog(announcement)}
+                            className="text-xs h-8"
                           >
-                            <Trash2 className="w-4 h-4 mr-2" />
-                            Hapus
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+                            <Eye className="w-3 h-3 mr-1" />
+                            Lihat
+                          </Button>
+                          <Button
+                            size="sm"
+                            onClick={() => handleOpenEditDialog(announcement)}
+                            className="text-xs h-8"
+                          >
+                            <Edit className="w-3 h-3 mr-1" />
+                            Edit
+                          </Button>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              {announcement.status !== 'published' && (
+                                <DropdownMenuItem onClick={() => handleUpdateStatus(announcement, 'published')}>
+                                  <CheckCircle2 className="w-4 h-4 mr-2" />
+                                  Publikasikan
+                                </DropdownMenuItem>
+                              )}
+                              
+                              {announcement.status !== 'draft' && (
+                                <DropdownMenuItem onClick={() => handleUpdateStatus(announcement, 'draft')}>
+                                  <Clock className="w-4 h-4 mr-2" />
+                                  Draft
+                                </DropdownMenuItem>
+                              )}
+                              
+                              {announcement.status !== 'archived' && (
+                                <DropdownMenuItem onClick={() => handleUpdateStatus(announcement, 'archived')}>
+                                  <Archive className="w-4 h-4 mr-2" />
+                                  Arsipkan
+                                </DropdownMenuItem>
+                              )}
+                              
+                              <DropdownMenuItem 
+                                onClick={() => handleOpenDeleteDialog(announcement)}
+                                className="text-red-600"
+                              >
+                                <Trash2 className="w-4 h-4 mr-2" />
+                                Hapus
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+
+              {/* Desktop View - Table */}
+              <div className="hidden lg:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[300px]">Judul</TableHead>
+                      <TableHead>Tag</TableHead>
+                      <TableHead>Tanggal Publikasi</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="text-right">Aksi</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredAnnouncements.map((announcement) => (
+                      <TableRow key={announcement.id}>
+                        <TableCell className="font-medium">{announcement.title}</TableCell>
+                        <TableCell>
+                          {announcement.tag ? (
+                            <Badge variant="outline" className="bg-blue-50">
+                              <Tag className="w-3 h-3 mr-1" />
+                              {announcement.tag}
+                            </Badge>
+                          ) : (
+                            "-"
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {announcement.published_at ? (
+                            <div className="flex items-center gap-2">
+                              <Calendar className="w-4 h-4 text-gray-500" />
+                              {formatDate(announcement.published_at)}
+                            </div>
+                          ) : (
+                            <span className="text-gray-500">-</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {getStatusBadge(announcement.status)}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                <span className="sr-only">Open menu</span>
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => handleOpenViewDialog(announcement)}>
+                                <Eye className="w-4 h-4 mr-2" />
+                                Lihat Detail
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleOpenEditDialog(announcement)}>
+                                <Edit className="w-4 h-4 mr-2" />
+                                Edit
+                              </DropdownMenuItem>
+                              
+                              {announcement.status !== 'published' && (
+                                <DropdownMenuItem onClick={() => handleUpdateStatus(announcement, 'published')}>
+                                  <CheckCircle2 className="w-4 h-4 mr-2" />
+                                  Publikasikan
+                                </DropdownMenuItem>
+                              )}
+                              
+                              {announcement.status !== 'draft' && (
+                                <DropdownMenuItem onClick={() => handleUpdateStatus(announcement, 'draft')}>
+                                  <Clock className="w-4 h-4 mr-2" />
+                                  Kembalikan ke Draft
+                                </DropdownMenuItem>
+                              )}
+                              
+                              {announcement.status !== 'archived' && (
+                                <DropdownMenuItem onClick={() => handleUpdateStatus(announcement, 'archived')}>
+                                  <Archive className="w-4 h-4 mr-2" />
+                                  Arsipkan
+                                </DropdownMenuItem>
+                              )}
+                              
+                              <DropdownMenuItem 
+                                onClick={() => handleOpenDeleteDialog(announcement)}
+                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                              >
+                                <Trash2 className="w-4 h-4 mr-2" />
+                                Hapus
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </>
+          )}
         </CardContent>
       </Card>
       
       {/* Create Dialog */}
       <Dialog open={createDialog} onOpenChange={setCreateDialog}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Tambah Pengumuman Baru</DialogTitle>
-            <DialogDescription>
+        <DialogContent className="w-full max-w-4xl max-h-[90vh] overflow-y-auto mx-4 sm:mx-8">
+          <DialogHeader className="pb-4">
+            <DialogTitle className="text-lg sm:text-xl">Tambah Pengumuman Baru</DialogTitle>
+            <DialogDescription className="text-sm">
               Isi form berikut untuk membuat pengumuman baru.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="col-span-2">
-                <Label htmlFor="title">Judul Pengumuman</Label>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="sm:col-span-2">
+                <Label htmlFor="title" className="text-sm font-medium">Judul Pengumuman</Label>
                 <Input
                   id="title"
                   name="title"
                   value={formData.title}
                   onChange={handleInputChange}
                   placeholder="Masukkan judul pengumuman"
+                  className="text-sm"
                 />
               </div>
               
-              <div>
-                <Label htmlFor="tag">Tag (Opsional)</Label>
+              <div className="space-y-2">
+                <Label htmlFor="tag" className="text-sm font-medium">Tag (Opsional)</Label>
                 <Input
                   id="tag"
                   name="tag"
                   value={formData.tag}
                   onChange={handleInputChange}
                   placeholder="Contoh: beasiswa, event, info"
+                  className="text-sm"
                 />
               </div>
               
-              <div>
-                <Label htmlFor="status">Status</Label>
+              <div className="space-y-2">
+                <Label htmlFor="status" className="text-sm font-medium">Status</Label>
                 <Select
                   name="status"
                   value={formData.status}
                   onValueChange={(value) => setFormData({ ...formData, status: value })}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="text-sm">
                     <SelectValue placeholder="Pilih Status" />
                   </SelectTrigger>
                   <SelectContent>
@@ -785,24 +888,25 @@ export default function AnnouncementPage() {
                 </Select>
               </div>
               
-              <div className="col-span-2">
-                <Label htmlFor="content">Konten</Label>
+              <div className="sm:col-span-2 space-y-2">
+                <Label htmlFor="content" className="text-sm font-medium">Konten</Label>
                 <Textarea
                   id="content"
                   name="content"
                   value={formData.content}
                   onChange={handleInputChange}
                   placeholder="Masukkan konten pengumuman (HTML diperbolehkan)"
-                  rows={10}
+                  rows={8}
+                  className="text-sm resize-none"
                 />
               </div>
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setCreateDialog(false)} disabled={isSubmitting}>
+          <DialogFooter className="flex flex-col gap-2 sm:flex-row">
+            <Button variant="outline" onClick={() => setCreateDialog(false)} disabled={isSubmitting} className="w-full sm:w-auto">
               Batal
             </Button>
-            <Button onClick={handleCreateAnnouncement} disabled={isSubmitting || !formData.title || !formData.content}>
+            <Button onClick={handleCreateAnnouncement} disabled={isSubmitting || !formData.title || !formData.content} className="w-full sm:w-auto">
               {isSubmitting ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />

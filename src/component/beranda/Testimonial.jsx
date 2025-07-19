@@ -7,6 +7,9 @@ const Testimonial = () => {
   const [testimonials, setTestimonials] = useState([])
   const [currentIndex, setCurrentIndex] = useState(0)
   const [loading, setLoading] = useState(true)
+  const [touchStart, setTouchStart] = useState(0)
+  const [touchEnd, setTouchEnd] = useState(0)
+  const [isPaused, setIsPaused] = useState(false)
 
   useEffect(() => {
     const fetchTestimonials = async () => {
@@ -36,12 +39,50 @@ const Testimonial = () => {
     fetchTestimonials()
   }, [])
 
+  // Auto-advance testimonials
+  useEffect(() => {
+    if (testimonials.length > 0 && !isPaused) {
+      const interval = setInterval(() => {
+        setCurrentIndex((prev) => (prev + 1) % testimonials.length)
+      }, 5000) // Change every 5 seconds
+      
+      return () => clearInterval(interval)
+    }
+  }, [testimonials.length, isPaused])
+
   const nextTestimonial = () => {
     setCurrentIndex((prev) => (prev + 1) % testimonials.length)
+    setIsPaused(true)
+    setTimeout(() => setIsPaused(false), 3000) // Resume after 3 seconds
   }
 
   const prevTestimonial = () => {
     setCurrentIndex((prev) => (prev - 1 + testimonials.length) % testimonials.length)
+    setIsPaused(true)
+    setTimeout(() => setIsPaused(false), 3000) // Resume after 3 seconds
+  }
+
+  // Handle touch events for mobile swipe
+  const handleTouchStart = (e) => {
+    setTouchStart(e.targetTouches[0].clientX)
+  }
+
+  const handleTouchMove = (e) => {
+    setTouchEnd(e.targetTouches[0].clientX)
+  }
+
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd) return
+    
+    const distance = touchStart - touchEnd
+    const isLeftSwipe = distance > 50
+    const isRightSwipe = distance < -50
+
+    if (isLeftSwipe) {
+      nextTestimonial()
+    } else if (isRightSwipe) {
+      prevTestimonial()
+    }
   }
 
   if (loading) {
@@ -67,17 +108,36 @@ const Testimonial = () => {
         </div>
 
         <div className="relative max-w-6xl mx-auto">
-          <div className="grid items-center grid-cols-1 gap-8 md:grid-cols-2 lg:gap-12">
+          <div 
+            className="grid items-center grid-cols-1 gap-8 md:grid-cols-2 lg:gap-12 touch-pan-x select-none overflow-hidden"
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+            onMouseEnter={() => setIsPaused(true)}
+            onMouseLeave={() => setIsPaused(false)}
+            style={{ 
+              touchAction: 'pan-x',
+              WebkitUserSelect: 'none',
+              MozUserSelect: 'none',
+              msUserSelect: 'none',
+              userSelect: 'none'
+            }}
+          >
             <div className="relative order-2 hidden lg:order-1 md:block">
-              <div className="relative w-full max-w-md mx-auto lg:mx-0">
+              <div className="relative w-full max-w-md mx-auto lg:mx-0 overflow-hidden">
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={currentTestimonial.id}
-                    initial={{ opacity: 0, scale: 0.8, rotateY: -15 }}
-                    animate={{ opacity: 1, scale: 1, rotateY: 0 }}
-                    exit={{ opacity: 0, scale: 0.8, rotateY: 15 }}
-                    transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
+                    initial={{ opacity: 0, x: 100 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -100 }}
+                    transition={{ 
+                      duration: 0.4, 
+                      ease: [0.23, 1, 0.32, 1],
+                      type: "tween"
+                    }}
                     className="relative"
+                    layoutId="testimonial-image"
                   >
                     <div className="relative z-10 overflow-hidden bg-white rounded-2xl">
                       <img 
@@ -90,14 +150,14 @@ const Testimonial = () => {
 
                     {/* Dekorasi */}
                     <motion.div 
-                      className="absolute w-24 h-24 bg-blue-100 -top-6 -left-6 rounded-2xl"
-                      animate={{ rotate: [0, 5, -5, 0], scale: [1, 1.05, 0.95, 1] }}
-                      transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+                      className="absolute w-24 h-24 bg-blue-100 -top-6 -left-6 rounded-2xl opacity-60"
+                      animate={{ rotate: [0, 2, -2, 0] }}
+                      transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
                     />
                     <motion.div 
-                      className="absolute w-32 h-32 bg-indigo-100 -right-6 -bottom-6 rounded-2xl"
-                      animate={{ rotate: [0, -5, 5, 0], scale: [1, 0.95, 1.05, 1] }}
-                      transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+                      className="absolute w-32 h-32 bg-indigo-100 -right-6 -bottom-6 rounded-2xl opacity-50"
+                      animate={{ rotate: [0, -2, 2, 0] }}
+                      transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
                     />
                   </motion.div>
                 </AnimatePresence>
@@ -105,14 +165,20 @@ const Testimonial = () => {
             </div>
 
             <div className="order-1 md:order-2">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={currentTestimonial.id}
-                  initial={{ opacity: 0, x: 50 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -50 }}
-                  transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
-                >
+              <div className="overflow-hidden">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={currentTestimonial.id}
+                    initial={{ opacity: 0, x: 100 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -100 }}
+                    transition={{ 
+                      duration: 0.4, 
+                      ease: [0.23, 1, 0.32, 1],
+                      type: "tween"
+                    }}
+                    layoutId="testimonial-content"
+                  >
                   <Card className="border-0 backdrop-blur-sm bg-white/80">
                     <CardBody className="p-8">
                       <Quote className="w-12 h-12 mb-6 text-blue-500 opacity-20" />
@@ -137,23 +203,42 @@ const Testimonial = () => {
                   </Card>
                 </motion.div>
               </AnimatePresence>
+              </div>
             </div>
           </div>
 
           <div className="flex items-center justify-center gap-4 mt-8">
-            <Button isIconOnly variant="flat" className="backdrop-blur-sm bg-white/80 hover:bg-white" onPress={prevTestimonial}>
+            <Button 
+              isIconOnly 
+              variant="flat" 
+              className="backdrop-blur-sm bg-white/80 hover:bg-white transition-all duration-200" 
+              onPress={prevTestimonial}
+            >
               <ChevronLeft className="w-5 h-5" />
             </Button>
             <div className="flex gap-2">
               {testimonials.map((_, index) => (
                 <button
                   key={index}
-                  onClick={() => setCurrentIndex(index)}
-                  className={`w-2 h-2 rounded-full transition-all duration-300 ${index === currentIndex ? 'bg-blue-600 w-8' : 'bg-gray-300 hover:bg-gray-400'}`}
-                />
+                  onClick={() => {
+                    setCurrentIndex(index)
+                    setIsPaused(true)
+                    setTimeout(() => setIsPaused(false), 3000)
+                  }}
+                  className={`relative w-2 h-2 rounded-full transition-all duration-300 ${index === currentIndex ? 'bg-blue-600 w-8' : 'bg-gray-300 hover:bg-gray-400'}`}
+                >
+                  {index === currentIndex && !isPaused && (
+                    <div className="absolute inset-0 w-full h-full bg-blue-400 rounded-full animate-pulse"></div>
+                  )}
+                </button>
               ))}
             </div>
-            <Button isIconOnly variant="flat" className="backdrop-blur-sm bg-white/80 hover:bg-white" onPress={nextTestimonial}>
+            <Button 
+              isIconOnly 
+              variant="flat" 
+              className="backdrop-blur-sm bg-white/80 hover:bg-white transition-all duration-200" 
+              onPress={nextTestimonial}
+            >
               <ChevronRight className="w-5 h-5" />
             </Button>
           </div>
@@ -161,7 +246,7 @@ const Testimonial = () => {
           <div className="mt-4 text-center">
             <span className="text-sm text-gray-500">
               {String(currentIndex + 1).padStart(2, '0')} / {String(testimonials.length).padStart(2, '0')}
-            </span>
+            </span>z
           </div>
         </div>
       </div>
